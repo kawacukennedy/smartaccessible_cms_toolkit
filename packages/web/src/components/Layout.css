@@ -103,3 +103,141 @@
   flex: 1;
   padding: 20px;
 }
+
+.container-fluid {
+  max-width: 1440px;
+}
+
+/* Desktop - Fixed Sidebar */
+@media (min-width: 1025px) {
+  .sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    flex-shrink: 0;
+  }
+  .main-content {
+    margin-left: 250px; /* Adjust content to make space for fixed sidebar */
+  }
+}
+
+/* Tablet - Collapsible Sidebar */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .sidebar {
+    width: 0; /* Collapsed by default */
+    overflow: hidden;
+    transition: width 0.3s ease-in-out;
+  }
+  .sidebar.show { /* When sidebar is open */
+    width: 250px;
+  }
+  .main-content {
+    margin-left: 0; /* No margin when sidebar is collapsed */
+    transition: margin-left 0.3s ease-in-out;
+  }
+  .main-content.sidebar-open {
+    margin-left: 250px; /* Adjust content when sidebar is open */
+  }
+}
+
+/* Mobile - Overlay Sidebar (handled by Bootstrap offcanvas) */
+@media (max-width: 640px) {
+  .sidebar {
+    width: 250px; /* Offcanvas width */
+  }
+  .main-content {
+    margin-left: 0; /* No margin on mobile */
+  }
+}
+
+/* Login Page Styles */
+.login-background {
+  background: linear-gradient(45deg, #007bff, #0056b3); /* Example gradient */
+  position: relative;
+  overflow: hidden;
+}
+
+.login-background::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: radial-gradient(circle, #ffffff33 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.2;
+  z-index: 0;
+}
+
+.login-card {
+  position: relative;
+  z-index: 1;
+  animation: fade-in-up 0.3s ease-out;
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.login-card .form-control:focus {
+  box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25); /* Bootstrap primary color glow */
+  border-color: #007bff;
+}
+
+/* Responsive styles for login card */
+@media (max-width: 640px) {
+  .login-card {
+    width: calc(100% - 32px); /* 16px padding on each side */
+    margin: 16px;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .login-card {
+    width: 400px;
+  }
+}
+
+@media (min-width: 1025px) {
+  .login-card {
+    width: 480px;
+  }
+}
+
+.dashboard-card {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175) !important; /* shadow-lg equivalent */
+}
+
+/* AI Panel Responsive Styles */
+/* Tablet - Bottom Drawer */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .ai-panel-bottom-drawer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 0; /* Collapsed by default */
+    overflow: hidden;
+    transition: height 0.3s ease-in-out;
+    background-color: var(--bs-body-bg); /* Use Bootstrap's body background */
+    z-index: 1040; /* Below modal, above navbar */
+    border-top: 1px solid var(--bs-border-color);
+  }
+
+  .ai-panel-bottom-drawer.show {
+    height: 50vh; /* Example height when open */
+  }
+}

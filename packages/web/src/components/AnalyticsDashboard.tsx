@@ -62,18 +62,9 @@ ${JSON.stringify(reportData, null, 2)}`);
       <h1>Analytics Dashboard</h1>
       <p>Overview of key performance indicators for your CMS.</p>
 
-      {/* Filtering Options */}
+      {/* Filters Bar */}
       <div className="mb-4">
         <div className="row">
-          <div className="col-md-4">
-            <label htmlFor="filterSelect" className="form-label">Filter by:</label>
-            <select id="filterSelect" className="form-select" value={filter} onChange={(e) => setFilter(e.target.value)}>
-              <option value="all">All</option>
-              <option value="content">Content</option>
-              <option value="users">Users</option>
-              <option value="ai">AI</option>
-            </select>
-          </div>
           <div className="col-md-4">
             <label htmlFor="dateRangeSelect" className="form-label">Date Range:</label>
             <select id="dateRangeSelect" className="form-select" value={dateRange} onChange={(e) => setDateRange(e.target.value)}>
@@ -82,12 +73,20 @@ ${JSON.stringify(reportData, null, 2)}`);
               <option value="today">Today</option>
             </select>
           </div>
+          <div className="col-md-4">
+            <label htmlFor="segmentSelect" className="form-label">Segment Select:</label> {/* Changed label and id */}
+            <select id="segmentSelect" className="form-select" value={filter} onChange={(e) => setFilter(e.target.value)}>
+              <option value="all">All Segments</option>
+              <option value="new_users">New Users</option>
+              <option value="returning_users">Returning Users</option>
+            </select>
+          </div>
         </div>
       </div>
 
       <div className="row">
         {metrics.map((metric, index) => (
-          <div key={index} className="col-md-4 mb-3">
+          <div key={index} className="col-12 col-md-6 col-lg-4 mb-3"> {/* Adjusted responsive classes */}
             <div className="card h-100">
               <div className="card-header">{metric.name}</div>
               <div className="card-body">
@@ -105,32 +104,29 @@ ${JSON.stringify(reportData, null, 2)}`);
         ))}
       </div>
 
-      <h2 className="mt-4">Interactive Charts (Placeholder)</h2>
+      <h2 className="mt-4">Charts</h2> {/* Changed heading */}
       <div className="row">
-        <div className="col-md-6 mb-3">
-          <div className="card">
-            <div className="card-header">Content Version Changes Over Time</div>
-            <div className="card-body" onMouseEnter={() => handleChartHover('Content Version Changes')}>
-              <p>A simple bar chart representation.</p>
-              <div style={{ display: 'flex', justifyContent: 'space-around', alignItems: 'flex-end', height: 150, borderBottom: '1px solid #ccc', paddingBottom: 5 }}>
-                <div style={{ height: '80%', width: '15%', backgroundColor: 'blue' }}></div>
-                <div style={{ height: '60%', width: '15%', backgroundColor: 'blue' }}></div>
-                <div style={{ height: '90%', width: '15%', backgroundColor: 'blue' }}></div>
-                <div style={{ height: '50%', width: '15%', backgroundColor: 'blue' }}></div>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-around', fontSize: '0.8em', marginTop: 5 }}>
-                <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span>
-              </div>
+        <div className="col-12 col-md-6 col-lg-4 mb-3"> {/* Adjusted responsive classes */}
+          <div className="card h-100">
+            <div className="card-header">Traffic Over Time</div> {/* Changed title */}
+            <div className="card-body" onMouseEnter={() => handleChartHover('Traffic Over Time')}>
+              <p>Placeholder for Line Chart.</p>
             </div>
           </div>
         </div>
-        <div className="col-md-6 mb-3">
-          <div className="card">
-            <div className="card-header">AI Suggestions Acceptance Rate</div>
-            <div className="card-body" onMouseEnter={() => handleChartHover('AI Suggestions Acceptance')}>
-              <p>A simple pie chart representation.</p>
-              <div style={{ width: 100, height: 100, borderRadius: 50, backgroundColor: 'conic-gradient(green 0% 70%, gray 70% 100%)', margin: 'auto' }}></div>
-              <p className="text-center mt-2">70% Accepted</p>
+        <div className="col-12 col-md-6 col-lg-4 mb-3"> {/* Adjusted responsive classes */}
+          <div className="card h-100">
+            <div className="card-header">Top Performing Content</div> {/* Changed title */}
+            <div className="card-body" onMouseEnter={() => handleChartHover('Top Performing Content')}>
+              <p>Placeholder for Bar Chart.</p>
+            </div>
+          </div>
+        </div>
+        <div className="col-12 col-md-6 col-lg-4 mb-3"> {/* Adjusted responsive classes */}
+          <div className="card h-100">
+            <div className="card-header">Audience Segments</div> {/* Changed title */}
+            <div className="card-body" onMouseEnter={() => handleChartHover('Audience Segments')}>
+              <p>Placeholder for Pie Chart.</p>
             </div>
           </div>
         </div>

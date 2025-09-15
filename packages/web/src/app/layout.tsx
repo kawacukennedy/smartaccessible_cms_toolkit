@@ -4,7 +4,7 @@ import { Inter } from "next/font/google";
 import Layout from "@/components/Layout";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import I18nProvider from "@/contexts/I18nProvider";
-import BootstrapClient from "@/components/BootstrapClient";
+
 import { NotificationProvider } from "@/contexts/NotificationContext";
 import NotificationToast from "@/components/NotificationToast";
 import { AISuggestionProvider } from "@/contexts/AISuggestionContext";
@@ -77,7 +77,7 @@ export default function RootLayout({
                   <AISuggestionProvider>
                     <UndoRedoProvider>
                       <Layout>{children}</Layout>
-                      <NotificationToast />
+                                            <NotificationRenderer /> {/* Replaced NotificationToast */}
                     </UndoRedoProvider>
                   </AISuggestionProvider>
                 </NotificationProvider>
@@ -86,6 +86,12 @@ export default function RootLayout({
           </AuthProvider>
         </AccessibilityProvider>
         <BootstrapClient />
+      </body>
+    </html>
+  );
+}
+
+     
       </body>
     </html>
   );

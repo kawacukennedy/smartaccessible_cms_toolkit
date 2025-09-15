@@ -5,7 +5,7 @@ import { Notification } from '../types/notification';
 
 interface NotificationContextType {
   notifications: Notification[];
-  addNotification: (notification: Omit<Notification, 'id' | 'read' | 'timestamp'>) => void;
+  addNotification: (notification: Omit<Notification, 'id' | 'read' | 'timestamp' | 'type'> & { displayType?: 'toast' | 'modal' | 'snackbar'; style?: 'info' | 'warning' | 'error' | 'success' | 'ai_suggestion'; title?: string; actions?: { label: string; onClick: () => void }[]; actionLabel?: string; onActionClick?: () => void; }) => void;
   markAsRead: (id: string) => void;
   removeNotification: (id: string) => void;
 }
@@ -15,11 +15,13 @@ const NotificationContext = createContext<NotificationContextType | undefined>(u
 export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
-  const addNotification = useCallback((notification: Omit<Notification, 'id' | 'read' | 'timestamp'>) => {
+  const addNotification = useCallback((notification: Omit<Notification, 'id' | 'read' | 'timestamp' | 'type'> & { displayType?: 'toast' | 'modal' | 'snackbar'; style?: 'info' | 'warning' | 'error' | 'error' | 'success' | 'ai_suggestion'; title?: string; actions?: { label: string; onClick: () => void }[]; actionLabel?: string; onActionClick?: () => void; }) => {
     const newNotification: Notification = {
       id: Date.now().toString(), // Simple unique ID for now
       read: false,
       timestamp: new Date().toISOString(),
+      displayType: notification.displayType || 'toast', // Default to toast
+      style: notification.style || 'info', // Default to info
       ...notification,
     };
     setNotifications((prev) => [...prev, newNotification]);

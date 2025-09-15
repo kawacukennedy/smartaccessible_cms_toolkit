@@ -13,7 +13,7 @@ const NotificationToast: React.FC = () => {
         // Display the toast
         const toastEl = document.getElementById(`toast-${notification.id}`);
         if (toastEl) {
-          const toast = new (window as any).bootstrap.Toast(toastEl, { autohide: true, delay: 5000 });
+          const toast = new (window as any).bootstrap.Toast(toastEl, { autohide: true, delay: 4000 }); // Changed delay to 4000
           toast.show();
           toastEl.addEventListener('hidden.bs.toast', () => {
             removeNotification(notification.id);
@@ -27,7 +27,7 @@ const NotificationToast: React.FC = () => {
     <div
       style={{
         position: 'fixed',
-        top: 20,
+        bottom: 20, // Changed top to bottom
         right: 20,
         zIndex: 1050,
       }}
@@ -36,7 +36,7 @@ const NotificationToast: React.FC = () => {
         <div
           key={notification.id}
           id={`toast-${notification.id}`}
-          className={`toast align-items-center text-white bg-${notification.type === 'error' ? 'danger' : notification.type === 'warning' ? 'warning' : notification.type === 'success' ? 'success' : 'primary'} border-0 fade show`}
+          className={`toast align-items-center text-white bg-${notification.style === 'error' ? 'danger' : notification.style === 'warning' ? 'warning' : notification.style === 'success' ? 'success' : 'primary'} border-0 fade show`}
           role="alert"
           aria-live="assertive"
           aria-atomic="true"
