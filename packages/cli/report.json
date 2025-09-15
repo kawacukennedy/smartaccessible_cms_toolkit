@@ -1,0 +1,20 @@
+{
+  "space": "my-space",
+  "locale": "all",
+  "timestamp": "2025-09-15T09:12:36.677Z",
+  "results": {
+    "contentBlockId": "uuid",
+    "issues": [
+      {
+        "type": "contrast",
+        "severity": "high",
+        "suggestion": "Increase contrast for the main heading."
+      },
+      {
+        "type": "alt-text",
+        "severity": "medium",
+        "suggestion": "Add alt text to all images."
+      }
+    ]
+  }
+}

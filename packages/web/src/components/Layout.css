@@ -1,0 +1,105 @@
+.main-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.main-layout.light {
+  background-color: #fff;
+  color: #000;
+}
+
+.main-layout.dark {
+  background-color: #212529;
+  color: #fff;
+}
+
+.main-layout.high-contrast {
+  background-color: #000;
+  color: #0f0;
+}
+
+.main-layout.high-contrast .sidebar {
+  background-color: #000;
+  color: #0f0;
+  border-right: 1px solid #0f0;
+}
+
+.main-layout.high-contrast .navbar {
+  background-color: #000 !important;
+  color: #0f0 !important;
+  border-bottom: 1px solid #0f0;
+}
+
+.main-layout.high-contrast .navbar-brand,
+.main-layout.high-contrast .btn-outline-primary,
+.main-layout.high-contrast .btn-outline-secondary,
+.main-layout.high-contrast .form-control,
+.main-layout.high-contrast .dropdown-toggle,
+.main-layout.high-contrast .dropdown-item {
+  color: #0f0 !important;
+  border-color: #0f0 !important;
+  background-color: #000 !important;
+}
+
+.main-layout.high-contrast .form-control {
+  background-color: #000 !important;
+}
+
+.main-layout.high-contrast .list-group-item {
+  background-color: #000 !important;
+  color: #0f0 !important;
+  border-color: #0f0 !important;
+}
+
+.main-layout.high-contrast .list-group-item.active {
+  background-color: #0f0 !important;
+  color: #000 !important;
+}
+
+.main-layout.high-contrast .card {
+  background-color: #000 !important;
+  color: #0f0 !important;
+  border-color: #0f0 !important;
+}
+
+/* Color Blind Modes */
+.main-layout.protanopia {
+  filter: url(#protanopia);
+}
+
+.main-layout.deuteranopia {
+  filter: url(#deuteranopia);
+}
+
+.main-layout.tritanopia {
+  filter: url(#tritanopia);
+}
+
+.main-layout.achromatopsia {
+  filter: url(#achromatopsia);
+}
+
+.main-content {
+  display: flex;
+  flex: 1;
+}
+
+.sidebar {
+  width: 250px;
+  transition: background-color 0.3s;
+}
+
+.main-layout.light .sidebar {
+    background-color: #f8f9fa;
+}
+
+.main-layout.dark .sidebar {
+    background-color: #343a40;
+}
+
+.content-area {
+  flex: 1;
+  padding: 20px;
+}

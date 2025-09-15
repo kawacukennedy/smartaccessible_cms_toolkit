@@ -1,0 +1,157 @@
+{
+  "project_name": "SmartAccessible CMS Toolkit",
+  "version": "1.0.0",
+  "description": "Ultimate AI-powered CMS toolkit integrating Storyblok for accessibility, inclusivity, personalization, creative content generation, live preview (web & mobile), multi-role management, CLI automation, real-time sync, analytics, monitoring, SEO, media handling, undo/redo, version control, CI/CD, localization, device simulation, themes, developer workflow optimization, and full system orchestration.",
+  "global_config": {
+    "languages_supported": ["en","fr","es","de","zh","ar","ru","pt","hi","ja","ko","it","nl"],
+    "default_language": "en",
+    "timezones_supported": true,
+    "default_timezone": "UTC",
+    "localization_framework": "i18next",
+    "themes": ["light","dark","high-contrast","sepia","solarized"],
+    "default_theme": "light",
+    "accessibility": {
+      "WCAG_version": "2.1",
+      "aria_labels_required": true,
+      "contrast_check_enabled": true,
+      "keyboard_navigation": true,
+      "screen_reader_test_enabled": true,
+      "color_blind_modes": ["protanopia","deuteranopia","tritanopia","achromatopsia"],
+      "dynamic_font_scaling": true,
+      "alt_text_required_for_images": true,
+      "semantic_html_enforced": true,
+      "auto_fix_suggestions_enabled": true,
+      "validation_rules":[
+        {"rule":"contrast_ratio","min_ratio":4.5},
+        {"rule":"image_alt_text","required":true},
+        {"rule":"aria_labels","required":true},
+        {"rule":"semantic_tags","required":true}
+      ]
+    },
+    "logging": {
+      "format": "JSON",
+      "levels": ["trace","debug","info","warn","error","fatal"],
+      "remote_logging_enabled": true,
+      "log_retention_days": 90,
+      "structured_error_codes": {
+        "1000-1999":"Frontend errors",
+        "2000-2999":"Backend errors",
+        "3000-3999":"AI errors",
+        "4000-4999":"CLI errors",
+        "5000-5999":"Webhook errors",
+        "6000-6999":"Database errors",
+        "7000-7999":"Media/SEO errors",
+        "8000-8999":"Real-time sync errors",
+        "9000-9999":"Version control & undo/redo errors",
+        "10000-10999":"Deployment & CI/CD errors"
+      }
+    },
+    "feature_flags": {
+      "ai_accessibility": true,
+      "ai_inclusivity": true,
+      "ai_personalization": true,
+      "ai_creative": true,
+      "live_preview_web": true,
+      "live_preview_mobile": true,
+      "cli_enabled": true,
+      "analytics_enabled": true,
+      "notifications_enabled": true,
+      "undo_redo_enabled": true,
+      "seo_analysis_enabled": true,
+      "media_optimization_enabled": true,
+      "version_control_enabled": true,
+      "webhook_sync_enabled": true,
+      "role_based_permissions": true,
+      "cache_enabled": true,
+      "device_simulation_enabled": true,
+      "mock_data_generation_enabled": true,
+      "auto_test_suite_enabled": true
+    }
+  },
+  "ai_integration": {
+    "models":[
+      {"name":"GPT-4 NLP","type":"text generation","version":"4","usage":["accessibility","inclusivity","personalization","creative content"],"input_format":"JSON","output_format":"JSON"},
+      {"name":"Computer Vision API","type":"image analysis","usage":["detect images lacking alt-text","contrast issues","layout analysis"],"input_format":"image URL or Base64","output_format":"JSON"},
+      {"name":"Custom Ensemble AI","type":"NLP+CV","usage":["advanced suggestions","predictive engagement","trend analysis"],"input_format":"JSON","output_format":"JSON"},
+      {"name":"Sentiment Analysis API","type":"text scoring","usage":["tone evaluation","engagement prediction"],"input_format":"JSON","output_format":"JSON"}
+    ],
+    "prompts":{
+      "accessibility":{
+        "description":"Analyze content for WCAG 2.1 compliance and auto-suggest fixes.",
+        "example_input":{"content":"<p>Hello World</p>","locale":"en"},
+        "example_output":{
+          "issues":[{"elementId":"123","type":"contrast","severity":"high","suggestion":"Increase contrast to 4.5:1"}],
+          "score":85,
+          "recommended_actions":["Add ARIA label","Use semantic HTML"],
+          "auto_fix_applied":false
+        }
+      },
+      "inclusivity":{
+        "description":"Detect biased/non-inclusive language and suggest neutral alternatives.",
+        "example_input":{"content":"He is a strong leader","locale":"en"},
+        "example_output":{"issues":[{"word":"He","suggestion":"They"}],"score":90,"auto_fix_applied":false}
+      },
+      "personalization":{
+        "description":"Generate localized content variations and predict engagement per locale.",
+        "example_input":{"content":"Welcome!","locale":"fr"},
+        "example_output":{"suggestions":["Bienvenue!"],"predicted_engagement":87}
+      },
+      "creative":{
+        "description":"Generate new content blocks, headlines, media concepts, campaigns based on trends.",
+        "example_input":{"content":"Blog topic: AI in healthcare","locale":"en"},
+        "example_output":{"generated_content":["AI revolutionizing patient care"],"confidence":0.92}
+      }
+    },
+    "triggers":["content create/update","CLI batch command","webhook event","scheduled batch scan","manual trigger via UI","analytics alert threshold breach"],
+    "response_format":{"description":"string","score":"int","type":"enum","confidence":"float","suggested_changes":"JSON patch","timestamp":"ISO 8601"},
+    "retry_logic":{"strategy":"Exponential backoff max 5 retries","fallback":"Log to DB and alert admin","queue_failed_events":true},
+    "confidence_thresholds":{"auto_apply":0.9,"manual_review":0.7,"reject_below":0.5},
+    "edge_cases":["Empty content blocks","Unsupported media types","High-frequency API calls","Conflicting AI suggestions"]
+  },
+  "real_time_sync":{
+    "mechanism":"WebSocket + Storyblok Bridge",
+    "events":["content_update","ai_suggestion_update","variation_publish","user_activity","notification_sent","theme_changed","media_upload","seo_analysis_complete","undo_redo_action","role_change","version_merge","cache_invalidation"],
+    "payloads":{
+      "content_update":{"blockId":"UUID","content":"JSON","locale":"string","timestamp":"ISO 8601","userId":"UUID","action":"create|update|delete","changes":"JSON patch"},
+      "ai_suggestion_update":{"suggestionId":"UUID","blockId":"UUID","type":"accessibility|inclusivity|personalization|creative","status":"pending|approved|rejected","confidence":"float","timestamp":"ISO 8601"},
+      "variation_publish":{"variationId":"UUID","blockId":"UUID","locale":"string","approved":"boolean","timestamp":"ISO 8601"},
+      "undo_redo_action":{"action":"undo|redo","blockId":"UUID","versionId":"int","userId":"UUID","timestamp":"ISO 8601"}
+    },
+    "retry_strategy":"Exponential backoff max 5 retries, queue if offline, reconcile on reconnect, alert on repeated failures",
+    "throttling":{"max_messages_per_second":50,"queue_limit":1000},
+    "conflict_resolution":{"strategy":"last-write-wins with manual merge option","alert_on_conflict":true},
+    "cache_sync_rules":{"invalidate_on_update":true,"ttl_seconds":300,"preload_high_freq_blocks":true}
+  },
+  "cli_commands":[
+    {"name":"migrate-content","flags":[{"flag":"--source-space","type":"string","required":true},{"flag":"--destination-space","type":"string","required":true},{"flag":"--include-media","type":"boolean","default":true},{"flag":"--dry-run","type":"boolean","default":false},{"flag":"--verbose","type":"boolean","default":false}],"workflow":["Fetch content","Validate schema","Copy content & media","Apply AI suggestions","Log success/errors","Send summary report"],"error_codes":[4001,4002,4003]},
+    {"name":"audit-accessibility","flags":[{"flag":"--space","type":"string","required":true},{"flag":"--output-file","type":"string","required":true},{"flag":"--include-ai-suggestions","type":"boolean","default":true},{"flag":"--locale","type":"string","default":"all"}],"workflow":["Fetch blocks","Run AI analysis","Generate report CSV/JSON","Send email","Log errors"],"error_codes":[4004,4005]},
+    {"name":"generate-suggestions","flags":[{"flag":"--space","type":"string","required":true},{"flag":"--locale","type":"string","default":"all"},{"flag":"--type","type":"string","default":"all"}],"workflow":["Fetch blocks","Run AI models","Update suggestions table","Log success/errors","Send summary report"],"error_codes":[4006,4007]}
+  ],
+  "database_schema":{
+    "ContentBlock":{"columns":["id UUID PK","type string","content JSON","locale string","metadata JSON","seo_score int DEFAULT 0","accessibility_score int DEFAULT 0","inclusivity_score int DEFAULT 0","created_at TIMESTAMP","updated_at TIMESTAMP","version int DEFAULT 1"],"relations":{"variations":"Variation.block_id","ai_suggestions":"AISuggestion.block_id"},"indexes":["locale","type","version"],"triggers":["on_update_increment_version","on_delete_log_audit"],"constraints":["content JSON not null","locale not null"]},
+    "User":{"columns":["id UUID PK","name string","email string UNIQUE","role enum","permissions JSON","preferences JSON","auth_token string","refresh_token string","token_expiry TIMESTAMP","theme string DEFAULT 'light'"],"relations":{"sessions":"Session.user_id"},"indexes":["email","role"]},
+    "AISuggestion":{"columns":["id UUID PK","block_id UUID FK","type enum","description text","score int","status enum","ai_model string","editor_feedback text","confidence float","timestamp TIMESTAMP"],"indexes":["block_id","status"]},
+    "Variation":{"columns":["id UUID PK","block_id UUID FK","content JSON","locale string","approved boolean","created_at TIMESTAMP","version int"],"indexes":["block_id","approved"]},
+    "AnalyticsRecord":{"columns":["id UUID PK","block_id UUID FK","user_id UUID FK","metrics JSON","timestamp TIMESTAMP"],"indexes":["block_id","user_id","timestamp"]},
+    "Notification":{"columns":["id UUID PK","user_id UUID FK","message text","read boolean DEFAULT false","created_at TIMESTAMP","type enum","metadata JSON"],"indexes":["user_id","read"]},
+    "AuditLog":{"columns":["id UUID PK","entity string","entity_id UUID","action string","user_id UUID","changes JSON","timestamp TIMESTAMP"],"indexes":["entity","entity_id","timestamp"]},
+    "Session":{"columns":["id UUID PK","user_id UUID FK","token JWT","expires TIMESTAMP","created_at TIMESTAMP","device_info JSON"],"indexes":["user_id","expires"]},
+    "Role":{"columns":["id UUID PK","name string UNIQUE","permissions JSON"],"indexes":["name"]}
+  },
+  "analytics_monitoring":{
+    "metrics":["AccessibilityScore","InclusivityScore","ReadabilityScore","VariationEngagement","AI Suggestions Accepted %","ContentVersionChanges","UserActivityLogs","NotificationDeliveryRate","ThemeUsageStats","SEOScore","MediaOptimizationScore","UndoRedoActions","RealtimeSyncLatency","CacheHitRate"],
+    "dashboards":["Web editor panel","Mobile editor panel","CLI report export","Admin analytics dashboard","AI performance dashboard","SEO dashboard","Media optimization dashboard","Real-time sync dashboard"],
+    "alert_thresholds":{"AccessibilityScore":70,"InclusivityScore":75,"SEOScore":60,"AIFailureRate":10,"NotificationFailures":5,"UndoRedoFailures":3,"MediaOptimizationFailures":5,"RealtimeSyncLatency":500,"CacheHitRate":80},
+    "error_tracking":["Sentry frontend/backend","CLI logs","Webhook failures","AI failure alerts","Notification failures","DB error alerts","Media/SEO errors","Real-time sync errors","Version control errors"]
+  },
+  "deployment":{
+    "web":{"provider":"Vercel","staging":true,"production":true,"monitoring":true,"CI/CD":["lint","unit tests","integration tests","build","deploy","post-deploy smoke tests","visual regression tests","rollback on failure"]},
+    "mobile":{"provider":"Expo","stores":["App Store","Google Play"],"staging":true,"CI/CD":["lint","unit tests","build","deploy","end-to-end tests","rollback on failure"]},
+    "backend":{"provider":"AWS Lambda or Vercel Serverless","monitoring":true,"CI/CD":["lint","unit tests","integration tests","deploy","post-deploy monitoring setup","rollback procedures"]},
+    "cli":{"distribution":"npm package","versioning":"semver","CI/CD":["lint","unit tests","build","publish","integration tests","rollback on failure"]}
+  },
+  "mock_data":{
+    "ContentBlock":{"sample":{"id":"uuid","type":"text","content":{"body":"Hello World"},"locale":"en","metadata":{"tags":["example"]},"seo_score":90,"accessibility_score":95,"inclusivity_score":100,"version":1}},
+    "User":{"sample":{"id":"uuid","name":"John Doe","email":"john@example.com","role":"editor","permissions":{"can_edit":true},"preferences":{"theme":"dark"}}}
+  }
+}

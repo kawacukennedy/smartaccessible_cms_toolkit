@@ -1,0 +1,139 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model ContentBlock {
+  id                  String        @id @default(uuid())
+  type                String
+  content             Json
+  locale              String
+  metadata            Json?
+  seo_score           Int           @default(0)
+  accessibility_score Int           @default(0)
+  inclusivity_score   Int           @default(0)
+  created_at          DateTime      @default(now())
+  updated_at          DateTime      @updatedAt
+  version             Int           @default(1)
+  variations          Variation[]
+  ai_suggestions      AISuggestion[]
+
+  @@index([locale])
+  @@index([type])
+  @@index([version])
+}
+
+model User {
+  id            String    @id @default(uuid())
+  name          String
+  email         String    @unique
+  role          String
+  permissions   Json?
+  preferences   Json?
+  auth_token    String?
+  refresh_token String?
+  token_expiry  DateTime?
+  theme         String    @default("light")
+  sessions      Session[]
+
+  @@index([email])
+  @@index([role])
+}
+
+model AISuggestion {
+  id          String      @id @default(uuid())
+  block_id    String
+  type        String
+  description String
+  score       Int
+  status      String
+  ai_model    String
+  editor_feedback String?
+  confidence  Float
+  timestamp   DateTime    @default(now())
+  contentBlock ContentBlock @relation(fields: [block_id], references: [id])
+
+  @@index([block_id])
+  @@index([status])
+}
+
+model Variation {
+  id         String       @id @default(uuid())
+  block_id   String
+  content    Json
+  locale     String
+  approved   Boolean
+  created_at DateTime     @default(now())
+  version    Int
+  contentBlock ContentBlock @relation(fields: [block_id], references: [id])
+
+  @@index([block_id])
+  @@index([approved])
+}
+
+model AnalyticsRecord {
+  id       String    @id @default(uuid())
+  block_id String
+  user_id  String
+  metrics  Json
+  timestamp DateTime  @default(now())
+
+  @@index([block_id])
+  @@index([user_id])
+  @@index([timestamp])
+}
+
+model Notification {
+  id         String    @id @default(uuid())
+  user_id    String
+  message    String
+  read       Boolean   @default(false)
+  created_at DateTime  @default(now())
+  type       String
+  metadata   Json?
+
+  @@index([user_id])
+  @@index([read])
+}
+
+model AuditLog {
+  id        String    @id @default(uuid())
+  entity    String
+  entity_id String
+  action    String
+  user_id   String
+  changes   Json?
+  timestamp DateTime  @default(now())
+
+  @@index([entity])
+  @@index([entity_id])
+  @@index([timestamp])
+}
+
+model Session {
+  id         String    @id @default(uuid())
+  user_id    String
+  token      String
+  expires    DateTime
+  created_at DateTime  @default(now())
+  device_info Json?
+  user       User      @relation(fields: [user_id], references: [id])
+
+  @@index([user_id])
+  @@index([expires])
+}
+
+model Role {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  permissions Json?
+
+  @@index([name])
+}
