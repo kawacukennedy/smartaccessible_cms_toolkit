@@ -10,18 +10,9 @@ const NotificationRenderer: React.FC = () => {
   const { notifications } = useNotifications();
 
   return (
-    <>
-      {notifications.map((notification) => {
-        if (notification.displayType === 'modal') {
-          return <NotificationModal key={notification.id} notification={notification} />;
-        }
-        if (notification.displayType === 'snackbar') {
-          return <NotificationSnackbar key={notification.id} notification={notification} />;
-        }
-        // Default to toast if displayType is 'toast' or undefined
-        return <NotificationToast key={notification.id} notification={notification} />;
-      })}
-    </>
+    <div>
+      <h1>Notification Renderer</h1>
+    </div>
   );
 };
 

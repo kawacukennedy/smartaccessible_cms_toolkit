@@ -2,12 +2,12 @@
 
 import React, { useState } from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
-import { useTranslation } from 'react-i18next';
+// import { useTranslation } from 'react-i18next'; // Removed
 import { useAccessibility } from '@/contexts/AccessibilityContext';
 
 const Settings: React.FC = () => {
   const { theme, setTheme } = useTheme(); // Use setTheme directly
-  const { i18n } = useTranslation();
+  // const { i18n } = useTranslation(); // Removed
   const { highContrast, toggleHighContrast, fontSize, increaseFontSize, decreaseFontSize, colorBlindMode, setColorBlindMode } = useAccessibility();
 
   const [activeTab, setActiveTab] = useState('general'); // State for active tab
@@ -98,13 +98,7 @@ const Settings: React.FC = () => {
                     <option value="high_contrast">High Contrast</option>
                   </select>
                 </div>
-                <div className="mb-3">
-                  <label htmlFor="languageSelect" className="form-label">Language</label>
-                  <select id="languageSelect" className="form-select" value={i18n.language} onChange={(e) => i18n.changeLanguage(e.target.value)}>
-                    <option value="en">English</option>
-                    <option value="fr">Français</option>
-                  </select>
-                </div>
+                {/* Language selection removed */}
                 <div className="mb-3">
                   <label className="form-label">Accessibility</label>
                   <div className="form-check form-switch">

@@ -3,10 +3,9 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import Layout from "@/components/Layout";
 import { ThemeProvider } from "@/contexts/ThemeContext";
-import I18nProvider from "@/contexts/I18nProvider";
-
+// I18nProvider removed
 import { NotificationProvider } from "@/contexts/NotificationContext";
-import NotificationToast from "@/components/NotificationToast";
+import NotificationRenderer from "@/components/NotificationRenderer"; // Corrected import
 import { AISuggestionProvider } from "@/contexts/AISuggestionContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { UndoRedoProvider } from "@/contexts/UndoRedoContext";
@@ -50,8 +49,7 @@ export default function RootLayout({
           </filter>
           <filter id="tritanopia">
             <feColorMatrix
-              in="SourceGraphic"
-              type="matrix"
+              in="SourceGraphic"              type="matrix"
               values="0.95 0.05 0 0 0
                       0 0.433 0.567 0 0
                       0 0.475 0.525 0 0
@@ -71,29 +69,21 @@ export default function RootLayout({
         </svg>
         <AccessibilityProvider>
           <AuthProvider>
-            <I18nProvider>
+            {/* I18nProvider removed */}
               <ThemeProvider>
                 <NotificationProvider>
                   <AISuggestionProvider>
                     <UndoRedoProvider>
                       <Layout>{children}</Layout>
-                                            <NotificationRenderer /> {/* Replaced NotificationToast */}
+                      <NotificationRenderer /> {/* Replaced NotificationToast */}
                     </UndoRedoProvider>
                   </AISuggestionProvider>
                 </NotificationProvider>
               </ThemeProvider>
-            </I18nProvider>
+            {/* I18nProvider removed */}
           </AuthProvider>
         </AccessibilityProvider>
-        <BootstrapClient />
       </body>
     </html>
   );
 }
-
-     
-      </body>
-    </html>
-  );
-}
-

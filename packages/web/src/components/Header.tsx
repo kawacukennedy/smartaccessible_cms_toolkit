@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef } from 'react'; // Import useRef
 import { useTheme } from '@/contexts/ThemeContext';
-import { useTranslation } from 'react-i18next';
+// import { useTranslation } from 'react-i18next'; // Removed
 import { useNotifications } from '@/contexts/NotificationContext';
 import { useAuth } from '@/contexts/AuthContext';
 import Link from 'next/link';
@@ -14,7 +14,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
   const { theme, setTheme, toggleTheme } = useTheme(); // Destructure setTheme
-  const { i18n } = useTranslation();
+  // const { i18n } = useTranslation(); // Removed
   const { addNotification } = useNotifications();
   const { isLoggedIn, user, logout } = useAuth();
   const { highContrast, toggleHighContrast, increaseFontSize, decreaseFontSize, colorBlindMode, setColorBlindMode } = useAccessibility();
@@ -24,9 +24,7 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
 
   const navbarClass = theme === 'dark' ? 'navbar-dark bg-dark' : 'navbar-light bg-light';
 
-  const changeLanguage = (lng: string) => {
-    i18n.changeLanguage(lng);
-  };
+  
 
   const triggerSampleNotification = () => {
     addNotification({
@@ -72,96 +70,101 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [toggleTheme]); // Add searchInputRef and profileDropdownRef to dependencies if they were state variables
+  }, [toggleTheme, searchInputRef, profileDropdownRef]); // Added refs to dependencies
 
   return (
-    <header className={`navbar ${navbarClass}`}>
-      <div className="container-fluid">
-        {/* Sidebar Toggle Button for mobile/tablet */}
-        <button
-          className="btn btn-primary d-md-none me-2"
-          type="button"
-          data-bs-toggle="offcanvas"
-          data-bs-target="#sidebarOffcanvas"
-          aria-controls="sidebarOffcanvas"
-          onClick={toggleSidebar}
-        >
-          <span className="navbar-toggler-icon"></span>
-        </button>
-
-        <span className="navbar-brand mb-0 h1">SmartAccessible CMS Toolkit</span>
-        <div className="d-flex align-items-center">
-          {/* SearchInput Placeholder */}
-          <input ref={searchInputRef} type="text" className="form-control me-2" placeholder="Search..." aria-label="Search" />
-
-          {/* Profile/Login Dropdown */}
-          {isLoggedIn ? (
-            <div className="dropdown me-2">
-              <button ref={profileDropdownRef} className="btn btn-secondary dropdown-toggle" type="button" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                {user?.username || 'Profile'}
+    <header>
+      <nav className={`navbar navbar-expand-lg ${navbarClass}`}>
+        <div className="container-fluid">
+          <button className="btn btn-primary me-2" onClick={toggleSidebar} aria-controls="sidebarOffcanvas" aria-label="Toggle sidebar">
+            <i className="bi bi-list"></i>
+          </button>
+          <Link href="/" className="navbar-brand" aria-label="Go to dashboard">
+            SmartAccessible CMS
+          </Link>
+          <div className="collapse navbar-collapse" id="navbarNav">
+            <ul className="navbar-nav me-auto mb-2 mb-lg-0">
+              {/* Primary Navigation Items */}
+              <li className="nav-item">
+                <Link href="/dashboard" className="nav-link">Dashboard</Link>
+              </li>
+              <li className="nav-item">
+                <Link href="/content" className="nav-link">Content</Link>
+              </li>
+              <li className="nav-item">
+                <Link href="/accessibility" className="nav-link">Accessibility</Link>
+              </li>
+              <li className="nav-item">
+                <Link href="/preview" className="nav-link">Preview</Link>
+              </li>
+              <li className="nav-item">
+                <Link href="/ai-assistant" className="nav-link">AI Assistant</Link>
+              </li>
+              <li className="nav-item">
+                <Link href="/analytics" className="nav-link">Analytics</Link>
+              </li>
+              <li className="nav-item">
+                <Link href="/settings" className="nav-link">Settings</Link>
+              </li>
+            </ul>
+            <div className="d-flex">
+              {/* Persistent Toolbar / Quick Actions */}
+              <button className="btn btn-outline-success me-2" title="Save Draft (Ctrl+S)">
+                <i className="bi bi-save"></i> Save
               </button>
-              <ul className="dropdown-menu" aria-labelledby="profileDropdown">
-                <li><a className="dropdown-item" href="#">Settings</a></li>
-                <li><a className="dropdown-item" href="#">Help</a></li> {/* Added Help */}
-                <li><a className="dropdown-item" href="#">Docs</a></li> {/* Added Docs */}
-                <li><hr className="dropdown-divider" /></li>
-                <li><h6 className="dropdown-header">Theme</h6></li>
-                <li><button className={`dropdown-item ${theme === 'light' ? 'active' : ''}`} onClick={() => setTheme('light')}>Light</button></li>
-                <li><button className={`dropdown-item ${theme === 'dark' ? 'active' : ''}`} onClick={() => setTheme('dark')}>Dark</button></li>
-                <li><button className={`dropdown-item ${theme === 'high_contrast' ? 'active' : ''}`} onClick={() => setTheme('high_contrast')}>High Contrast</button></li>
-                <li><hr className="dropdown-divider" /></li>
-                <li><button className="dropdown-item" onClick={logout}>Logout</button></li>
-              </ul>
+              <button className="btn btn-outline-secondary me-2" title="Undo (Ctrl+Z)">
+                <i className="bi bi-arrow-counterclockwise"></i> Undo
+              </button>
+              <button className="btn btn-outline-secondary me-2" title="Redo">
+                <i className="bi bi-arrow-clockwise"></i> Redo
+              </button>
+              <button className="btn btn-outline-info me-2" title="Preview (Ctrl+Shift+P)">
+                <i className="bi bi-eye"></i> Preview
+              </button>
+              <button className="btn btn-outline-primary me-2" title="Run AI Scan (Ctrl+Alt+A)">
+                <i className="bi bi-robot"></i> AI Suggest
+              </button>
+
+              {/* Secondary Navigation / User Actions */}
+              {isLoggedIn ? (
+                <div className="dropdown">
+                  <button
+                    className="btn btn-secondary dropdown-toggle"
+                    type="button"
+                    id="profileDropdown"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                    ref={profileDropdownRef}
+                    aria-label="User menu"
+                  >
+                    <i className="bi bi-person-circle"></i> {user?.name || 'Profile'}
+                  </button>
+                  <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                    <li><Link href="/profile" className="dropdown-item">Profile</Link></li>
+                    <li><Link href="/notifications" className="dropdown-item">Notifications</Link></li>
+                    <li><Link href="/help" className="dropdown-item">Help</Link></li>
+                    <li><hr className="dropdown-divider" /></li>
+                    <li><button className="dropdown-item" onClick={logout}>Logout</button></li>
+                  </ul>
+                </div>
+              ) : (
+                <Link href="/login" className="btn btn-primary">Login</Link>
+              )}
+
+              {/* Theme Toggle */}
+              <button className="btn btn-outline-secondary ms-2" onClick={toggleTheme} title="Toggle Theme (Ctrl+Shift+T)">
+                <i className={`bi ${theme === 'dark' ? 'bi-sun' : 'bi-moon'}`}></i>
+              </button>
+              {/* Sample Notification Trigger */}
+              <button className="btn btn-outline-info ms-2" onClick={triggerSampleNotification} title="Trigger Sample Notifications">
+                <i className="bi bi-bell"></i>
+              </button>
             </div>
-          ) : (
-            <Link href="/login" className="btn btn-primary me-2">
-              Login
-            </Link>
-          )}
-
-          {/* NotificationsIcon Placeholder */}
-          <button className="btn btn-outline-secondary me-2" type="button" onClick={triggerSampleNotification}>
-            Notifications
-          </button>
-
-          {/* Accessibility Controls */}
-          <button className={`btn btn-outline-secondary me-2 ${highContrast ? 'active' : ''}`} onClick={toggleHighContrast}>
-            High Contrast
-          </button>
-          <button className="btn btn-outline-secondary me-2" onClick={increaseFontSize}>
-            A+
-          </button>
-          <button className="btn btn-outline-secondary me-2" onClick={decreaseFontSize}>
-            A-
-          </button>
-
-          {/* Color Blind Mode Dropdown */}
-          <div className="dropdown d-inline-block me-2">
-            <button className="btn btn-secondary dropdown-toggle" type="button" id="colorBlindDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-              {colorBlindMode === 'none' ? 'Color Blind Mode' : colorBlindMode.replace('_', ' ')}
-            </button>
-            <ul className="dropdown-menu" aria-labelledby="colorBlindDropdown">
-              <li><button className="dropdown-item" type="button" onClick={() => setColorBlindMode('none')}>None</button></li>
-              <li><button className="dropdown-item" type="button" onClick={() => setColorBlindMode('protanopia')}>Protanopia</button></li>
-              <li><button className="dropdown-item" type="button" onClick={() => setColorBlindMode('deuteranopia')}>Deuteranopia</button></li>
-              <li><button className="dropdown-item" type="button" onClick={() => setColorBlindMode('tritanopia')}>Tritanopia</button></li>
-              <li><button className="dropdown-item" type="button" onClick={() => setColorBlindMode('achromatopsia')}>Achromatopsia</button></li>
-            </ul>
           </div>
-
-          {/* Language Switcher */}
-          <div className="dropdown d-inline-block me-2">
-            <button className="btn btn-secondary dropdown-toggle" type="button" id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-              {i18n.language.toUpperCase()}
-            </button>
-            <ul className="dropdown-menu" aria-labelledby="languageDropdown">
-              <li><button className="dropdown-item" type="button" onClick={() => changeLanguage('en')}>English</button></li>
-              <li><button className="dropdown-item" type="button" onClick={() => changeLanguage('fr')}>Français</button></li>
-            </ul>
-          </div>
-
-          {/* Removed old Theme Switcher */}
         </div>
-      </div>
+      </nav>
     </header>
   );
+};
+
+export default Header;

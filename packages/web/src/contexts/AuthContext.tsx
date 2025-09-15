@@ -29,21 +29,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   // Mock login function
-  const login = useCallback(async (username, password) => {
-    // Simulate API call
-    return new Promise<void>((resolve, reject) => {
-      setTimeout(() => {
-        if (username === 'admin' && password === 'password') {
-          setIsLoggedIn(true);
-          setUser({ username });
-          Cookies.set('isLoggedIn', 'true', { expires: 7 }); // Set cookie for 7 days
-          resolve();
-        } else {
-          reject(new Error('Invalid username or password'));
+  const login = async (email: string, password: string) => {
+    try {
+      const response = await fetch('https://api.storyblok-ai.example/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setIsLoggedIn(true);
+        setUser(data.user);
+        Cookies.set('isLoggedIn', 'true', { expires: 7 });
+        Cookies.set('user', JSON.stringify(data.user), { expires: 7 });
+        Cookies.set('token', data.token, { expires: 7 }); // Store JWT token
+        if (data.refresh_token) {
+          Cookies.set('refresh_token', data.refresh_token, { expires: 7 }); // Store refresh token
         }
-      }, 500);
-    });
-  }, []);
+      } else {
+        throw new Error(data.message || 'Login failed');
+      }
+    } catch (error: any) {
+      throw new Error(error.message || 'Network error');
+    }
+  };
 
   const logout = useCallback(() => {
     setIsLoggedIn(false);

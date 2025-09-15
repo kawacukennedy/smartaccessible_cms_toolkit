@@ -54,12 +54,19 @@ const ContentEditor: React.FC = () => {
     // In a real app, this would open a preview in a new tab or modal
   };
 
+  const handlePublish = () => {
+    console.log('Publishing content:', currentContent);
+    addNotification({ displayType: 'toast', style: 'info', message: 'Publishing content initiated.' });
+    // In a real app, this would trigger the publish flow (validation, confirmation, API call)
+  };
+
   return (
     <div className="container-fluid h-100 py-3">
       <EditorToolbar
         onSave={handleSave}
         onAISuggestion={handleAISuggestionRequest}
         onPreview={handlePreview}
+        onPublish={handlePublish} // Pass handlePublish to EditorToolbar
       />
       <div className="row h-100">
         <div className="col-md-3 h-100">

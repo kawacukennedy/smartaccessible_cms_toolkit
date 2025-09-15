@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import AISuggestionsPanel from './AISuggestionsPanel';
 import SEOPanel from './SEOPanel'; // Assuming SEOPanel exists and is relevant for Accessibility
 import { AISuggestion } from '@/types/ai-suggestion';
+import { useUndoRedo } from '@/contexts/UndoRedoContext'; // Import useUndoRedo
 
 interface AIPanelProps {
   onApplySuggestion: (suggestion: AISuggestion) => void;
@@ -16,6 +17,16 @@ const AIPanel: React.FC<AIPanelProps> = ({ onApplySuggestion, isOpen, togglePane
   const offcanvasRef = useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
+  const [variationPrompt, setVariationPrompt] = useState('');
+  const [generatedVariation, setGeneratedVariation] = useState('');
+  const { currentContent } = useUndoRedo(); // Get current content from UndoRedoContext
+
+  const handleGenerateVariation = () => {
+    // In a real application, this would involve an API call to an AI model
+    // For now, we'll just simulate a variation based on the prompt and current content
+    const simulatedVariation = `Based on your prompt: "${variationPrompt}" and current content: "${currentContent.substring(0, 50)}...", here is a generated variation.`;
+    setGeneratedVariation(simulatedVariation);
+  };
 
   useEffect(() => {
     const handleResize = () => {
@@ -126,8 +137,26 @@ const AIPanel: React.FC<AIPanelProps> = ({ onApplySuggestion, isOpen, togglePane
                 <AISuggestionsPanel onApplySuggestion={onApplySuggestion} />
               </div>
               <div className="tab-pane fade" id="variations" role="tabpanel" aria-labelledby="variations-tab">
-                <h5>Content Variations</h5>
-                <p>Generate different versions of your content here.</p>
+                <div className="mb-3">
+                  <label htmlFor="variationPrompt" className="form-label">Prompt for Variation</label>
+                  <textarea
+                    className="form-control"
+                    id="variationPrompt"
+                    rows={3}
+                    value={variationPrompt}
+                    onChange={(e) => setVariationPrompt(e.target.value)}
+                    placeholder="e.g., Make it more concise, Change the tone to formal."
+                  ></textarea>
+                </div>
+                <button className="btn btn-primary mb-3" onClick={handleGenerateVariation}>
+                  Generate Variation
+                </button>
+                {generatedVariation && (
+                  <div className="card bg-light p-3">
+                    <h6>Generated Variation:</h6>
+                    <p>{generatedVariation}</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -200,8 +229,26 @@ const AIPanel: React.FC<AIPanelProps> = ({ onApplySuggestion, isOpen, togglePane
               <AISuggestionsPanel onApplySuggestion={onApplySuggestion} />
             </div>
             <div className="tab-pane fade" id="variations" role="tabpanel" aria-labelledby="variations-tab">
-              <h5>Content Variations</h5>
-              <p>Generate different versions of your content here.</p>
+              <div className="mb-3">
+                  <label htmlFor="variationPrompt" className="form-label">Prompt for Variation</label>
+                  <textarea
+                    className="form-control"
+                    id="variationPrompt"
+                    rows={3}
+                    value={variationPrompt}
+                    onChange={(e) => setVariationPrompt(e.target.value)}
+                    placeholder="e.g., Make it more concise, Change the tone to formal."
+                  ></textarea>
+                </div>
+                <button className="btn btn-primary mb-3" onClick={handleGenerateVariation}>
+                  Generate Variation
+                </button>
+                {generatedVariation && (
+                  <div className="card bg-light p-3">
+                    <h6>Generated Variation:</h6>
+                    <p>{generatedVariation}</p>
+                  </div>
+                )}
             </div>
           </div>
         </div>
@@ -271,8 +318,26 @@ const AIPanel: React.FC<AIPanelProps> = ({ onApplySuggestion, isOpen, togglePane
           <AISuggestionsPanel onApplySuggestion={onApplySuggestion} />
         </div>
         <div className="tab-pane fade" id="variations" role="tabpanel" aria-labelledby="variations-tab">
-          <h5>Content Variations</h5>
-          <p>Generate different versions of your content here.</p>
+          <div className="mb-3">
+            <label htmlFor="variationPrompt" className="form-label">Prompt for Variation</label>
+            <textarea
+              className="form-control"
+              id="variationPrompt"
+              rows={3}
+              value={variationPrompt}
+              onChange={(e) => setVariationPrompt(e.target.value)}
+              placeholder="e.g., Make it more concise, Change the tone to formal."
+            ></textarea>
+          </div>
+          <button className="btn btn-primary mb-3" onClick={handleGenerateVariation}>
+            Generate Variation
+          </button>
+          {generatedVariation && (
+            <div className="card bg-light p-3">
+              <h6>Generated Variation:</h6>
+              <p>{generatedVariation}</p>
+            </div>
+          )}
         </div>
       </div>
     </div>

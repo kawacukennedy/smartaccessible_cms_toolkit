@@ -18,22 +18,19 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   };
 
   return (
-    <div
-      className={`main-layout ${theme} ${highContrast ? 'high-contrast' : ''} ${colorBlindMode !== 'none' ? colorBlindMode : ''}`}
-      style={{ fontSize: `${fontSize}px` }}
-    >
-      <BootstrapClient /> {/* Place BootstrapClient here */}
-      <Header toggleSidebar={toggleSidebar} /> {/* Pass toggleSidebar to Header */}
-      <div className={`main-content ${isSidebarOpen ? 'sidebar-open' : ''}`}>
-        <Sidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} /> {/* Pass props to Sidebar */}
-        <main className="content-area">
+    <div className={`main-layout d-flex flex-column min-vh-100 bg-${theme === 'dark' ? 'dark' : 'light'} ${highContrast ? 'high-contrast' : ''}`}>
+      <Header toggleSidebar={toggleSidebar} />
+      <div className="d-flex flex-grow-1">
+        <Sidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+        <main className="main-content flex-grow-1 p-3">
           {children}
         </main>
       </div>
+      <BootstrapClient />
     </div>
   );
 };
 
 export default Layout;
 
-export default Layout;
+

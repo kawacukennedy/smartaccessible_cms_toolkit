@@ -2,7 +2,6 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { useTranslation } from 'react-i18next';
 
 interface SidebarProps {
   isSidebarOpen: boolean;
@@ -10,7 +9,6 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
-  const { t } = useTranslation();
 
   return (
     <nav
@@ -32,33 +30,38 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
       <div className="offcanvas-body">
         <ul className="nav flex-column">
           <li className="nav-item">
-            <Link href="/" className="nav-link active" onClick={toggleSidebar}>
-              {t('dashboard')}
+            <Link href="/dashboard" className="nav-link" onClick={toggleSidebar}>
+              Dashboard
             </Link>
           </li>
           <li className="nav-item">
             <Link href="/content" className="nav-link" onClick={toggleSidebar}>
-              {t('content')}
+              Content
             </Link>
           </li>
           <li className="nav-item">
-            <Link href="/ai-tools" className="nav-link" onClick={toggleSidebar}>
-              {t('ai_tools')}
+            <Link href="/accessibility" className="nav-link" onClick={toggleSidebar}>
+              Accessibility
+            </Link>
+          </li>
+          <li className="nav-item">
+            <Link href="/preview" className="nav-link" onClick={toggleSidebar}>
+              Preview
+            </Link>
+          </li>
+          <li className="nav-item">
+            <Link href="/ai-assistant" className="nav-link" onClick={toggleSidebar}>
+              AI Assistant
             </Link>
           </li>
           <li className="nav-item">
             <Link href="/analytics" className="nav-link" onClick={toggleSidebar}>
-              {t('analytics')}
-            </Link>
-          </li>
-          <li className="nav-item">
-            <Link href="/media" className="nav-link" onClick={toggleSidebar}>
-              {t('media')}
+              Analytics
             </Link>
           </li>
           <li className="nav-item">
             <Link href="/settings" className="nav-link" onClick={toggleSidebar}>
-              {t('settings')}
+              Settings
             </Link>
           </li>
         </ul>

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link'; // Added Link import
 import { useAuth } from '@/contexts/AuthContext';
 import { useNotifications } from '@/contexts/NotificationContext'; // Added
 
