@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db/prisma';
 
+export const dynamic = 'force-dynamic'; // Ensure this route is always dynamic
+
 export async function GET() {
   try {
     const contentBlock = await prisma.contentBlock.findFirst(); // Fetch the first content block
