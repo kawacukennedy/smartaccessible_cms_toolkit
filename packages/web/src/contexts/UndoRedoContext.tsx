@@ -9,6 +9,7 @@ interface UndoRedoContextType {
   redo: () => void;
   addChange: (newState: string) => void;
   currentContent: string;
+  feedbackMessage: string; // New: feedback message for undo/redo actions
 }
 
 const UndoRedoContext = createContext<UndoRedoContextType | undefined>(undefined);
@@ -17,6 +18,7 @@ export const UndoRedoProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const history = useRef<string[]>([]);
   const [currentIndex, setCurrentIndex] = useState(-1);
   const [currentContent, setCurrentContent] = useState('');
+  const [feedbackMessage, setFeedbackMessage] = useState(''); // New state for feedback message
 
   // Update currentContent when currentIndex or history changes
   useEffect(() => {
@@ -44,21 +46,29 @@ export const UndoRedoProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const undo = useCallback(() => {
     if (currentIndex > 0) {
       setCurrentIndex((prev) => prev - 1);
+      setFeedbackMessage('Undo successful.');
+    } else {
+      setFeedbackMessage('Cannot undo further.');
     }
+    setTimeout(() => setFeedbackMessage(''), 2000); // Clear feedback after 2 seconds
   }, [currentIndex]);
 
   const redo = useCallback(() => {
     if (currentIndex < history.current.length - 1) {
       setCurrentIndex((prev) => prev + 1);
+      setFeedbackMessage('Redo successful.');
+    } else {
+      setFeedbackMessage('Cannot redo further.');
     }
+    setTimeout(() => setFeedbackMessage(''), 2000); // Clear feedback after 2 seconds
   }, [currentIndex]);
 
   const canUndo = currentIndex > 0;
   const canRedo = currentIndex < history.current.length - 1;
 
   const value = useMemo(
-    () => ({ canUndo, canRedo, undo, redo, addChange, currentContent }),
-    [canUndo, canRedo, undo, redo, addChange, currentContent]
+    () => ({ canUndo, canRedo, undo, redo, addChange, currentContent, feedbackMessage }),
+    [canUndo, canRedo, undo, redo, addChange, currentContent, feedbackMessage]
   );
 
   return (

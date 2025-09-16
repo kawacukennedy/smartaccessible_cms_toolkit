@@ -1,58 +1,83 @@
 'use client';
 
-import React, { createContext, useState, useContext, useCallback, useMemo } from 'react';
-import { Notification } from '../types/notification';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  ReactNode,
+  useRef,
+} from 'react';
+import { Notification } from '@/types/notification';
 
 interface NotificationContextType {
   notifications: Notification[];
-  addNotification: (notification: Omit<Notification, 'id' | 'read' | 'timestamp' | 'type'> & { displayType?: 'toast' | 'modal' | 'snackbar'; style?: 'info' | 'warning' | 'error' | 'success' | 'ai_suggestion'; title?: string; actions?: { label: string; onClick: () => void }[]; actionLabel?: string; onActionClick?: () => void; }) => void;
-  markAsRead: (id: string) => void;
+  addNotification: (notification: Omit<Notification, 'id'>) => void;
   removeNotification: (id: string) => void;
 }
 
-const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
+const NotificationContext = createContext<NotificationContextType | undefined>(
+  undefined
+);
 
-export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const NotificationProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const liveRegionRef = useRef<HTMLDivElement>(null); // Ref for the live region
 
-  const addNotification = useCallback((notification: Omit<Notification, 'id' | 'read' | 'timestamp' | 'type'> & { displayType?: 'toast' | 'modal' | 'snackbar'; style?: 'info' | 'warning' | 'error' | 'error' | 'success' | 'ai_suggestion'; title?: string; actions?: { label: string; onClick: () => void }[]; actionLabel?: string; onActionClick?: () => void; }) => {
-    const newNotification: Notification = {
-      id: Date.now().toString(), // Simple unique ID for now
-      read: false,
-      timestamp: new Date().toISOString(),
-      displayType: notification.displayType || 'toast', // Default to toast
-      style: notification.style || 'info', // Default to info
-      ...notification,
-    };
-    setNotifications((prev) => [...prev, newNotification]);
-  }, []);
+  const addNotification = useCallback((notification: Omit<Notification, 'id'>) => {
+    const id = Date.now().toString(); // Simple unique ID
+    setNotifications((prevNotifications) => [
+      ...prevNotifications,
+      { ...notification, id },
+    ]);
 
-  const markAsRead = useCallback((id: string) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+    // Announce notification message to screen readers
+    if (liveRegionRef.current && notification.message) {
+      liveRegionRef.current.textContent = notification.message;
+    }
+
+    // Auto-remove toast notifications after a delay
+    if (notification.displayType === 'toast') {
+      setTimeout(() => {
+        removeNotification(id);
+        // Clear live region after announcement
+        if (liveRegionRef.current && liveRegionRef.current.textContent === notification.message) {
+          liveRegionRef.current.textContent = '';
+        }
+      }, 5000); // 5 seconds
+    }
+  }, [removeNotification]);
+
+  const removeNotification = useCallback((id: string) => {
+    setNotifications((prevNotifications) =>
+      prevNotifications.filter((n) => n.id !== id)
     );
   }, []);
 
-  const removeNotification = useCallback((id: string) => {
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
-  }, []);
-
-  const value = useMemo(
-    () => ({ notifications, addNotification, markAsRead, removeNotification }),
-    [notifications, addNotification, markAsRead, removeNotification]
-  );
-
   return (
-    <NotificationContext.Provider value={value}>
+    <NotificationContext.Provider
+      value={{ notifications, addNotification, removeNotification }}
+    >
       {children}
+      {/* Hidden ARIA live region for screen reader announcements */}
+      <div
+        ref={liveRegionRef}
+        role="status"
+        aria-live="polite"
+        className="visually-hidden" // Bootstrap class to hide visually but keep accessible
+      ></div>
     </NotificationContext.Provider>
   );
 };
 
 export const useNotifications = () => {
   const context = useContext(NotificationContext);
-  if (context === undefined) {
-    throw new Error('useNotifications must be used within a NotificationProvider');
+  if (!context) {
+    throw new Error(
+      'useNotifications must be used within a NotificationProvider'
+    );
   }
   return context;
 };

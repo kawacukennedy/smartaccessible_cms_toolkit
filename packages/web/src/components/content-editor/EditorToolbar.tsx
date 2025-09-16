@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useUndoRedo } from '@/contexts/UndoRedoContext';
 import { useNotifications } from '@/contexts/NotificationContext';
 
@@ -12,14 +12,27 @@ interface EditorToolbarProps {
 }
 
 const EditorToolbar: React.FC<EditorToolbarProps> = ({ onSave, onAISuggestion, onPreview, onPublish }) => {
-  const { undo, redo, canUndo, canRedo } = useUndoRedo();
+  const { undo, redo, canUndo, canRedo, feedbackMessage } = useUndoRedo(); // Get feedbackMessage
   const { addNotification } = useNotifications();
   const [hasValidationErrors, setHasValidationErrors] = useState(false); // Placeholder for validation errors
-  const [isPublishInProgress, setIsPublishInProgress] = useState(false); // Placeholder for publish in progress
+  const [autosaveStatus, setAutosaveStatus] = useState<'idle' | 'saving' | 'saved' | 'failed'>('idle'); // Autosave status
+  const [publishStatus, setPublishStatus] = useState<'idle' | 'publishing' | 'success' | 'failed'>('idle'); // Publish status
 
   const handleSave = () => {
+    setAutosaveStatus('saving');
     onSave();
-    addNotification({ displayType: 'toast', style: 'success', message: 'Content saved successfully!' });
+    // Simulate API call
+    setTimeout(() => {
+      const success = Math.random() > 0.1; // 90% success rate
+      if (success) {
+        setAutosaveStatus('saved');
+        addNotification({ displayType: 'toast', style: 'success', message: 'Content saved successfully!' });
+      } else {
+        setAutosaveStatus('failed');
+        addNotification({ displayType: 'toast', style: 'error', message: 'Save failed. Please try again.' });
+      }
+      setTimeout(() => setAutosaveStatus('idle'), 3000); // Reset status after 3 seconds
+    }, 1500);
   };
 
   const handleAISuggestion = () => {
@@ -33,38 +46,64 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ onSave, onAISuggestion, o
   };
 
   const handlePublish = () => {
-    setIsPublishInProgress(true); // Simulate publish in progress
+    setPublishStatus('publishing');
     onPublish();
     addNotification({ displayType: 'toast', style: 'info', message: 'Publishing content...' });
     setTimeout(() => {
-      setIsPublishInProgress(false);
-      addNotification({ displayType: 'toast', style: 'success', message: 'Content published successfully!' });
-    }, 2000); // Simulate publish delay
+      const success = Math.random() > 0.2; // 80% success rate
+      if (success) {
+        setPublishStatus('success');
+        addNotification({ displayType: 'toast', style: 'success', message: 'Content published successfully!' });
+      } else {
+        setPublishStatus('failed');
+        addNotification({ displayType: 'toast', style: 'error', message: 'Publish failed. Retry?' });
+      }
+      setTimeout(() => setPublishStatus('idle'), 3000); // Reset status after 3 seconds
+    }, 2000);
   };
 
-  const isPublishDisabled = hasValidationErrors || isPublishInProgress;
+  const isPublishDisabled = hasValidationErrors || publishStatus === 'publishing';
 
   return (
     <div className="d-flex justify-content-between align-items-center mb-3">
       <div>
-        <button className="btn btn-outline-secondary me-2" onClick={undo} disabled={!canUndo}>
+        <button className="btn btn-outline-secondary me-2" onClick={undo} disabled={!canUndo} aria-label="Undo last action">
           Undo
         </button>
-        <button className="btn btn-outline-secondary" onClick={redo} disabled={!canRedo}>
+        <button className="btn btn-outline-secondary" onClick={redo} disabled={!canRedo} aria-label="Redo last action">
           Redo
         </button>
+        {feedbackMessage && (
+          <div role="status" aria-live="polite" className="ms-3 text-info">
+            {feedbackMessage}
+          </div>
+        )}
       </div>
-      <div>
-        <button className="btn btn-outline-primary me-2" onClick={handlePreview}>
+      <div className="d-flex align-items-center">
+        {autosaveStatus !== 'idle' && (
+          <div role="status" aria-live="polite" className="me-3 text-muted">
+            {autosaveStatus === 'saving' && 'Saving draft…'}
+            {autosaveStatus === 'saved' && 'Draft saved'}
+            {autosaveStatus === 'failed' && 'Save failed. Retry?'}
+          </div>
+        )}
+        {publishStatus !== 'idle' && (
+          <div role="status" aria-live="polite" className="me-3 text-muted">
+            {publishStatus === 'publishing' && 'Publishing content…'}
+            {publishStatus === 'success' && 'Content published successfully.'}
+            {publishStatus === 'failed' && 'Publish failed. Retry?'}
+          </div>
+        )}
+        <button className="btn btn-outline-primary me-2" onClick={handlePreview} aria-label="Preview content">
           Preview
         </button>
-        <button className="btn btn-success me-2" onClick={handleSave}>
-          Save
+        <button className="btn btn-success me-2" onClick={handleSave} aria-label="Save draft">
+          Save Draft
         </button>
-        <button className="btn btn-info me-2" onClick={handleAISuggestion}>
+        <button className="btn btn-info me-2" onClick={handleAISuggestion} aria-label="Get AI suggestions">
           AI Suggestion
         </button>
-        <button className="btn btn-primary" onClick={handlePublish} disabled={isPublishDisabled} title="Publish (Ctrl+Alt+P)">
+        <button className="btn btn-primary" onClick={handlePublish} disabled={isPublishDisabled} title="Publish (Ctrl+Alt+P)" aria-label="Publish content">
           <i className="bi bi-upload"></i> Publish
         </button>
       </div>

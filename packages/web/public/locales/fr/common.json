@@ -7,5 +7,38 @@
   "analytics": "Analytique",
   "notifications": "Notifications",
   "settings": "Paramètres",
-  "content_editor": "Éditeur de contenu"
+  "content_editor": "Éditeur de contenu",
+  "status_messages": {
+    "autosave": {
+      "saving": "Enregistrement du brouillon…",
+      "saved": "Brouillon enregistré",
+      "failed": "Échec de l'enregistrement. Réessayer ?"
+    },
+    "publish": {
+      "confirm": "Publier le contenu ? Les vérifications finales d'accessibilité seront exécutées.",
+      "success": "Contenu publié avec succès.",
+      "failed": "Échec de la publication. Réessayer ?"
+    }
+  },
+  "buttons": {
+    "save": "Enregistrer le brouillon",
+    "publish": "Publier",
+    "apply_ai": "Appliquer la suggestion",
+    "reject_ai": "Rejeter la suggestion",
+    "preview": "Aperçu",
+    "retry": "Réessayer",
+    "cancel": "Annuler",
+    "bulk_apply": "Appliquer toutes les suggestions sûres",
+    "undo": "Annuler",
+    "redo": "Rétablir"
+  },
+  "tooltips": {
+    "save": "Enregistrer le brouillon actuel (Ctrl+S)",
+    "publish": "Publier le contenu (Ctrl+Alt+P)",
+    "ai_panel": "Suggestions IA",
+    "undo": "Annuler la dernière action (Ctrl+Z)",
+    "redo": "Rétablir la dernière action (Ctrl+Shift+Z)",
+    "toggle_theme": "Changer de thème clair/sombre",
+    "preview": "Aperçu de l'appareil"
+  }
 }
