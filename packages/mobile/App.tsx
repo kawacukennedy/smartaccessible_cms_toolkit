@@ -6,6 +6,11 @@ import { useTranslation } from 'react-i18next';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NotificationProvider, useNotifications } from './src/contexts/NotificationContext';
+import { AISuggestionProvider } from './src/contexts/AISuggestionContext';
+import { UndoRedoProvider } from './src/contexts/UndoRedoContext';
+import { AccessibilityProvider } from './src/contexts/AccessibilityContext';
+
+import MobileNotificationRenderer from './src/components/MobileNotificationRenderer';
 
 // Import Screens
 import DashboardScreen from './src/screens/DashboardScreen';
@@ -22,6 +27,7 @@ function ScreenWrapper({ children, navigation }: { children: React.ReactNode, na
   const { theme, toggleTheme } = useTheme();
   const { t, i18n } = useTranslation();
   const { addNotification } = useNotifications();
+  const { highContrast, toggleHighContrast, reducedMotion, toggleReducedMotion, fontSize, increaseFontSize, decreaseFontSize } = useAccessibility();
 
   const containerStyle = theme === 'dark' ? darkStyles.container : lightStyles.container;
   const headerStyle = theme === 'dark' ? darkStyles.header : lightStyles.header;
@@ -33,41 +39,66 @@ function ScreenWrapper({ children, navigation }: { children: React.ReactNode, na
 
   const triggerSampleNotification = () => {
     addNotification({
-      type: 'info',
+      displayType: 'toast',
+      style: 'info',
       message: 'This is a sample info notification!',
     });
     addNotification({
-      type: 'success',
+      displayType: 'toast',
+      style: 'success',
       message: 'Content saved successfully!',
     });
     addNotification({
-      type: 'warning',
+      displayType: 'toast',
+      style: 'warning',
       message: 'Review accessibility suggestions.',
     });
     addNotification({
-      type: 'error',
+      displayType: 'toast',
+      style: 'error',
       message: 'Failed to publish content.',
     });
   };
 
+  const getFontSize = () => {
+    if (fontSize === 'small') return 14;
+    if (fontSize === 'large') return 18;
+    return 16;
+  };
+
   return (
-    <SafeAreaView style={[styles.container, containerStyle]}>
+    <SafeAreaView style={[styles.container, containerStyle, highContrast && styles.highContrastContainer]}>
       <View style={[styles.header, headerStyle]}>
-        <Text style={[styles.headerTitle, headerTitleStyle]}>SmartAccessible CMS Toolkit</Text>
+        <Text style={[styles.headerTitle, headerTitleStyle, { fontSize: getFontSize() + 4 }]}>SmartAccessible CMS Toolkit</Text>
         <View style={styles.headerControls}>
           <TouchableOpacity onPress={() => changeLanguage(i18n.language === 'en' ? 'fr' : 'en')} style={styles.languageSwitcher}>
-            <Text style={theme === 'dark' ? { color: '#fff' } : { color: '#000' }}>
+            <Text style={[theme === 'dark' ? { color: '#fff' } : { color: '#000' }, { fontSize: getFontSize() }]}>
               {i18n.language === 'en' ? t('french') : t('english')}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={triggerSampleNotification} style={styles.themeSwitcher}>
-            <Text style={theme === 'dark' ? { color: '#fff' } : { color: '#000' }}>
+            <Text style={[theme === 'dark' ? { color: '#fff' } : { color: '#000' }, { fontSize: getFontSize() }]}>
               Notifications
             </Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={toggleTheme} style={styles.themeSwitcher}>
-            <Text style={theme === 'dark' ? { color: '#fff' } : { color: '#000' }}>
+            <Text style={[theme === 'dark' ? { color: '#fff' } : { color: '#000' }, { fontSize: getFontSize() }]}>
               {t('switch_theme', { theme: theme === 'light' ? 'Dark' : 'Light' })}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={toggleHighContrast} style={styles.themeSwitcher}>
+            <Text style={[theme === 'dark' ? { color: '#fff' } : { color: '#000' }, { fontSize: getFontSize() }]}>
+              {highContrast ? 'HC Off' : 'HC On'}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={increaseFontSize} style={styles.themeSwitcher}>
+            <Text style={[theme === 'dark' ? { color: '#fff' } : { color: '#000' }, { fontSize: getFontSize() }]}>
+              A+
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={decreaseFontSize} style={styles.themeSwitcher}>
+            <Text style={[theme === 'dark' ? { color: '#fff' } : { color: '#000' }, { fontSize: getFontSize() }]}>
+              A-
             </Text>
           </TouchableOpacity>
         </View>
@@ -102,6 +133,14 @@ function AppContent() {
               label = t('content');
             } else if (route.name === 'ContentEditor') { // New tab label
               label = t('content_editor');
+            } else if (route.name === 'AI') {
+              label = t('ai');
+            } else if (route.name === 'Notifications') {
+              label = t('notifications');
+            } else if (route.name === 'Settings') {
+              label = t('settings');
+            } else if (route.name === 'Onboarding') {
+              label = t('onboarding');
             }
             return <Text style={{ color: color, fontSize: 10 }}>{label}</Text>;
           },
@@ -125,6 +164,9 @@ function AppContent() {
         <Tab.Screen name="ContentEditor"> {/* New Tab Screen */}
           {props => <ScreenWrapper {...props}><ContentEditorScreen /></ScreenWrapper>}
         </Tab.Screen>
+        <Tab.Screen name="Onboarding">
+          {props => <ScreenWrapper {...props}><OnboardingScreen /></ScreenWrapper>}
+        </Tab.Screen>
       </Tab.Navigator>
     </NavigationContainer>
   );
@@ -135,7 +177,14 @@ export default function App() {
     <NotificationProvider>
       <ThemeProvider>
         <AISuggestionProvider>
-          <AppContent />
+          <OnboardingProvider>
+            <UndoRedoProvider>
+              <AccessibilityProvider>
+                <AppContent />
+                <MobileNotificationRenderer />
+              </AccessibilityProvider>
+            </UndoRedoProvider>
+          </OnboardingProvider>
         </AISuggestionProvider>
       </ThemeProvider>
     </NotificationProvider>
@@ -188,6 +237,9 @@ const styles = StyleSheet.create({
   },
   buttonText: { // Removed as it's no longer directly in App.tsx
     fontSize: 16,
+  },
+  highContrastContainer: {
+    filter: 'contrast(200%)',
   }
 });
 

@@ -10,9 +10,10 @@ import { useAccessibility } from '@/contexts/AccessibilityContext';
 
 interface HeaderProps {
   toggleSidebar: () => void;
+  startTour: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
+const Header: React.FC<HeaderProps> = ({ toggleSidebar, startTour }) => {
   const { theme, setTheme, toggleTheme } = useTheme(); // Destructure setTheme
   // const { i18n } = useTranslation(); // Removed
   const { addNotification } = useNotifications();
@@ -28,19 +29,23 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
 
   const triggerSampleNotification = () => {
     addNotification({
-      type: 'info',
+      displayType: 'toast',
+      style: 'info',
       message: 'This is a sample info notification!',
     });
     addNotification({
-      type: 'success',
+      displayType: 'toast',
+      style: 'success',
       message: 'Content saved successfully!',
     });
     addNotification({
-      type: 'warning',
+      displayType: 'toast',
+      style: 'warning',
       message: 'Review accessibility suggestions.',
     });
     addNotification({
-      type: 'error',
+      displayType: 'toast',
+      style: 'error',
       message: 'Failed to publish content.',
     });
   };
@@ -74,7 +79,7 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
 
   return (
     <header>
-      <nav className={`navbar navbar-expand-lg ${navbarClass}`}>
+      <nav className={`navbar navbar-expand-lg sticky-top shadow-sm ${navbarClass}`}>
         <div className="container-fluid">
           <button className="btn btn-primary me-2" onClick={toggleSidebar} aria-controls="sidebarOffcanvas" aria-label="Toggle sidebar">
             <i className="bi bi-list"></i>
@@ -108,20 +113,34 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
               </li>
             </ul>
             <div className="d-flex">
+              {/* Global Search Bar */}
+              <form className="d-flex me-2" role="search">
+                <input
+                  ref={searchInputRef}
+                  className="form-control me-2"
+                  type="search"
+                  placeholder="Search... (Ctrl+/)"
+                  aria-label="Search"
+                />
+                <button className="btn btn-outline-secondary" type="submit">
+                  <i className="bi bi-search"></i>
+                </button>
+              </form>
+
               {/* Persistent Toolbar / Quick Actions */}
-              <button className="btn btn-outline-success me-2" title="Save Draft (Ctrl+S)">
+              <button className="btn btn-outline-success me-2" title="Save current draft (Ctrl+S)">
                 <i className="bi bi-save"></i> Save
               </button>
-              <button className="btn btn-outline-secondary me-2" title="Undo (Ctrl+Z)">
+              <button className="btn btn-outline-secondary me-2" title="Undo last action (Ctrl+Z)">
                 <i className="bi bi-arrow-counterclockwise"></i> Undo
               </button>
-              <button className="btn btn-outline-secondary me-2" title="Redo">
+              <button className="btn btn-outline-secondary me-2" title="Redo last action (Ctrl+Shift+Z)">
                 <i className="bi bi-arrow-clockwise"></i> Redo
               </button>
-              <button className="btn btn-outline-info me-2" title="Preview (Ctrl+Shift+P)">
+              <button className="btn btn-outline-info me-2" title="Preview device (Ctrl+Shift+P)">
                 <i className="bi bi-eye"></i> Preview
               </button>
-              <button className="btn btn-outline-primary me-2" title="Run AI Scan (Ctrl+Alt+A)">
+              <button className="btn btn-outline-primary me-2" title="AI suggestions (Ctrl+Alt+A)">
                 <i className="bi bi-robot"></i> AI Suggest
               </button>
 
@@ -143,6 +162,7 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
                     <li><Link href="/profile" className="dropdown-item">Profile</Link></li>
                     <li><Link href="/notifications" className="dropdown-item">Notifications</Link></li>
                     <li><Link href="/help" className="dropdown-item">Help</Link></li>
+                    <li><button className="dropdown-item" onClick={startTour}>Start Tour</button></li>
                     <li><hr className="dropdown-divider" /></li>
                     <li><button className="dropdown-item" onClick={logout}>Logout</button></li>
                   </ul>
@@ -152,7 +172,7 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar }) => {
               )}
 
               {/* Theme Toggle */}
-              <button className="btn btn-outline-secondary ms-2" onClick={toggleTheme} title="Toggle Theme (Ctrl+Shift+T)">
+              <button className="btn btn-outline-secondary ms-2" onClick={toggleTheme} title="Switch light/dark (Ctrl+Shift+T)">
                 <i className={`bi ${theme === 'dark' ? 'bi-sun' : 'bi-moon'}`}></i>
               </button>
               {/* Sample Notification Trigger */}

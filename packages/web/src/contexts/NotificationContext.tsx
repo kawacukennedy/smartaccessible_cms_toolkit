@@ -12,8 +12,10 @@ import { Notification } from '@/types/notification';
 
 interface NotificationContextType {
   notifications: Notification[];
-  addNotification: (notification: Omit<Notification, 'id'>) => void;
+  addNotification: (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => void;
   removeNotification: (id: string) => void;
+  markAsRead: (id: string) => void;
+  markAllAsRead: () => void;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(
@@ -26,29 +28,35 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const liveRegionRef = useRef<HTMLDivElement>(null); // Ref for the live region
 
-  const addNotification = useCallback((notification: Omit<Notification, 'id'>) => {
+  const addNotification = useCallback((notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => {
     const id = Date.now().toString(); // Simple unique ID
+    const newNotification: Notification = {
+      ...notification,
+      id,
+      timestamp: new Date().toISOString(),
+      read: false,
+    };
     setNotifications((prevNotifications) => [
       ...prevNotifications,
-      { ...notification, id },
+      newNotification,
     ]);
 
     // Announce notification message to screen readers
-    if (liveRegionRef.current && notification.message) {
-      liveRegionRef.current.textContent = notification.message;
+    if (liveRegionRef.current && newNotification.message) {
+      liveRegionRef.current.textContent = newNotification.message;
     }
 
     // Auto-remove toast notifications after a delay
-    if (notification.displayType === 'toast') {
+    if (newNotification.displayType === 'toast') {
       setTimeout(() => {
         removeNotification(id);
         // Clear live region after announcement
-        if (liveRegionRef.current && liveRegionRef.current.textContent === notification.message) {
+        if (liveRegionRef.current && liveRegionRef.current.textContent === newNotification.message) {
           liveRegionRef.current.textContent = '';
         }
       }, 5000); // 5 seconds
     }
-  }, [removeNotification]);
+  }, []);
 
   const removeNotification = useCallback((id: string) => {
     setNotifications((prevNotifications) =>
@@ -56,9 +64,19 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({
     );
   }, []);
 
+  const markAsRead = useCallback((id: string) => {
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+    );
+  }, []);
+
+  const markAllAsRead = useCallback(() => {
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+  }, []);
+
   return (
     <NotificationContext.Provider
-      value={{ notifications, addNotification, removeNotification }}
+      value={{ notifications, addNotification, removeNotification, markAsRead, markAllAsRead }}
     >
       {children}
       {/* Hidden ARIA live region for screen reader announcements */}

@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useNotifications } from '@/contexts/NotificationContext';
 
 const NotificationsCenter: React.FC = () => {
@@ -34,7 +34,8 @@ const NotificationsCenter: React.FC = () => {
           <button type="button" className={`btn btn-outline-primary ${filter === 'System' ? 'active' : ''}`} onClick={() => setFilter('System')}>System</button>
           <button type="button" className={`btn btn-outline-primary ${filter === 'User' ? 'active' : ''}`} onClick={() => setFilter('User')}>User</button>
         </div>
-        <button className="btn btn-secondary" onClick={markAllAsRead}>Mark All as Read</button>
+        <button className="btn btn-secondary me-2" onClick={markAllAsRead}>Mark All as Read</button>
+        <button className="btn btn-danger" onClick={() => notifications.forEach(n => removeNotification(n.id))}>Dismiss All</button>
       </div>
 
       {filteredNotifications.length === 0 ? (

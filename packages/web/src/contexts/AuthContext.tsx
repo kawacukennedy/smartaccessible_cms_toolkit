@@ -6,8 +6,8 @@ import Cookies from 'js-cookie';
 
 interface AuthContextType {
   isLoggedIn: boolean;
-  user: { username: string } | null;
-  login: (username: string, password: string) => Promise<void>;
+  user: { id: string; name: string; email: string; role: string } | null;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -15,7 +15,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState<{ username: string } | null>(null);
+  const [user, setUser] = useState<{ id: string; name: string; email: string; role: string } | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -24,7 +24,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoggedIn(loggedIn);
     if (loggedIn) {
       // In a real app, you'd fetch user details from an API
-      setUser({ username: 'admin' }); // Placeholder user
+      // Placeholder user, ensure it matches the User type
+      setUser({ id: '1', name: 'Admin User', email: 'admin@example.com', role: 'admin' });
     }
   }, []);
 

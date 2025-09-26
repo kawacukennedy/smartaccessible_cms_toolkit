@@ -34,9 +34,6 @@
 }
 
 .main-layout {
-}
-
-.main-layout {
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -279,4 +276,14 @@
   .ai-panel-bottom-drawer.show {
     height: 50vh; /* Example height when open */
   }
+}
+
+.card-body.dark {
+  background-color: #212529;
+  color: #fff;
+}
+
+.card-body.high-contrast {
+  background-color: #000;
+  color: #0f0;
 }

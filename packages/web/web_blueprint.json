@@ -1,0 +1,81 @@
+{
+  "app": {
+    "name": "SmartAccessible CMS Toolkit",
+    "platform": "Web",
+    "version": "1.0.0-web",
+    "goals": [
+      "Maximize content creation efficiency",
+      "Ensure accessibility and inclusivity",
+      "Deliver AI-assisted real-time suggestions",
+      "Support offline-first editing with conflict resolution",
+      "Provide responsive previews across devices",
+      "Enable undo/redo, autosave, bulk operations",
+      "Capture telemetry and respect user privacy"
+    ]
+  },
+  "ui": {
+    "layouts": {
+      "editor": {
+        "components":["block_canvas","toolbar","side_panel","ai_panel","notifications","preview_toggle"],
+        "grid_system":"flex + responsive breakpoints",
+        "drag_drop":true,
+        "inline_edit":true,
+        "hover_controls":true
+      },
+      "modals": ["publish_confirmation","conflict_resolution","ai_error","media_upload"],
+      "toolbars": ["main_toolbar","block_toolbar","ai_toolbar"],
+      "panels": ["side_panel","ai_panel","media_library","accessibility_dashboard"],
+      "preview": ["desktop","tablet","mobile_portrait","mobile_landscape","dark_mode","high_contrast"]
+    },
+    "components": {
+      "blocks":{"drag_drop":true,"inline_edit":true,"ai_highlight":true},
+      "ai_panel":{"real_time_suggestions":true,"confidence_colors":["high","medium","low"],"bulk_operations":true,"revert_option":true},
+      "media_library":{"drag_drop":true,"bulk_upload":true,"ai_alt_text":true,"validation":true,"progress_indicator":true},
+      "notifications":{"types":["info","warning","error","AI"],"delivery":["toast","push","email"],"bulk_dismiss":true},
+      "onboarding":{"interactive_tour":true,"tooltips":true,"checklist_tracking":true,"reward_animations":true},
+      "preview":{"responsive_modes":true,"live_update_debounce":200,"scroll_sync":true,"theme_switch":true}
+    },
+    "animations": {
+      "button_hover":"scale 1.05",
+      "ai_suggestion":"fade + color highlight",
+      "autosave_spinner":"rotating circle 1s",
+      "toast_notifications":"slide_in_out 300ms",
+      "reward_confetti":"particle burst 1.5s"
+    }
+  },
+  "ux": {
+    "keyboard_navigation": {
+      "shortcuts":{"save":"Ctrl+S","publish":"Ctrl+Alt+P","undo":"Ctrl+Z","redo":"Ctrl+Shift+Z","toggle_ai":"Ctrl+Alt+A","search":"Ctrl+K","command_palette":"Ctrl+Shift+P"},
+      "focus_management":{"trap_modals":true,"nested_traps":true,"return_focus":true,"skip_to_main":true}
+    },
+    "accessibility": {
+      "aria_roles":["toolbar","region","status","dialog","button","form","list","listitem","slider","tooltip","switch"],
+      "live_regions":["autosave_status","ai_panel_status","notifications","publish_status","media_upload_status","undo_redo_feedback"],
+      "high_contrast":true,"reduced_motion":true,"screen_reader_labels":true,"colorblind_friendly":true
+    },
+    "microcopy": {
+      "status_messages":{"autosave":{"saving":"Saving draft…","saved":"Draft saved","failed":"Save failed. Retry?"},"publish":{"confirm":"Publish content? Final accessibility checks will run.","success":"Content published successfully.","failed":"Publish failed. Retry?"},"ai_scan":{"queued":"AI scan queued","running":"AI scan in progress…","done":"AI scan complete","failed":"AI scan failed. Retry?"}},
+      "buttons":{"save":"Save Draft","publish":"Publish","apply_ai":"Apply Suggestion","reject_ai":"Reject Suggestion","preview":"Preview","retry":"Retry","cancel":"Cancel","bulk_apply":"Apply All Safe Suggestions","undo":"Undo","redo":"Redo"},
+      "tooltips":{"save":"Save current draft (Ctrl+S)","publish":"Publish content (Ctrl+Alt+P)","ai_panel":"AI suggestions","undo":"Undo last action (Ctrl+Z)","redo":"Redo last action (Ctrl+Shift+Z)","toggle_theme":"Switch light/dark","preview":"Preview device"}
+    }
+  },
+  "flows": {
+    "content_creation":["open_editor","add_blocks","edit_inline","apply_ai","save","preview","publish"],
+    "ai_workflow":{"triggers":["manual","autosave"],"process":["trigger_scan","poll_status","show_results","review_suggestions","apply_reject","update_undo_redo"],"confidence":{"high":">75%","medium":"50-75%","low":"<50%"},"errors":{"service_unavailable":"retry","invalid_response":"fallback"}},
+    "publish_flow":["run_validations","confirmation_modal","fix_issues","send_publish_request","handle_conflicts","show_feedback"],
+    "preview_flow":["responsive_modes","live_update","scroll_sync","theme_switch"],
+    "undo_redo_flow":{"strategy":"operation_stack","max_entries":200,"visual_feedback":true},
+    "media_library_flow":["drag_drop","bulk_upload","ai_alt_text","validation","progress"],
+    "notifications_flow":["toast","push","bulk_dismiss"],
+    "onboarding_flow":["interactive_tour","tooltips","checklist","reward_animations"],
+    "accessibility_dashboard_flow":["prioritize_by_severity","bulk_fix","jump_to_content","ai_scores"]
+  },
+  "state_machines": {
+    "editor":{"states":["idle","editing","autosaving","saved","saving_failed","publishing","published","conflict","offline"]},
+    "ai_scan":{"states":["queued","running","done","failed"]},
+    "media_upload":{"states":["idle","uploading","success","error"]},
+    "undo_redo":{"strategy":"operation_stack","max_entries":200}
+  },
+  "edge_cases":{"offline_edits":"queue and sync","slow_network":"debounce, retry","version_conflicts":"modal merge","ai_errors":"fallback and retry","large_projects":"lazy load, paginate","media_failures":"retry"},
+  "telemetry":{"events":["content_save","publish","ai_applied","media_upload","undo","redo","preview","validation","error","offline_sync"],"privacy":"consent_required","granularity":"per_action_per_block"}
+}

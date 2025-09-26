@@ -27,45 +27,54 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
           onClick={toggleSidebar}
         ></button>
       </div>
-      <div className="offcanvas-body">
-        <ul className="nav flex-column">
-          <li className="nav-item">
-            <Link href="/dashboard" className="nav-link" onClick={toggleSidebar}>
-              Dashboard
-            </Link>
-          </li>
-          <li className="nav-item">
-            <Link href="/content" className="nav-link" onClick={toggleSidebar}>
-              Content
-            </Link>
-          </li>
-          <li className="nav-item">
-            <Link href="/accessibility" className="nav-link" onClick={toggleSidebar}>
-              Accessibility
-            </Link>
-          </li>
-          <li className="nav-item">
-            <Link href="/preview" className="nav-link" onClick={toggleSidebar}>
-              Preview
-            </Link>
-          </li>
-          <li className="nav-item">
-            <Link href="/ai-assistant" className="nav-link" onClick={toggleSidebar}>
-              AI Assistant
-            </Link>
-          </li>
-          <li className="nav-item">
-            <Link href="/analytics" className="nav-link" onClick={toggleSidebar}>
-              Analytics
-            </Link>
-          </li>
-          <li className="nav-item">
-            <Link href="/settings" className="nav-link" onClick={toggleSidebar}>
-              Settings
-            </Link>
-          </li>
-        </ul>
-      </div>
+          <div className="offcanvas-body">
+            {/* Quick Actions */}
+            <div className="d-grid gap-2 mb-4">
+              <button className="btn btn-primary" type="button">
+                <i className="bi bi-plus-circle me-2"></i> New Page
+              </button>
+              <button className="btn btn-outline-secondary" type="button">
+                <i className="bi bi-file-earmark-plus me-2"></i> New Template
+              </button>
+            </div>
+
+            {/* Search Bar */}
+            <div className="mb-4">
+              <input type="text" className="form-control" placeholder="Search sidebar..." aria-label="Search sidebar" />
+            </div>
+
+            {/* Navigation Items */}
+            <ul className="navbar-nav justify-content-end flex-grow-1 pe-3">
+              <li className="nav-item">
+                <Link href="#" className="nav-link active" aria-current="page">
+                  <i className="bi bi-grid me-2"></i> Templates
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link href="#" className="nav-link">
+                  <i className="bi bi-journal-text me-2"></i> Drafts
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link href="#" className="nav-link">
+                  <i className="bi bi-file-earmark-richtext me-2"></i> Content Types
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link href="/onboarding" className="nav-link">
+                  <i className="bi bi-rocket-takeoff me-2"></i> Onboarding
+                </Link>
+              </li>
+            </ul>
+
+            {/* Live Sync Status Indicator */}
+            <div className="mt-auto p-3 border-top">
+              <span className="badge bg-success">
+                <i className="bi bi-cloud-check me-2"></i> Online
+              </span>
+              <span className="text-muted ms-2">Last synced: Just now</span>
+            </div>
+          </div>
     </nav>
   );
 };

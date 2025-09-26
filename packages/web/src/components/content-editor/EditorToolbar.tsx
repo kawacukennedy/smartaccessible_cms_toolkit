@@ -9,9 +9,13 @@ interface EditorToolbarProps {
   onAISuggestion: () => void;
   onPreview: () => void;
   onPublish: () => void; // Added onPublish prop
+  isPreviewMode: boolean;
+  onToggleAccessibilityPanel: () => void;
+  onToggleMediaLibrary: () => void;
+  onToggleVersionHistory: () => void;
 }
 
-const EditorToolbar: React.FC<EditorToolbarProps> = ({ onSave, onAISuggestion, onPreview, onPublish }) => {
+const EditorToolbar: React.FC<EditorToolbarProps> = ({ onSave, onAISuggestion, onPreview, onPublish, isPreviewMode, onToggleAccessibilityPanel, onToggleMediaLibrary, onToggleVersionHistory }) => {
   const { undo, redo, canUndo, canRedo, feedbackMessage } = useUndoRedo(); // Get feedbackMessage
   const { addNotification } = useNotifications();
   const [hasValidationErrors, setHasValidationErrors] = useState(false); // Placeholder for validation errors
@@ -42,7 +46,7 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ onSave, onAISuggestion, o
 
   const handlePreview = () => {
     onPreview();
-    addNotification({ displayType: 'toast', style: 'info', message: 'Opening preview...' });
+    addNotification({ displayType: 'toast', style: 'info', message: isPreviewMode ? 'Exiting preview...' : 'Opening preview...' });
   };
 
   const handlePublish = () => {
@@ -94,14 +98,23 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ onSave, onAISuggestion, o
             {publishStatus === 'failed' && 'Publish failed. Retry?'}
           </div>
         )}
-        <button className="btn btn-outline-primary me-2" onClick={handlePreview} aria-label="Preview content">
-          Preview
+        <button className="btn btn-outline-primary me-2" onClick={handlePreview} aria-label={isPreviewMode ? "Back to Editor" : "Preview content"}>
+          {isPreviewMode ? 'Editor' : 'Preview'}
         </button>
         <button className="btn btn-success me-2" onClick={handleSave} aria-label="Save draft">
           Save Draft
         </button>
         <button className="btn btn-info me-2" onClick={handleAISuggestion} aria-label="Get AI suggestions">
           AI Suggestion
+        </button>
+        <button className="btn btn-secondary me-2" onClick={onToggleAccessibilityPanel} aria-label="Toggle Accessibility Panel">
+            Accessibility
+        </button>
+        <button className="btn btn-secondary me-2" onClick={onToggleMediaLibrary} aria-label="Toggle Media Library">
+            Media
+        </button>
+        <button className="btn btn-secondary me-2" onClick={onToggleVersionHistory} aria-label="Toggle Version History">
+            History
         </button>
         <button className="btn btn-primary" onClick={handlePublish} disabled={isPublishDisabled} title="Publish (Ctrl+Alt+P)" aria-label="Publish content">
           <i className="bi bi-upload"></i> Publish

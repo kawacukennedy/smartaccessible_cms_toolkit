@@ -1,47 +1,159 @@
-import React, { useState } from 'react';
-import { useNotifications } from '@/contexts/NotificationContext'; // Import useNotifications
+'use client';
+
+import React, { useState, useCallback } from 'react';
+import { useNotifications } from '@/contexts/NotificationContext';
+
+interface UploadableFile {
+  file: File;
+  id: string;
+  progress: number; // 0-100
+  status: 'pending' | 'uploading' | 'success' | 'failed' | 'generating-alt' | 'alt-generated';
+  altText?: string;
+}
 
 const MediaUploader: React.FC = () => {
-  const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success' | 'failed'>('idle');
+  const [files, setFiles] = useState<UploadableFile[]>([]);
   const { addNotification } = useNotifications();
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (files && files.length > 0) {
-      setUploadStatus('uploading');
-      addNotification({ displayType: 'toast', style: 'info', message: `Uploading ${files.length} file(s)...` });
+  const handleFiles = (fileList: FileList) => {
+    const newFiles: UploadableFile[] = Array.from(fileList).map(file => ({
+      file,
+      id: `${file.name}-${Date.now()}`,
+      progress: 0,
+      status: 'pending',
+    }));
 
-      // Simulate file upload
-      setTimeout(() => {
-        const success = Math.random() > 0.2; // 80% success rate
-        if (success) {
-          setUploadStatus('success');
-          addNotification({ displayType: 'toast', style: 'success', message: `Successfully uploaded ${files.length} file(s)!` });
-        } else {
-          setUploadStatus('failed');
-          addNotification({ displayType: 'toast', style: 'error', message: `Failed to upload file(s). Retry?` });
+    // Simple validation
+    const validFiles = newFiles.filter(f => {
+      if (f.file.size > 10 * 1024 * 1024) { // 10MB limit
+        addNotification({ displayType: 'toast', style: 'error', message: `${f.file.name} is too large.` });
+        return false;
+      }
+      return true;
+    });
+
+    setFiles(prev => [...prev, ...validFiles]);
+    validFiles.forEach(simulateUpload);
+  };
+
+  const simulateUpload = (uploadableFile: UploadableFile) => {
+    setFiles(prev => prev.map(f => f.id === uploadableFile.id ? { ...f, status: 'uploading' } : f));
+
+    const interval = setInterval(() => {
+      setFiles(prev => prev.map(f => {
+        if (f.id === uploadableFile.id && f.progress < 100) {
+          return { ...f, progress: f.progress + 10 };
         }
-        setTimeout(() => setUploadStatus('idle'), 3000); // Reset status after 3 seconds
-      }, 2000); // Simulate upload delay
+        return f;
+      }));
+    }, 200);
+
+    setTimeout(() => {
+      clearInterval(interval);
+      const success = Math.random() > 0.2;
+      setFiles(prev => prev.map(f => {
+        if (f.id === uploadableFile.id) {
+          return { ...f, progress: 100, status: success ? 'success' : 'failed' };
+        }
+        return f;
+      }));
+      addNotification({ displayType: 'toast', style: success ? 'success' : 'error', message: `${uploadableFile.file.name} ${success ? 'uploaded' : 'failed'}.` });
+    }, 2200);
+  };
+
+  const handleGenerateAltText = (fileId: string) => {
+    setFiles(prev => prev.map(f => f.id === fileId ? { ...f, status: 'generating-alt' } : f));
+    addNotification({ displayType: 'toast', style: 'info', message: `Generating alt text...` });
+
+    setTimeout(() => {
+      setFiles(prev => prev.map(f => {
+        if (f.id === fileId) {
+          return { ...f, status: 'alt-generated', altText: `A descriptive alt text for ${f.file.name}` };
+        }
+        return f;
+      }));
+      addNotification({ displayType: 'toast', style: 'success', message: `Alt text generated.` });
+    }, 1500);
+  };
+
+  const handleAltTextChange = (fileId: string, altText: string) => {
+    setFiles(prev => prev.map(f => f.id === fileId ? { ...f, altText } : f));
+  };
+
+  const onDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.currentTarget.classList.add('border-primary');
+  };
+
+  const onDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.currentTarget.classList.remove('border-primary');
+  };
+
+  const onDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.currentTarget.classList.remove('border-primary');
+    handleFiles(e.dataTransfer.files);
+  };
+
+  const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      handleFiles(e.target.files);
     }
   };
 
   return (
     <div className="mb-3">
-      <label htmlFor="mediaUpload" className="form-label">Media Uploader</label>
-      <input
-        className="form-control"
-        type="file"
-        id="mediaUpload"
-        onChange={handleFileUpload}
-        aria-label="Upload media files"
-        multiple // Allow multiple file selection
-      />
-      {uploadStatus !== 'idle' && (
-        <div role="status" aria-live="polite" className="mt-2 text-muted">
-          {uploadStatus === 'uploading' && 'Media upload in progress…'}
-          {uploadStatus === 'success' && 'Media upload complete.'}
-          {uploadStatus === 'failed' && 'Media upload failed. Retry?'}
+      <div
+        className="border-dashed p-4 text-center mb-3"
+        onDragOver={onDragOver}
+        onDragLeave={onDragLeave}
+        onDrop={onDrop}
+        style={{ borderWidth: '2px' }}
+      >
+        <p>Drag & drop files here, or click to select files</p>
+        <input
+          type="file"
+          id="mediaUpload"
+          multiple
+          onChange={onFileChange}
+          className="d-none"
+        />
+        <label htmlFor="mediaUpload" className="btn btn-outline-primary">Browse Files</label>
+      </div>
+      {files.length > 0 && (
+        <div>
+          <h6>Uploads</h6>
+          {files.map(f => (
+            <div key={f.id} className="mb-2">
+              <div className="d-flex justify-content-between">
+                <span className="text-truncate" style={{ maxWidth: '70%' }}>{f.file.name}</span>
+                <span>{f.status}</span>
+              </div>
+              <div className="progress mb-2">
+                <div
+                  className={`progress-bar ${f.status === 'success' || f.status === 'alt-generated' ? 'bg-success' : f.status === 'failed' ? 'bg-danger' : ''}`}
+                  role="progressbar"
+                  style={{ width: `${f.progress}%` }}
+                  aria-valuenow={f.progress}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                ></div>
+              </div>
+              {f.status === 'success' && (
+                <button className="btn btn-sm btn-outline-primary" onClick={() => handleGenerateAltText(f.id)}>Generate Alt Text</button>
+              )}
+              {(f.status === 'alt-generated' || f.altText) && (
+                <input
+                  type="text"
+                  className="form-control form-control-sm mt-2"
+                  value={f.altText || ''}
+                  onChange={(e) => handleAltTextChange(f.id, e.target.value)}
+                  placeholder="Generated alt text"
+                />
+              )}
+            </div>
+          ))}
         </div>
       )}
     </div>

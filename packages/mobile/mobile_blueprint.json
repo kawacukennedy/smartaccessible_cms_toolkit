@@ -1,0 +1,60 @@
+{
+  "app": {
+    "name": "SmartAccessible CMS Toolkit",
+    "platform": "Mobile",
+    "version": "1.0.0-mobile",
+    "goals": [
+      "Enable fast content editing on small screens",
+      "Support AI suggestions inline",
+      "Enable swipe and tap gestures for undo/redo and navigation",
+      "Support offline-first editing and sync",
+      "Provide device-specific previews and dark/high contrast modes",
+      "Capture telemetry and maintain privacy"
+    ]
+  },
+  "ui": {
+    "layouts": {
+      "editor": {"components":["block_canvas","toolbar","ai_panel","notifications","preview_toggle"],"tap_gestures":true,"swipe_undo_redo":true,"inline_edit":true},
+      "modals":["publish_confirmation","conflict_resolution","ai_error","media_upload"],
+      "panels":["ai_panel","media_library"]
+    },
+    "components": {
+      "blocks":{"tap_edit":true,"ai_highlight":true},
+      "ai_panel":{"real_time_suggestions":true,"confidence_colors":["high","medium","low"],"bulk_operations":true,"revert_option":true},
+      "media_library":{"tap_select":true,"bulk_upload":true,"ai_alt_text":true,"progress_indicator":true},
+      "notifications":{"types":["info","warning","error","AI"],"delivery":["push","in-app"],"bulk_dismiss":true},
+      "onboarding":{"interactive_tour":true,"tooltips":true,"checklist_tracking":true,"reward_animations":true},
+      "preview":{"responsive_modes":true,"live_update_debounce":200,"scroll_sync":true,"theme_switch":true}
+    },
+    "animations": {
+      "button_tap":"scale 1.05",
+      "ai_suggestion":"fade + color highlight",
+      "autosave_spinner":"rotating circle 1s",
+      "toast_notifications":"slide_in_out 300ms",
+      "reward_confetti":"particle burst 1.5s"
+    }
+  },
+  "ux": {
+    "gestures":{"tap_edit":true,"swipe_undo_redo":true},
+    "accessibility":{"high_contrast":true,"reduced_motion":true,"screen_reader_labels":true,"colorblind_friendly":true},
+    "microcopy":{"status_messages":{"autosave":"Saving draft…","publish":"Publish content?","ai_scan":"AI scan complete"}}
+  },
+  "flows": {
+    "content_creation":["open_editor","tap_add_blocks","edit_inline","apply_ai","save","preview","publish"],
+    "ai_workflow":{"triggers":["manual","autosave"],"process":["trigger_scan","poll_status","show_results","review_suggestions","apply_reject","update_undo_redo"]},
+    "publish_flow":["run_validations","confirmation_modal","fix_issues","send_publish_request","handle_conflicts","show_feedback"],
+    "preview_flow":["device_specific_modes","live_update","scroll_sync","theme_switch"],
+    "undo_redo_flow":{"strategy":"operation_stack","max_entries":200,"visual_feedback":true},
+    "media_library_flow":["tap_select","bulk_upload","ai_alt_text","progress"],
+    "notifications_flow":["push","in-app","bulk_dismiss"],
+    "onboarding_flow":["interactive_tour","tooltips","checklist","reward_animations"]
+  },
+  "state_machines": {
+    "editor":{"states":["idle","editing","autosaving","saved","saving_failed","publishing","published","conflict","offline"]},
+    "ai_scan":{"states":["queued","running","done","failed"]},
+    "media_upload":{"states":["idle","uploading","success","error"]},
+    "undo_redo":{"strategy":"operation_stack","max_entries":200}
+  },
+  "edge_cases":{"offline_edits":"queue and sync","slow_network":"debounce, retry","ai_errors":"fallback","large_projects":"lazy load, paginate"},
+  "telemetry":{"events":["content_save","publish","ai_applied","media_upload","undo","redo","preview","validation","error","offline_sync"],"privacy":"consent_required"}
+}

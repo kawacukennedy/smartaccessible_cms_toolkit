@@ -3,5 +3,6 @@
   "switch_theme": "Passer en mode {{theme}}",
   "english": "Anglais",
   "french": "Français",
-  "content_editor": "Éditeur de contenu"
+  "settings": "Paramètres",
+  "onboarding": "Intégration"
 }

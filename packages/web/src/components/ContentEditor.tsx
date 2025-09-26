@@ -1,19 +1,65 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import BlockListPanel from './content-editor/BlockListPanel';
 import EditorPanel from './content-editor/EditorPanel';
 import EditorToolbar from './content-editor/EditorToolbar'; // Import EditorToolbar
+import LivePreviewPanel from './content-editor/LivePreviewPanel';
 import AIPanel from './content-editor/AIPanel'; // Import AIPanel
+import AccessibilityDashboard from './content-editor/AccessibilityDashboard'; // Import AccessibilityDashboard
+import MediaLibrary from './content-editor/MediaLibrary'; // Import MediaLibrary
+import PublishConfirmationModal from './PublishConfirmationModal'; // Import PublishConfirmationModal
+import VersionHistoryPanel from './VersionHistoryPanel'; // Import VersionHistoryPanel
 import { useUndoRedo } from '@/contexts/UndoRedoContext';
 import { AISuggestion } from '@/types/ai-suggestion';
 import { useNotifications } from '@/contexts/NotificationContext'; // Import useNotifications
+import { useOnboarding } from '@/contexts/OnboardingContext'; // Import useOnboarding
 
 const ContentEditor: React.FC = () => {
   const { currentContent, addChange, undo, redo } = useUndoRedo(); // Destructure undo and redo
   const { addNotification } = useNotifications();
+  const { completeStep } = useOnboarding();
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [isAIPanelOpen, setIsAIPanelOpen] = useState(false); // State for AI Panel visibility
+  const [isAccessibilityPanelOpen, setIsAccessibilityPanelOpen] = useState(false);
+  const [isMediaLibraryOpen, setIsMediaLibraryOpen] = useState(false);
+  const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
+  const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
+  const [validationIssues, setValidationIssues] = useState<string[]>([]);
   const [aiScanStatus, setAiScanStatus] = useState<'idle' | 'queued' | 'running' | 'done' | 'failed'>('idle'); // AI Scan status for ContentEditor
+  const [scrollPercentage, setScrollPercentage] = useState(0);
+  const activeScroller = useRef<'editor' | 'preview' | null>(null);
+  const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  // Debounce function
+  const debounce = (func: (...args: any[]) => void, delay: number) => {
+    let timeout: NodeJS.Timeout;
+    return (...args: any[]) => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func(...args), delay);
+    };
+  };
+
+  const debouncedAddChange = useCallback(debounce((newContent: string) => {
+    addChange(newContent);
+  }, 200), [addChange]); // Debounce for 200ms
+
+  const handleScroll = (source: 'editor' | 'preview', percentage: number) => {
+    if (activeScroller.current && activeScroller.current !== source) {
+      return;
+    }
+
+    activeScroller.current = source;
+    setScrollPercentage(percentage);
+
+    if (scrollTimeout.current) {
+      clearTimeout(scrollTimeout.current);
+    }
+
+    scrollTimeout.current = setTimeout(() => {
+      activeScroller.current = null;
+    }, 150);
+  };
 
   // Initialize content in UndoRedoContext if it's empty
   useEffect(() => {
@@ -24,10 +70,41 @@ const ContentEditor: React.FC = () => {
 
   const toggleAIPanel = () => {
     setIsAIPanelOpen(!isAIPanelOpen);
+    setIsAccessibilityPanelOpen(false);
+    setIsMediaLibraryOpen(false);
+    setIsVersionHistoryOpen(false);
+  };
+
+  const toggleAccessibilityPanel = () => {
+    setIsAccessibilityPanelOpen(!isAccessibilityPanelOpen);
+    setIsAIPanelOpen(false);
+    setIsMediaLibraryOpen(false);
+    setIsVersionHistoryOpen(false);
+  };
+
+  const toggleMediaLibrary = () => {
+    setIsMediaLibraryOpen(!isMediaLibraryOpen);
+    setIsAIPanelOpen(false);
+    setIsAccessibilityPanelOpen(false);
+    setIsVersionHistoryOpen(false);
+    completeStep('Explore the media library');
+  };
+
+  const toggleVersionHistory = () => {
+    setIsVersionHistoryOpen(!isVersionHistoryOpen);
+    setIsAIPanelOpen(false);
+    setIsAccessibilityPanelOpen(false);
+    setIsMediaLibraryOpen(false);
+  };
+
+  const togglePreviewMode = () => {
+    setIsPreviewMode(!isPreviewMode);
+    completeStep('Preview your content');
   };
 
   const handleBlockSelect = (blockContent: string) => {
     addChange(blockContent);
+    completeStep('Create your first block');
   };
 
   const handleApplyAISuggestion = (suggestion: AISuggestion) => {
@@ -35,6 +112,7 @@ const ContentEditor: React.FC = () => {
     // In a real application, this would involve more sophisticated content manipulation
     const newContent = currentContent + '\n\n' + `[AI Suggestion Applied: ${suggestion.message}]`;
     addChange(newContent);
+    completeStep('Use an AI suggestion');
   };
 
   const handleSave = () => {
@@ -43,37 +121,44 @@ const ContentEditor: React.FC = () => {
     // In a real app, this would trigger an API call to save the content
   };
 
-  const handleAISuggestionRequest = useCallback(() => {
-    setAiScanStatus('queued');
-    addNotification({ displayType: 'toast', style: 'info', message: 'AI suggestion request sent.' });
-    // Simulate AI processing
-    setTimeout(() => {
-      setAiScanStatus('running');
-      addNotification({ displayType: 'toast', style: 'info', message: 'Generating AI suggestions...' });
-      setTimeout(() => {
-        const success = Math.random() > 0.2; // 80% success rate
-        if (success) {
-          setAiScanStatus('done');
-          addNotification({ displayType: 'toast', style: 'success', message: 'AI suggestions generated!' });
-        } else {
-          setAiScanStatus('failed');
-          addNotification({ displayType: 'toast', style: 'error', message: 'Failed to generate AI suggestions. Retry?' });
-        }
-        setTimeout(() => setAiScanStatus('idle'), 3000); // Reset status after 3 seconds
-      }, 2000);
-    }, 500);
-  }, [addNotification]);
-
-  const handlePreview = () => {
-    console.log('Opening preview for:', currentContent);
-    addNotification({ displayType: 'toast', style: 'info', message: 'Preview opened.' });
-    // In a real app, this would open a preview in a new tab or modal
+  const runValidationChecks = (): string[] => {
+    const issues: string[] = [];
+    if (currentContent.length < 10) {
+      issues.push('Content is too short.');
+    }
+    if (!currentContent.includes('title')) {
+      issues.push('Missing a clear title.');
+    }
+    // Mock accessibility checks
+    if (currentContent.includes('img') && !currentContent.includes('alt=')) {
+      issues.push('Image missing alt text.');
+    }
+    if (currentContent.includes('low contrast')) {
+      issues.push('Potential low contrast text detected.');
+    }
+    return issues;
   };
 
   const handlePublish = () => {
-    console.log('Publishing content:', currentContent);
-    addNotification({ displayType: 'toast', style: 'info', message: 'Publishing content initiated.' });
-    // In a real app, this would trigger the publish flow (validation, confirmation, API call)
+    const issues = runValidationChecks();
+    setValidationIssues(issues);
+    setIsPublishModalOpen(true);
+  };
+
+  const handleConfirmPublish = () => {
+    console.log('Publishing content confirmed:', currentContent);
+    addNotification({ displayType: 'toast', style: 'info', message: 'Publishing content...' });
+    // Simulate API call for publishing
+    setTimeout(() => {
+      const success = Math.random() > 0.2; // 80% success rate
+      if (success) {
+        addNotification({ displayType: 'toast', style: 'success', message: 'Content published successfully!' });
+        completeStep('Publish your first piece');
+      } else {
+        addNotification({ displayType: 'toast', style: 'error', message: 'Publish failed. Retry?' });
+      }
+      setIsPublishModalOpen(false);
+    }, 2000);
   };
 
   // New useEffect for keyboard shortcuts
@@ -137,39 +222,69 @@ const ContentEditor: React.FC = () => {
       <EditorToolbar
         onSave={handleSave}
         onAISuggestion={handleAISuggestionRequest}
-        onPreview={handlePreview}
+        onPreview={togglePreviewMode}
         onPublish={handlePublish} // Pass handlePublish to EditorToolbar
+        isPreviewMode={isPreviewMode}
+        onToggleAccessibilityPanel={toggleAccessibilityPanel}
+        onToggleMediaLibrary={toggleMediaLibrary}
+        onToggleVersionHistory={toggleVersionHistory}
       />
-      <div className="row h-100">
-        <div className="col-md-3 h-100">
-          <BlockListPanel onBlockSelect={handleBlockSelect} />
+      {isPreviewMode ? (
+        <LivePreviewPanel content={currentContent} scrollPercentage={scrollPercentage} onScroll={(p) => handleScroll('preview', p)} />
+      ) : (
+        <div className="row h-100">
+          <div className="col-md-3 h-100">
+            <BlockListPanel onBlockSelect={handleBlockSelect} />
+          </div>
+          <div className="col-md-6 h-100">
+            <EditorPanel content={currentContent} onContentChange={debouncedAddChange} onScroll={(p) => handleScroll('editor', p)} />
+          </div>
+          {/* AI Panel & Accessibility Dashboard - visible on desktop */}
+          <div className="col-md-3 h-100 d-none d-lg-block">
+            {isAIPanelOpen && (
+                <AIPanel onApplySuggestion={handleApplyAISuggestion} onAIScanRequest={handleAISuggestionRequest} />
+            )}
+            {isAccessibilityPanelOpen && (
+                <AccessibilityDashboard />
+            )}
+            {isMediaLibraryOpen && (
+                <MediaLibrary />
+            )}
+            {isVersionHistoryOpen && (
+                <VersionHistoryPanel />
+            )}
+          </div>
         </div>
-        <div className="col-md-6 h-100">
-          <EditorPanel content={currentContent} onContentChange={addChange} />
-        </div>
-        {/* AI Panel - visible on desktop, toggled on mobile/tablet */}
-        <div className="col-md-3 h-100 d-none d-lg-block"> {/* Hide on md and below, show on lg and above */}
-          <AIPanel onApplySuggestion={handleApplyAISuggestion} onAIScanRequest={handleAISuggestionRequest} />
-        </div>
-      </div>
+      )}
 
       {/* AI Panel Toggle Button for mobile/tablet */}
-      <button
-        className="btn btn-primary d-lg-none position-fixed bottom-0 end-0 m-3" // Show on md and below, hide on lg and above
-        type="button"
-        onClick={toggleAIPanel}
-      >
-        Toggle AI Panel
-      </button>
+      {!isPreviewMode && (
+        <>
+          <button
+            className="btn btn-primary d-lg-none position-fixed bottom-0 end-0 m-3" // Show on md and below, hide on lg and above
+            type="button"
+            onClick={toggleAIPanel}
+          >
+            Toggle AI Panel
+          </button>
 
-      {/* AI Panel for mobile/tablet (rendered as offcanvas/bottom drawer) */}
-      {/* This will be handled within AIPanel.tsx using props */}
-      <AIPanel
-        onApplySuggestion={handleApplyAISuggestion}
-        isOpen={isAIPanelOpen}
-        togglePanel={toggleAIPanel}
-        isResponsive={true} // Indicate that it's being rendered responsively
-        onAIScanRequest={handleAISuggestionRequest}
+          {/* AI Panel for mobile/tablet (rendered as offcanvas/bottom drawer) */}
+          {/* This will be handled within AIPanel.tsx using props */}
+          <AIPanel
+            onApplySuggestion={handleApplyAISuggestion}
+            isOpen={isAIPanelOpen}
+            togglePanel={toggleAIPanel}
+            isResponsive={true} // Indicate that it's being rendered responsively
+            onAIScanRequest={handleAISuggestionRequest}
+          />
+        </>
+      )}
+
+      <PublishConfirmationModal
+        isOpen={isPublishModalOpen}
+        onClose={() => setIsPublishModalOpen(false)}
+        onConfirm={handleConfirmPublish}
+        validationIssues={validationIssues}
       />
     </div>
   );

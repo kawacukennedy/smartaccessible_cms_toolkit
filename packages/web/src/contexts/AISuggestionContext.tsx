@@ -8,6 +8,7 @@ interface AISuggestionContextType {
   addSuggestion: (suggestion: Omit<AISuggestion, 'id'>) => void;
   applySuggestion: (id: string) => void;
   rejectSuggestion: (id: string) => void;
+  clearSuggestions: () => void; // Added
 }
 
 const AISuggestionContext = createContext<AISuggestionContextType | undefined>(undefined);
@@ -34,9 +35,14 @@ export const AISuggestionProvider: React.FC<{ children: React.ReactNode }> = ({ 
     console.log(`Rejected suggestion: ${id}`);
   }, []);
 
+  const clearSuggestions = useCallback(() => {
+    setSuggestions([]);
+    console.log('Cleared all suggestions.');
+  }, []);
+
   const value = useMemo(
-    () => ({ suggestions, addSuggestion, applySuggestion, rejectSuggestion }),
-    [suggestions, addSuggestion, applySuggestion, rejectSuggestion]
+    () => ({ suggestions, addSuggestion, applySuggestion, rejectSuggestion, clearSuggestions }),
+    [suggestions, addSuggestion, applySuggestion, rejectSuggestion, clearSuggestions]
   );
 
   return (

@@ -7,11 +7,40 @@ import NotificationModal from '@/components/NotificationModal';
 import NotificationSnackbar from '@/components/NotificationSnackbar';
 
 const NotificationRenderer: React.FC = () => {
-  const { notifications } = useNotifications();
+  const { notifications, dismissNotification } = useNotifications();
 
   return (
-    <div>
-      <h1>Notification Renderer</h1>
+    <div className="notification-renderer-container">
+      {notifications.map((notification) => {
+        switch (notification.displayType) {
+          case 'toast':
+            return (
+              <NotificationToast
+                key={notification.id}
+                notification={notification}
+                onClose={() => dismissNotification(notification.id)}
+              />
+            );
+          case 'modal':
+            return (
+              <NotificationModal
+                key={notification.id}
+                notification={notification}
+                onClose={() => dismissNotification(notification.id)}
+              />
+            );
+          case 'snackbar':
+            return (
+              <NotificationSnackbar
+                key={notification.id}
+                notification={notification}
+                onClose={() => dismissNotification(notification.id)}
+              />
+            );
+          default:
+            return null;
+        }
+      })}
     </div>
   );
 };

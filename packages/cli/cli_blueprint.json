@@ -1,0 +1,39 @@
+{
+  "app": {
+    "name": "SmartAccessible CMS Toolkit",
+    "platform": "CLI",
+    "version": "1.0.0-cli",
+    "goals": [
+      "Enable content creation and editing from terminal",
+      "Provide AI-assisted suggestions via commands",
+      "Support undo/redo, preview, and publishing",
+      "Enable media management via CLI",
+      "Maintain offline-first editing with queued actions",
+      "Capture telemetry and respect privacy"
+    ]
+  },
+  "ui": {
+    "commands": ["create","edit","ai_scan","undo","redo","preview","publish","upload_media","list_media"],
+    "feedback":"Terminal output with timestamps and status messages",
+    "interactive_wizard":{"onboarding":true,"ai_review":true,"conflict_resolution":true}
+  },
+  "ux": {
+    "keyboard_navigation":{"command_shortcuts":"full CLI commands with flags"},
+    "microcopy":{"feedback_messages":{"save":"Draft saved","publish":"Publishing content…","ai_scan":"AI suggestions ready","undo":"Action undone","redo":"Action redone"}}
+  },
+  "flows": {
+    "content_creation":["start_session","edit_command","apply_ai","save","preview","publish"],
+    "ai_workflow":{"triggers":["manual"],"process":["trigger_scan","show_results","apply_reject","update_undo_redo"]},
+    "publish_flow":["run_validations","confirmation_prompt","fix_issues","send_publish_request","handle_conflicts","show_feedback"],
+    "undo_redo_flow":{"strategy":"operation_stack","max_entries":200},
+    "media_library_flow":["upload_media <path>","list_media","assign_ai_alt_text","progress_feedback"]
+  },
+  "state_machines": {
+    "editor":{"states":["idle","editing","autosaving","saved","saving_failed","publishing","published","conflict","offline"]},
+    "ai_scan":{"states":["queued","running","done","failed"]},
+    "media_upload":{"states":["idle","uploading","success","error"]},
+    "undo_redo":{"strategy":"operation_stack","max_entries":200}
+  },
+  "edge_cases":{"offline_edits":"queue and sync","version_conflicts":"merge command","ai_errors":"fallback","large_projects":"paginate","media_failures":"retry"},
+  "telemetry":{"events":["content_save","publish","ai_applied","media_upload","undo","redo","preview","validation","error","offline_sync"],"privacy":"consent_required"}
+}

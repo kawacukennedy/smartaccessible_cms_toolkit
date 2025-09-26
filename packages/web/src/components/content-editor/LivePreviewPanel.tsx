@@ -1,9 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface LivePreviewPanelProps {
   content: string;
+  scrollPercentage: number;
+  onScroll: (percentage: number) => void;
 }
 
 type Device = 'desktop' | 'tablet' | 'mobile_portrait' | 'mobile_landscape';
@@ -15,8 +18,30 @@ const deviceDimensions: Record<Device, { width: string; height: string }> = {
   mobile_landscape: { width: '667px', height: '375px' },
 };
 
-const LivePreviewPanel: React.FC<LivePreviewPanelProps> = ({ content }) => {
+const LivePreviewPanel: React.FC<LivePreviewPanelProps> = ({ content, scrollPercentage, onScroll }) => {
   const [selectedDevice, setSelectedDevice] = useState<Device>('desktop');
+  const { theme, setTheme } = useTheme();
+  const previewRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (previewRef.current) {
+      const scrollableHeight = previewRef.current.scrollHeight - previewRef.current.clientHeight;
+      if (scrollableHeight > 0) {
+        const newScrollTop = scrollPercentage * scrollableHeight;
+        if (Math.abs(previewRef.current.scrollTop - newScrollTop) > 1) { // Avoid small adjustments
+            previewRef.current.scrollTop = newScrollTop;
+        }
+      }
+    }
+  }, [scrollPercentage]);
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const scrollableHeight = e.currentTarget.scrollHeight - e.currentTarget.clientHeight;
+    if (scrollableHeight > 0) {
+      const percentage = e.currentTarget.scrollTop / scrollableHeight;
+      onScroll(percentage);
+    }
+  };
 
   const previewStyle: React.CSSProperties = {
     width: deviceDimensions[selectedDevice].width,
@@ -32,6 +57,15 @@ const LivePreviewPanel: React.FC<LivePreviewPanelProps> = ({ content }) => {
       <div className="card-header d-flex justify-content-between align-items-center">
         <span>Live Preview</span>
         <div>
+          <div className="btn-group me-2" role="group" aria-label="Accessibility Simulation">
+            <button type="button" className="btn btn-sm btn-outline-secondary">Reduced Motion</button>
+            <button type="button" className="btn btn-sm btn-outline-secondary">Colorblind Friendly</button>
+          </div>
+          <div className="btn-group me-2" role="group" aria-label="Theme Simulation">
+            <button type="button" className={`btn btn-sm btn-outline-secondary ${theme === 'light' ? 'active' : ''}`} onClick={() => setTheme('light')}>Light</button>
+            <button type="button" className={`btn btn-sm btn-outline-secondary ${theme === 'dark' ? 'active' : ''}`} onClick={() => setTheme('dark')}>Dark</button>
+            <button type="button" className={`btn btn-sm btn-outline-secondary ${theme === 'high_contrast' ? 'active' : ''}`} onClick={() => setTheme('high_contrast')}>High Contrast</button>
+          </div>
           <div className="btn-group" role="group" aria-label="Device Simulation">
             {Object.keys(deviceDimensions).map((device) => (
               <button
@@ -46,8 +80,8 @@ const LivePreviewPanel: React.FC<LivePreviewPanelProps> = ({ content }) => {
           </div>
         </div>
       </div>
-      <div className="card-body d-flex flex-column align-items-center justify-content-center">
-        <div style={previewStyle}>
+      <div className={`card-body d-flex flex-column align-items-center justify-content-center ${theme}`}>
+        <div style={previewStyle} ref={previewRef} onScroll={handleScroll}>
           <div dangerouslySetInnerHTML={{ __html: content }} />
           {/* Placeholder for AI Suggestion Highlight */}
           {content.includes('AI Suggestion Applied') && (
