@@ -9,11 +9,12 @@ The **SmartAccessible CMS Toolkit** is an ultimate AI-powered CMS toolkit design
 *   **AI-Powered Content Generation:** Leverage AI for creative content generation, accessibility, inclusivity, and personalization.
 *   **Live Preview:** Real-time content preview for both web and mobile.
 *   **Multi-Role Management:** Granular control over user roles and permissions.
-*   **CLI Automation:** Command-line interface for common tasks like content migration and accessibility audits.
+*   **CLI Automation:** Command-line interface for common tasks like content migration, accessibility audits, content creation, editing, and publishing.
+*   **Onboarding Experience:** Interactive tours, checklists, and guidance for new users across all platforms.
 *   **Real-time Synchronization:** WebSocket and Storyblok Bridge for instant updates.
 *   **Comprehensive Analytics & Monitoring:** Track key performance indicators and system health.
-*   **Advanced SEO & Media Handling:** Tools for optimizing content for search engines and efficient media management.
-*   **Undo/Redo & Version Control:** Robust mechanisms for content history and recovery.
+*   **Advanced SEO & Media Handling:** Tools for optimizing content for search engines, efficient media management with bulk upload and AI alt-text generation.
+*   **Undo/Redo & Version Control:** Robust mechanisms for content history and recovery across all platforms.
 *   **CI/CD Integration:** Automated pipelines for seamless deployment.
 *   **Localization:** Support for multiple languages (`en`, `fr`, `es`, `de`, `zh`, `ar`, `ru`, `pt`, `hi`, `ja`, `ko`, `it`, `nl`).
 *   **Accessibility Features:** WCAG 2.1 compliance, ARIA labels, contrast checking, keyboard navigation, screen reader testing, color blind modes, dynamic font scaling, alt text enforcement, semantic HTML, and auto-fix suggestions.
@@ -119,14 +120,41 @@ cd packages/cli
 # Build the CLI tool
 npm run build
 
+# Run the interactive onboarding wizard
+npm start onboard
+
+# Example: Create new content
+npm start create -- --title "My New Article" --type post
+
+# Example: Edit existing content
+npm start edit -- 123 --field content --value "Updated content here."
+
+# Example: Run an AI scan on content
+npm start ai-scan -- --id 123
+
+# Example: List media assets
+npm start list-media
+
+# Example: Preview content
+npm start preview -- --id 123
+
+# Example: Publish content
+npm start publish -- --id 123
+
+# Example: Undo the last action
+npm start undo
+
+# Example: Redo the last undone action
+npm start redo
+
 # Example: Migrate content
 npm start migrate-content -- --source-space your-source-space-id --destination-space your-destination-space-id
 
 # Example: Audit accessibility
 npm start audit-accessibility -- --space your-space-id --output-file report.json
 
-# Example: Generate suggestions
-npm start generate-suggestions -- --space your-space-id
+# Example: Upload media
+npm start upload-media -- path/to/your/file.jpg --generate-alt-text
 ```
 
 ## Architecture
@@ -169,8 +197,8 @@ Real-time updates are powered by WebSockets and the Storyblok Bridge, ensuring i
 
 ## Contributing
 
-Contributions are welcome! Please refer to the project's issue tracker for open tasks or submit pull requests with your enhancements.
+We welcome contributions! Please see our [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 ## License
 
-This project is licensed under the ISC License.
+This project is licensed under the [MIT License](LICENSE).
