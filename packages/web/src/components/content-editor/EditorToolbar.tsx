@@ -13,6 +13,9 @@ interface EditorToolbarProps {
   onToggleAccessibilityPanel: () => void;
   onToggleMediaLibrary: () => void;
   onToggleVersionHistory: () => void;
+  onSimulateConflict: () => void;
+  onToggleOffline: () => void;
+  isOffline: boolean;
 }
 
 const EditorToolbar: React.FC<EditorToolbarProps> = ({ onSave, onAISuggestion, onPreview, onPublish, isPreviewMode, onToggleAccessibilityPanel, onToggleMediaLibrary, onToggleVersionHistory }) => {
@@ -96,7 +99,7 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ onSave, onAISuggestion, o
         <button className="btn btn-outline-primary me-2" onClick={handlePreview} aria-label={isPreviewMode ? "Back to Editor" : "Preview content"}>
           {isPreviewMode ? 'Editor' : 'Preview'}
         </button>
-        <button className="btn btn-success me-2" onClick={handleSave} aria-label="Save draft">
+        <button className="btn btn-success me-2" onClick={handleSave} aria-label="Save draft" disabled={isOffline}>
           Save Draft
         </button>
         <button className="btn btn-info me-2" onClick={handleAISuggestion} aria-label="Get AI suggestions">
@@ -111,7 +114,13 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ onSave, onAISuggestion, o
         <button className="btn btn-secondary me-2" onClick={onToggleVersionHistory} aria-label="Toggle Version History">
             History
         </button>
-        <button className="btn btn-primary" onClick={handlePublish} disabled={isPublishDisabled} title="Publish (Ctrl+Alt+P)" aria-label="Publish content">
+        <button className="btn btn-danger me-2" onClick={onSimulateConflict} aria-label="Simulate Conflict">
+            Conflict
+        </button>
+        <button className="btn btn-warning me-2" onClick={onToggleOffline} aria-label="Toggle Offline Mode">
+            Offline
+        </button>
+        <button className="btn btn-primary" onClick={handlePublish} disabled={isPublishDisabled || isOffline} title="Publish (Ctrl+Alt+P)" aria-label="Publish content">
           <i className="bi bi-upload"></i> Publish
         </button>
       </div>

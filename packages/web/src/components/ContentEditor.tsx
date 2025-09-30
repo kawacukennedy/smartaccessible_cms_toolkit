@@ -15,7 +15,7 @@ import { AISuggestion } from '@/types/ai-suggestion';
 import { useNotifications } from '@/contexts/NotificationContext'; // Import useNotifications
 import { useAISuggestions } from '@/contexts/AISuggestionContext';
 import { useOnboarding } from '@/contexts/OnboardingContext'; // Import useOnboarding
-import { trackEvent } from '@/lib/telemetry';
+import ConflictResolutionModal from './ConflictResolutionModal';
 
 const ContentEditor: React.FC = () => {
   const { currentContent, addChange, undo, redo } = useUndoRedo(); // Destructure undo and redo
@@ -27,6 +27,36 @@ const ContentEditor: React.FC = () => {
   const [isMediaLibraryOpen, setIsMediaLibraryOpen] = useState(false);
   const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [isConflictModalOpen, setIsConflictModalOpen] = useState(false);
+  const [serverContent, setServerContent] = useState('');
+  const [isOffline, setIsOffline] = useState(false);
+
+  const simulateConflict = () => {
+    setServerContent(currentContent + '\n\nThis is a change from the server.');
+    setIsConflictModalOpen(true);
+  };
+
+  const toggleOffline = () => {
+    setIsOffline(!isOffline);
+    addNotification({
+      displayType: 'toast',
+      style: isOffline ? 'success' : 'warning',
+      message: isOffline ? 'Back online' : 'You are now in offline mode',
+    });
+  };
+
+  const commands = [
+    { id: 'save', name: 'Save', action: handleSave },
+    { id: 'publish', name: 'Publish', action: handlePublish },
+    { id: 'toggle-preview', name: 'Toggle Preview', action: togglePreviewMode },
+    { id: 'toggle-ai-panel', name: 'Toggle AI Panel', action: toggleAIPanel },
+    { id: 'toggle-accessibility-panel', name: 'Toggle Accessibility Panel', action: toggleAccessibilityPanel },
+    { id: 'toggle-media-library', name: 'Toggle Media Library', action: toggleMediaLibrary },
+    { id: 'toggle-version-history', name: 'Toggle Version History', action: toggleVersionHistory },
+    { id: 'undo', name: 'Undo', action: undo },
+    { id: 'redo', name: 'Redo', action: redo },
+  ];
   const [validationIssues, setValidationIssues] = useState<string[]>([]);
   const [aiScanStatus, setAiScanStatus] = useState<'idle' | 'queued' | 'running' | 'done' | 'failed'>('idle');
   const { setSuggestions, applySuggestion, suggestions } = useAISuggestions();
@@ -264,8 +294,7 @@ const ContentEditor: React.FC = () => {
 
       if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 'P') { // Ctrl+Shift+P or Cmd+Shift+P for command palette
         event.preventDefault();
-        addNotification({ displayType: 'toast', style: 'info', message: 'Command Palette triggered (placeholder).' });
-        // TODO: Implement actual command palette functionality here
+        setIsCommandPaletteOpen(true);
         trackEvent('command_palette_shortcut');
       }
     };
@@ -289,6 +318,9 @@ const ContentEditor: React.FC = () => {
         onToggleAccessibilityPanel={toggleAccessibilityPanel}
         onToggleMediaLibrary={toggleMediaLibrary}
         onToggleVersionHistory={toggleVersionHistory}
+        onSimulateConflict={simulateConflict}
+        onToggleOffline={toggleOffline}
+        isOffline={isOffline}
       />
       {isPreviewMode ? (
         <LivePreviewPanel content={currentContent} scrollPercentage={scrollPercentage} onScroll={(p) => handleScroll('preview', p)} />
@@ -346,6 +378,16 @@ const ContentEditor: React.FC = () => {
         onClose={() => setIsPublishModalOpen(false)}
         onConfirm={handleConfirmPublish}
         validationIssues={validationIssues}
+      />
+      <ConflictResolutionModal
+        isOpen={isConflictModalOpen}
+        onClose={() => setIsConflictModalOpen(false)}
+        onResolve={(resolvedContent) => {
+          addChange(resolvedContent);
+          setIsConflictModalOpen(false);
+        }}
+        serverContent={serverContent}
+        localContent={currentContent}
       />
     </div>
   );

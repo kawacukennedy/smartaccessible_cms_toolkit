@@ -65,71 +65,23 @@ const AIPanel: React.FC<AIPanelProps> = ({ onApplySuggestion, isOpen, togglePane
     }
   }, [isOpen, isResponsive, isMobile]);
 
-  const renderAIPanelContent = () => (
-    <div className="card h-100">
-      <div className="card-header">
-        <ul className="nav nav-tabs card-header-tabs" id="aiPanelTabs" role="tablist">
-          <li className="nav-item">
-            <button
-              className="nav-link active"
-              id="accessibility-tab"
-              data-bs-toggle="tab"
-              data-bs-target="#accessibility"
-              type="button"
-              role="tab"
-              aria-controls="accessibility"
-              aria-selected="true"
+          <div className="card-body tab-content" id="aiPanelTabsContent">
+            {aiScanStatus !== 'idle' && (
+              <div role="status" aria-live="polite" className="mb-3 text-muted">
+                {aiScanStatus === 'queued' && 'AI scan queued'}
+                {aiScanStatus === 'running' && 'AI scan in progress…'}
+                {aiScanStatus === 'done' && 'AI scan complete'}
+                {aiScanStatus === 'failed' && 'AI scan failed. Retry?'}
+              </div>
+            )}
+            <div
+              className="tab-pane fade show active"
+              id="accessibility"
+              role="tabpanel"
+              aria-labelledby="accessibility-tab"
             >
-              Accessibility
-            </button>
-          </li>
-          <li className="nav-item">
-            <button
-              className="nav-link"
-              id="suggestions-tab"
-              data-bs-toggle="tab"
-              data-bs-target="#suggestions"
-              type="button"
-              role="tab"
-              aria-controls="suggestions"
-              aria-selected="false"
-            >
-              Suggestions
-            </button>
-          </li>
-          <li className="nav-item">
-            <button
-              className="nav-link"
-              id="variations-tab"
-              data-bs-toggle="tab"
-              data-bs-target="#variations"
-              type="button"
-              role="tab"
-              aria-controls="variations"
-              aria-selected="false"
-            >
-              Variations
-            </button>
-          </li>
-        </ul>
-      </div>
-      <div className="card-body tab-content" id="aiPanelTabsContent">
-        {aiScanStatus !== 'idle' && (
-          <div role="status" aria-live="polite" className="mb-3 text-muted">
-            {aiScanStatus === 'queued' && 'AI scan queued'}
-            {aiScanStatus === 'running' && 'AI scan in progress…'}
-            {aiScanStatus === 'done' && 'AI scan complete'}
-            {aiScanStatus === 'failed' && 'AI scan failed. Retry?'}
-          </div>
-        )}
-        <div
-          className="tab-pane fade show active"
-          id="accessibility"
-          role="tabpanel"
-          aria-labelledby="accessibility-tab"
-        >
-          <SEOPanel />
-        </div>
+              <AccessibilityDashboard />
+            </div>
         <div className="tab-pane fade" id="suggestions" role="tabpanel" aria-labelledby="suggestions-tab">
           <AISuggestionsPanel onApplySuggestion={onApplySuggestion} />
         </div>
@@ -248,14 +200,14 @@ const AIPanel: React.FC<AIPanelProps> = ({ onApplySuggestion, isOpen, togglePane
                 {aiScanStatus === 'failed' && 'AI scan failed. Retry?'}
               </div>
             )}
-            <div
-              className="tab-pane fade show active"
-              id="accessibility"
-              role="tabpanel"
-              aria-labelledby="accessibility-tab"
-            >
-              <SEOPanel />
-            </div>
+        <div
+          className="tab-pane fade show active"
+          id="accessibility"
+          role="tabpanel"
+          aria-labelledby="accessibility-tab"
+        >
+          <AccessibilityDashboard />
+        </div>
             <div className="tab-pane fade" id="suggestions" role="tabpanel" aria-labelledby="suggestions-tab">
               <AISuggestionsPanel onApplySuggestion={onApplySuggestion} />
             </div>
@@ -352,7 +304,7 @@ const AIPanel: React.FC<AIPanelProps> = ({ onApplySuggestion, isOpen, togglePane
           role="tabpanel"
           aria-labelledby="accessibility-tab"
         >
-          <SEOPanel />
+          <AccessibilityDashboard />
         </div>
         <div className="tab-pane fade" id="suggestions" role="tabpanel" aria-labelledby="suggestions-tab">
           <AISuggestionsPanel onApplySuggestion={onApplySuggestion} />
