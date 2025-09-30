@@ -12,10 +12,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
 
   return (
     <nav
-      className={`sidebar offcanvas offcanvas-start bg-light ${isSidebarOpen ? 'show' : ''}`}
+      className={`sidebar offcanvas offcanvas-start bg-light ${isSidebarOpen ? 'show' : ''} app-sidebar`}
       tabIndex={-1}
       id="sidebarOffcanvas"
       aria-labelledby="sidebarOffcanvasLabel"
+      role="navigation"
+      aria-label="Main Sidebar"
     >
       <div className="offcanvas-header">
         <h5 className="offcanvas-title" id="sidebarOffcanvasLabel">Menu</h5>
@@ -43,26 +45,51 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
               <input type="text" className="form-control" placeholder="Search sidebar..." aria-label="Search sidebar" />
             </div>
 
-            {/* Navigation Items */}
-            <ul className="navbar-nav justify-content-end flex-grow-1 pe-3">
+            {/* Filters */}
+            <h6 className="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted text-uppercase">
+              <span>Filters</span>
+            </h6>
+            <ul className="navbar-nav flex-column mb-2">
               <li className="nav-item">
-                <Link href="#" className="nav-link active" aria-current="page">
-                  <i className="bi bi-grid me-2"></i> Templates
+                <Link href="#" className="nav-link">
+                  <i className="bi bi-file-earmark-text me-2"></i> Drafts
                 </Link>
               </li>
               <li className="nav-item">
                 <Link href="#" className="nav-link">
-                  <i className="bi bi-journal-text me-2"></i> Drafts
+                  <i className="bi bi-check-circle me-2"></i> Published
                 </Link>
               </li>
               <li className="nav-item">
                 <Link href="#" className="nav-link">
-                  <i className="bi bi-file-earmark-richtext me-2"></i> Content Types
+                  <i className="bi bi-calendar-event me-2"></i> Scheduled
+                </Link>
+              </li>
+            </ul>
+
+            {/* Content Types */}
+            <h6 className="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted text-uppercase">
+              <span>Content Types</span>
+            </h6>
+            <ul className="navbar-nav flex-column mb-2">
+              <li className="nav-item">
+                <Link href="#" className="nav-link">
+                  <i className="bi bi-file-earmark-richtext me-2"></i> Article
                 </Link>
               </li>
               <li className="nav-item">
-                <Link href="/onboarding" className="nav-link">
-                  <i className="bi bi-rocket-takeoff me-2"></i> Onboarding
+                <Link href="#" className="nav-link">
+                  <i className="bi bi-newspaper me-2"></i> Blog Post
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link href="#" className="nav-link">
+                  <i className="bi bi-layout-text-window-reverse me-2"></i> Landing Page
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link href="#" className="nav-link">
+                  <i className="bi bi-box me-2"></i> Product
                 </Link>
               </li>
             </ul>

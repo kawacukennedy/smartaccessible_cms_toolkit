@@ -73,6 +73,15 @@ body {
   height: 64px;
 }
 
+.app-sidebar {
+  width: 280px;
+  transition: width var(--animation-duration-medium) var(--animation-easing-in-out);
+}
+
+.app-sidebar.collapsed {
+  width: 64px;
+}
+
 .main-content {
   flex-grow: 1;
   padding: var(--spacing-lg); /* Use spacing variable */
