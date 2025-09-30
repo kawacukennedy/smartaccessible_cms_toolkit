@@ -19,6 +19,7 @@ interface Block {
   content: string;
   suggestions?: string[]; // Added suggestions array
   accessibilityAlerts?: string[]; // Added accessibilityAlerts array
+  collaborators?: { id: string; avatar: string; name: string }[]; // New collaborators property
 }
 
 interface EditorPanelProps {
@@ -33,8 +34,8 @@ const EditorPanel: React.FC<EditorPanelProps> = ({ initialContent, onContentChan
   const { addChange } = useUndoRedo();
 
   const [blocks, setBlocks] = useState<Block[]>([
-    { id: 'block-1', type: 'text', content: initialContent || 'This is the first block.' },
-    { id: 'block-2', type: 'text', content: 'This is the second block.' },
+    { id: 'block-1', type: 'text', content: initialContent || 'This is the first block.', collaborators: [{ id: 'user-1', avatar: 'https://i.pravatar.cc/30?img=1', name: 'Alice' }] },
+    { id: 'block-2', type: 'text', content: 'This is the second block.', collaborators: [{ id: 'user-2', avatar: 'https://i.pravatar.cc/30?img=2', name: 'Bob' }] },
   ]);
   const [isDragging, setIsDragging] = useState(false);
   const [activeSuggestionsBlockId, setActiveSuggestionsBlockId] = useState<string | null>(null);
@@ -208,6 +209,20 @@ const EditorPanel: React.FC<EditorPanelProps> = ({ initialContent, onContentChan
                 style={{ cursor: 'grab' }}
               >
                 <div className="block-controls position-absolute top-0 end-0 p-1">
+                  {block.collaborators && block.collaborators.length > 0 && (
+                    <div className="collaborator-avatars d-flex mb-1">
+                      {block.collaborators.map(collab => (
+                        <img
+                          key={collab.id}
+                          src={collab.avatar}
+                          alt={collab.name}
+                          className="rounded-circle me-1" // Bootstrap classes for styling
+                          style={{ width: '24px', height: '24px' }}
+                          title={collab.name}
+                        />
+                      ))}
+                    </div>
+                  )}
                   <BlockContextMenu
                     blockId={block.id}
                     onMoveUp={() => handleMoveBlock(block.id, 'up')}
