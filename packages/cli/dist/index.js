@@ -4,6 +4,15 @@ const commander_1 = require("commander");
 const audit_accessibility_1 = require("./commands/audit-accessibility");
 const migrate_content_1 = require("./commands/migrate-content");
 const upload_media_1 = require("./commands/upload-media");
+const create_1 = require("./commands/create");
+const edit_1 = require("./commands/edit");
+const onboard_1 = require("./commands/onboard");
+const undo_1 = require("./commands/undo");
+const redo_1 = require("./commands/redo");
+const ai_scan_1 = require("./commands/ai-scan");
+const list_media_1 = require("./commands/list-media");
+const preview_1 = require("./commands/preview");
+const publish_1 = require("./commands/publish");
 const program = new commander_1.Command();
 program
     .version('1.0.0')
@@ -30,4 +39,23 @@ program
     .description('Upload a media file')
     .option('--generate-alt-text', 'Automatically generate AI alt text for the media', false)
     .action(upload_media_1.uploadMedia);
+program
+    .command('create')
+    .description('Create new content')
+    .option('--type <type>', 'Type of content to create (e.g., page, post)', 'page')
+    .option('--title <title>', 'Title of the new content')
+    .action(create_1.create);
+program
+    .command('edit <contentId>')
+    .description('Edit existing content')
+    .option('--field <field>', 'Field to edit')
+    .option('--value <value>', 'New value for the field')
+    .action(edit_1.edit);
+program.addCommand(onboard_1.onboardCommand);
+program.addCommand(undo_1.undoCommand);
+program.addCommand(redo_1.redoCommand);
+program.addCommand(ai_scan_1.aiScanCommand);
+program.addCommand(list_media_1.listMediaCommand);
+program.addCommand(preview_1.previewCommand);
+program.addCommand(publish_1.publishCommand);
 program.parse(process.argv);

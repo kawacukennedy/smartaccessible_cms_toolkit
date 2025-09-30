@@ -1,6 +1,6 @@
 
 import React from 'react';
-import Joyride, { Step, STATUS } from 'react-joyride';
+import Joyride, { Step, STATUS, CallBackProps } from 'react-joyride';
 
 const steps: Step[] = [
   {
@@ -21,10 +21,15 @@ const steps: Step[] = [
   },
 ];
 
-const InteractiveTour = ({ run, setRunTour }) => {
-  const handleJoyrideCallback = (data) => {
+interface InteractiveTourProps {
+  run: boolean;
+  setRunTour: (run: boolean) => void;
+}
+
+const InteractiveTour: React.FC<InteractiveTourProps> = ({ run, setRunTour }) => {
+  const handleJoyrideCallback = (data: CallBackProps) => {
     const { status } = data;
-    if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)) {
+    if (data.status === STATUS.FINISHED || data.status === STATUS.SKIPPED) {
       setRunTour(false);
     }
   };

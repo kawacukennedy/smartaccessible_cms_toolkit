@@ -10,6 +10,9 @@ interface UndoRedoContextType {
   addChange: (newState: string) => void;
   currentContent: string;
   feedbackMessage: string; // New: feedback message for undo/redo actions
+  history: string[]; // Expose history for versioning
+  currentIndex: number; // Expose current index
+  goToState: (index: number) => void; // Function to jump to a specific state
 }
 
 const UndoRedoContext = createContext<UndoRedoContextType | undefined>(undefined);
@@ -66,9 +69,19 @@ export const UndoRedoProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const canUndo = currentIndex > 0;
   const canRedo = currentIndex < history.current.length - 1;
 
+  const goToState = useCallback((index: number) => {
+    if (index >= 0 && index < history.current.length) {
+      setCurrentIndex(index);
+      setFeedbackMessage(`Jumped to state ${index + 1}.`);
+    } else {
+      setFeedbackMessage('Invalid state index.');
+    }
+    setTimeout(() => setFeedbackMessage(''), 2000); // Clear feedback after 2 seconds
+  }, []);
+
   const value = useMemo(
-    () => ({ canUndo, canRedo, undo, redo, addChange, currentContent, feedbackMessage }),
-    [canUndo, canRedo, undo, redo, addChange, currentContent, feedbackMessage]
+    () => ({ canUndo, canRedo, undo, redo, addChange, currentContent, feedbackMessage, history: history.current, currentIndex, goToState }),
+    [canUndo, canRedo, undo, redo, addChange, currentContent, feedbackMessage, history.current, currentIndex, goToState]
   );
 
   return (

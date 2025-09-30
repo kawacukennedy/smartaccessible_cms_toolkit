@@ -1,15 +1,13 @@
-'use client';
-
 import React, { useEffect, useRef, useCallback } from 'react';
 import { Notification } from '@/types/notification';
 import { useNotifications } from '@/contexts/NotificationContext';
 
-interface NotificationModalProps {
+interface ModalItemProps {
   notification: Notification;
+  onClose: (id: string) => void;
 }
 
-const NotificationModal: React.FC<NotificationModalProps> = ({ notification }) => {
-  const { removeNotification } = useNotifications();
+const ModalItem: React.FC<ModalItemProps> = ({ notification, onClose }) => {
   const modalRef = useRef<HTMLDivElement>(null);
   const previouslyFocusedElement = useRef<HTMLElement | null>(null);
 
@@ -20,8 +18,8 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ notification }) =
         modalInstance.hide();
       }
     }
-    removeNotification(notification.id);
-  }, [notification.id, removeNotification]);
+    onClose(notification.id);
+  }, [notification.id, onClose]);
 
   useEffect(() => {
     if (modalRef.current) {
@@ -33,7 +31,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ notification }) =
       modal.show();
 
       const handleHidden = () => {
-        removeNotification(notification.id);
+        onClose(notification.id);
         // Return focus to the previously focused element
         if (previouslyFocusedElement.current) {
           previouslyFocusedElement.current.focus();
@@ -96,7 +94,7 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ notification }) =
         }
       };
     }
-  }, [notification.id, removeNotification, handleClose]);
+  }, [notification.id, onClose, handleClose]);
 
   return (
     <div
@@ -148,6 +146,24 @@ const NotificationModal: React.FC<NotificationModalProps> = ({ notification }) =
         </div>
       </div>
     </div>
+  );
+};
+
+const NotificationModal: React.FC = () => {
+  const { notifications, removeNotification } = useNotifications();
+
+  const modalNotifications = notifications.filter(n => n.displayType === 'modal');
+
+  return (
+    <>
+      {modalNotifications.map(notification => (
+        <ModalItem
+          key={notification.id}
+          notification={notification}
+          onClose={removeNotification}
+        />
+      ))}
+    </>
   );
 };
 

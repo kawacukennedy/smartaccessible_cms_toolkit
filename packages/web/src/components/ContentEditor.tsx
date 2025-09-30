@@ -121,6 +121,11 @@ const ContentEditor: React.FC = () => {
     // In a real app, this would trigger an API call to save the content
   };
 
+  const handleAISuggestionRequest = () => {
+    addNotification({ displayType: 'toast', style: 'info', message: 'AI Suggestion requested.' });
+    // In a real app, this would trigger an AI scan
+  };
+
   const runValidationChecks = (): string[] => {
     const issues: string[] = [];
     if (currentContent.length < 10) {
