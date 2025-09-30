@@ -124,6 +124,18 @@ html.font-size-large body {
               box-shadow var(--animation-duration-fast) var(--animation-easing-in-out);
 }
 
+/* Error Alert effect for blocks */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+.editor-block.has-error-alert {
+  border: 2px solid var(--color-error) !important;
+  animation: shake 0.5s ease-in-out;
+}
+
 /* Dark theme adjustments */
 .main-layout.bg-dark {
   background-color: var(--color-background-dark) !important;

@@ -205,7 +205,7 @@ const EditorPanel: React.FC<EditorPanelProps> = ({ initialContent, onContentChan
                 onDragOver={handleDragOver}
                 onDrop={handleDrop}
                 onDragEnd={handleDragEnd}
-                className={`editor-block mb-3 p-2 border rounded position-relative ${isDragging && dragItem.current === index ? 'is-dragging' : ''}`}
+                className={`editor-block mb-3 p-2 border rounded position-relative ${isDragging && dragItem.current === index ? 'is-dragging' : ''} ${block.accessibilityAlerts && block.accessibilityAlerts.length > 0 ? 'has-error-alert' : ''}`}
                 style={{ cursor: 'grab' }}
               >
                 <div className="block-controls position-absolute top-0 end-0 p-1">
