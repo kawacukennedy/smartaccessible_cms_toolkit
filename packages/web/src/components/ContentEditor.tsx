@@ -180,22 +180,6 @@ const ContentEditor: React.FC = () => {
     setIsPublishModalOpen(true);
     addNotification({ displayType: 'toast', style: 'info', message: 'Publish content? Final accessibility checks will run.' });
   };
-    console.log('Publishing content confirmed:', currentContent);
-    addNotification({ displayType: 'toast', style: 'info', message: 'Publishing content...' });
-    // Simulate API call for publishing
-    setTimeout(() => {
-      const success = Math.random() > 0.2; // 80% success rate
-      if (success) {
-        addNotification({ displayType: 'toast', style: 'success', message: 'Content published successfully.' });
-        completeStep('Publish your first piece');
-        trackEvent('publish', { status: 'success' });
-      } else {
-        addNotification({ displayType: 'toast', style: 'error', message: 'Publish failed. Retry?' });
-        trackEvent('error', { type: 'publish_failed' });
-      }
-      setIsPublishModalOpen(false);
-    }, 2000);
-  };
 
   const commands = [
     { id: 'save', name: 'Save', action: handleSave },
