@@ -18,12 +18,12 @@ import { useOnboarding } from '@/contexts/OnboardingContext'; // Import useOnboa
 import ConflictResolutionModal from './ConflictResolutionModal';
 import { trackEvent } from '@/lib/telemetry';
 
-'use client';
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { useUndoRedo } from '@/contexts/UndoRedoContext';
 import { useNotifications } from '@/contexts/NotificationContext';
 import dynamic from 'next/dynamic';
+import PublishConfirmationModal from '@/components/PublishConfirmationModal'; // Import confirmation modal
+import PublishErrorModal from '@/components/PublishErrorModal'; // Import error modal
 
 // Dynamically import EditorToolbar to ensure it's treated as a client component
 const EditorToolbar = dynamic(() => import('./content-editor/EditorToolbar'), { ssr: false });
@@ -40,23 +40,55 @@ const ContentEditor: React.FC = () => {
 
   const [accessibilityScore, setAccessibilityScore] = useState(85); // Mock score
   const [isAiAssistEnabled, setIsAiAssistEnabled] = useState(true);
-  const [isSaving, setIsSaving] = useState(false); // New state for save feedback
+  const [isSaving, setIsSaving] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [showPublishConfirmation, setShowPublishConfirmation] = useState(false); // State for confirmation modal
+  const [publishError, setPublishError] = useState<{ message: string; logs?: string } | null>(null); // State for publish error
 
   const handleSaveDraft = useCallback(async () => {
     setIsSaving(true);
-    // Simulate saving draft
     console.log('Saving draft:', currentContent);
-    await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1500));
     const saveTime = new Date().toLocaleTimeString();
     addNotification({ displayType: 'toast', style: 'success', message: `Draft saved successfully at ${saveTime}!` });
     setIsSaving(false);
   }, [currentContent, addNotification]);
 
   const handlePublish = useCallback(() => {
-    // Simulate publishing content
-    console.log('Publishing content:', currentContent);
-    addNotification({ displayType: 'toast', style: 'success', message: 'Content published successfully!' });
+    setShowPublishConfirmation(true); // Show confirmation modal first
+  }, []);
+
+  const confirmPublish = useCallback(async () => {
+    setShowPublishConfirmation(false);
+    setIsPublishing(true);
+    setPublishError(null); // Clear previous errors
+
+    try {
+      console.log('Publishing content:', currentContent);
+      // Simulate API call with potential error
+      await new Promise((resolve, reject) =>
+        setTimeout(() => {
+          if (Math.random() > 0.8) { // 20% chance of error
+            reject(new Error('Failed to connect to publishing service.'));
+          } else {
+            resolve(true);
+          }
+        }, 2000)
+      );
+      addNotification({ displayType: 'toast', style: 'success', message: 'Content published successfully!' });
+    } catch (error: any) {
+      console.error('Publish error:', error);
+      setPublishError({ message: error.message || 'Unknown error', logs: error.stack });
+      addNotification({ displayType: 'toast', style: 'error', message: 'Failed to publish content.' });
+    } finally {
+      setIsPublishing(false);
+    }
   }, [currentContent, addNotification]);
+
+  const handleRetryPublish = useCallback(() => {
+    setPublishError(null);
+    confirmPublish(); // Retry publishing
+  }, [confirmPublish]);
 
   const toggleAiAssist = useCallback(() => {
     setIsAiAssistEnabled((prev) => !prev);
@@ -79,17 +111,31 @@ const ContentEditor: React.FC = () => {
         accessibilityScore={accessibilityScore}
         isAiAssistEnabled={isAiAssistEnabled}
         toggleAiAssist={toggleAiAssist}
-        isSaving={isSaving} // Pass isSaving state
+        isSaving={isSaving}
+        isPublishing={isPublishing}
       />
       <div className="flex-grow-1 d-flex">
         <div className="flex-grow-1 p-3 border-end">
           <EditorPanel onContentChange={addChange} initialContent={currentContent} />
         </div>
-        {/* Preview Pane */}
         <div className="p-3" style={{ width: '30%' }}>
           <PreviewPane content={currentContent} />
         </div>
       </div>
+
+      <PublishConfirmationModal
+        show={showPublishConfirmation}
+        onClose={() => setShowPublishConfirmation(false)}
+        onConfirm={confirmPublish}
+      />
+
+      <PublishErrorModal
+        show={!!publishError}
+        onClose={() => setPublishError(null)}
+        onRetry={handleRetryPublish}
+        errorMessage={publishError?.message || ''}
+        errorLogs={publishError?.logs}
+      />
     </div>
   );
 };

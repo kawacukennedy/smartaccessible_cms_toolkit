@@ -9,7 +9,8 @@ interface EditorToolbarProps {
   accessibilityScore: number;
   isAiAssistEnabled: boolean;
   toggleAiAssist: () => void;
-  isSaving: boolean; // New prop
+  isSaving: boolean;
+  isPublishing: boolean; // New prop
 }
 
 const EditorToolbar: React.FC<EditorToolbarProps> = ({
@@ -18,7 +19,8 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({
   accessibilityScore,
   isAiAssistEnabled,
   toggleAiAssist,
-  isSaving, // Destructure new prop
+  isSaving,
+  isPublishing, // Destructure new prop
 }) => {
   const { canUndo, canRedo, undo, redo } = useUndoRedo();
   const [showSavedCheck, setShowSavedCheck] = useState(false);
@@ -62,8 +64,13 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({
         )}
         {isSaving ? ' Saving...' : showSavedCheck ? ' Saved!' : ' Save Draft'}
       </button>
-      <button className="btn btn-primary me-2" onClick={onPublish} title="Publish">
-        <i className="bi bi-cloud-upload"></i> Publish
+      <button className="btn btn-primary me-2" onClick={onPublish} disabled={isPublishing} title="Publish">
+        {isPublishing ? (
+          <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        ) : (
+          <i className="bi bi-cloud-upload"></i>
+        )}
+        {isPublishing ? ' Publishing...' : ' Publish'}
       </button>
 
       {/* Accessibility Score */}
