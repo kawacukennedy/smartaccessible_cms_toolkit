@@ -27,7 +27,7 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, startTour }) => {
 
   const cycleTheme = () => {
     if (theme === 'light') setTheme('dark');
-    else if (theme === 'dark') setTheme('high-contrast');
+    else if (theme === 'dark') setTheme('high_contrast');
     else if (theme === 'high-contrast') setTheme('sepia');
     else if (theme === 'sepia') setTheme('solarized');
     else setTheme('light');
