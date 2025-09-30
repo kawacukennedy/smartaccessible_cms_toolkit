@@ -4,7 +4,6 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import MediaUploader from './MediaUploader';
-import AI_Toolbar from './AI_Toolbar';
 import SEOPanel from './SEOPanel';
 import BlockContextMenu from './BlockContextMenu';
 import { generateMockAISuggestions } from '@/lib/ai-suggestions';
@@ -12,8 +11,6 @@ import TiptapBlock from './TiptapBlock';
 import { useAISuggestions } from '@/contexts/AISuggestionContext';
 import { useUndoRedo } from '@/contexts/UndoRedoContext';
 import { AISuggestion } from '@/types/ai-suggestion';
-
-
 
 interface Block {
   id: string;
@@ -24,18 +21,17 @@ interface Block {
 }
 
 interface EditorPanelProps {
-  content: string; // This will now represent the joined content of all blocks
+  initialContent: string;
   onContentChange: (content: string) => void;
   onScroll: (percentage: number) => void;
-  aiSuggestions: AISuggestion[]; // New prop for AI suggestions
 }
 
-const EditorPanel: React.FC<EditorPanelProps> = ({ content, onContentChange, onScroll }) => {
+const EditorPanel: React.FC<EditorPanelProps> = ({ initialContent, onContentChange, onScroll }) => {
   const { addSuggestion, suggestions: aiSuggestions } = useAISuggestions();
   const { addChange } = useUndoRedo();
 
   const [blocks, setBlocks] = useState<Block[]>([
-    { id: 'block-1', type: 'text', content: 'This is the first block.' },
+    { id: 'block-1', type: 'text', content: initialContent || 'This is the first block.' },
     { id: 'block-2', type: 'text', content: 'This is the second block.' },
   ]);
   const [isDragging, setIsDragging] = useState(false);
