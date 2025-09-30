@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useState, useContext, useCallback, useMemo } from 'react';
+import React, { createContext, useState, useContext, useCallback, useMemo, ReactNode } from 'react';
 
 type ColorBlindMode = 'none' | 'protanopia' | 'deuteranopia' | 'tritanopia' | 'achromatopsia';
 
