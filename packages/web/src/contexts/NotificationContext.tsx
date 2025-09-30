@@ -16,6 +16,7 @@ interface NotificationContextType {
   removeNotification: (id: string) => void;
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
+  bulkDismiss: () => void;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(

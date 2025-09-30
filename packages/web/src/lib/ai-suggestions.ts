@@ -8,6 +8,7 @@ export const generateMockAISuggestions = (content: string): AISuggestion[] => {
       id: 'sugg-1',
       type: 'accessibility',
       message: 'Consider adding more descriptive alt text for images.',
+      recommendation: 'Ensure all images have descriptive alt text for screen readers.',
       confidence: 90,
     });
   }
@@ -17,6 +18,7 @@ export const generateMockAISuggestions = (content: string): AISuggestion[] => {
       id: 'sugg-2',
       type: 'creative',
       message: 'Expand on the content to provide more detail.',
+      recommendation: 'Elaborate on key points and add supporting examples to enrich the content.',
       confidence: 75,
     });
   }
@@ -25,6 +27,7 @@ export const generateMockAISuggestions = (content: string): AISuggestion[] => {
     id: 'sugg-3',
     type: 'inclusivity',
     message: 'Review language for inclusive terminology.',
+    recommendation: 'Use gender-neutral language and avoid stereotypes to ensure inclusivity.',
     confidence: 80,
   });
 

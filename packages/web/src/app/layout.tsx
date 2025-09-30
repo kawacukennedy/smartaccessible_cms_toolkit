@@ -32,18 +32,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <OnboardingProvider>
           <ThemeProvider>
             <NotificationProvider>
-              <AISuggestionProvider>
-                <AuthProvider>
-                  <UndoRedoProvider>
+              <AuthProvider>
+                <UndoRedoProvider>
+                  <AISuggestionProvider>
                     <AccessibilityProvider>
                       <Layout>
                         {children}
                       </Layout>
                       <NotificationRenderer />
                     </AccessibilityProvider>
-                  </UndoRedoProvider>
-                </AuthProvider>
-              </AISuggestionProvider>
+                  </AISuggestionProvider>
+                </UndoRedoProvider>
+              </AuthProvider>
             </NotificationProvider>
           </ThemeProvider>
         </OnboardingProvider>

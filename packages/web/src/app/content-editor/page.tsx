@@ -1,10 +1,13 @@
 'use client';
 
-import React from 'react';
-import ContentEditor from '@/components/ContentEditor';
+import dynamic from 'next/dynamic';
+
+const DynamicContentEditor = dynamic(() => import('@/components/ContentEditor'), { ssr: false });
 
 const ContentEditorPage: React.FC = () => {
-  return <ContentEditor />;
+  return (
+    <DynamicContentEditor />
+  );
 };
 
 export default ContentEditorPage;
