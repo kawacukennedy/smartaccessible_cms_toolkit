@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import NewPageModal from './NewPageModal'; // Import the new page modal
 
@@ -11,12 +11,31 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
   const [showNewPageModal, setShowNewPageModal] = useState(false);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   const handleCreatePage = (title: string, slug: string, template: string) => {
     console.log(`Creating page: Title - ${title}, Slug - ${slug}, Template - ${template}`);
     // In a real app, this would trigger page creation logic
     setShowNewPageModal(false);
   };
+
+  const statusBadgeClass = isOnline ? 'bg-success' : 'bg-danger';
+  const statusIconClass = isOnline ? 'bi-cloud-check' : 'bi-cloud-slash';
+  const statusText = isOnline ? 'Online' : 'Offline';
+  const statusTooltip = isOnline ? 'Online: All changes will sync immediately.' : 'Offline: Changes will sync later.';
 
   return (
     <nav
@@ -104,8 +123,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
 
             {/* Live Sync Status Indicator */}
             <div className="mt-auto p-3 border-top">
-              <span className="badge bg-success">
-                <i className="bi bi-cloud-check me-2"></i> Online
+              <span className={`badge ${statusBadgeClass}`} title={statusTooltip}>
+                <i className={`bi ${statusIconClass} me-2`}></i> {statusText}
               </span>
               <span className="text-muted ms-2">Last synced: Just now</span>
             </div>
