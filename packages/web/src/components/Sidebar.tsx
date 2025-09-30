@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
+import NewPageModal from './NewPageModal'; // Import the new page modal
 
 interface SidebarProps {
   isSidebarOpen: boolean;
@@ -9,6 +10,13 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
+  const [showNewPageModal, setShowNewPageModal] = useState(false);
+
+  const handleCreatePage = (title: string, slug: string, template: string) => {
+    console.log(`Creating page: Title - ${title}, Slug - ${slug}, Template - ${template}`);
+    // In a real app, this would trigger page creation logic
+    setShowNewPageModal(false);
+  };
 
   return (
     <nav
@@ -32,7 +40,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
           <div className="offcanvas-body">
             {/* Quick Actions */}
             <div className="d-grid gap-2 mb-4">
-              <button className="btn btn-primary" type="button">
+              <button className="btn btn-primary" type="button" onClick={() => setShowNewPageModal(true)}>
                 <i className="bi bi-plus-circle me-2"></i> New Page
               </button>
               <button className="btn btn-outline-secondary" type="button">
@@ -102,6 +110,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
               <span className="text-muted ms-2">Last synced: Just now</span>
             </div>
           </div>
+
+      <NewPageModal
+        show={showNewPageModal}
+        onClose={() => setShowNewPageModal(false)}
+        onCreate={handleCreatePage}
+      />
     </nav>
   );
 };
