@@ -1,335 +1,122 @@
 :root {
   /* Colors */
-  --color-primary: #1E88E5;
-  --color-primary-dark: #1565C0;
-  --color-primary-rgb: 30, 136, 229; /* RGB values for --color-primary */
-  --color-accent: #8E24AA;
-  --color-success: #43A047;
-  --color-warning: #FB8C00;
-  --color-error: #E53935;
-  --color-bg: #FFFFFF;
-  --color-surface: #F8FAFC;
-  --color-muted: #6B7280;
-  --color-border: #E5E7EB;
-  --color-focus-ring: #2563eb;
+  --color-primary: #2563EB;
+  --color-secondary: #FBBF24;
+  --color-background-light: #FFFFFF;
+  --color-background-dark: #111827;
+  --color-success: #16A34A;
+  --color-error: #DC2626;
+  --color-warning: #F59E0B;
 
-  /* Typography */
-  --font-family-base: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
-  --font-size-xs: 12px;
-  --font-size-sm: 14px;
-  --font-size-md: 16px;
-  --font-size-lg: 18px;
-  --font-size-xl: 20px;
-  --font-size-2xl: 24px;
-  --font-size-3xl: 30px;
-  --font-weight-light: 300;
-  --font-weight-regular: 400;
-  --font-weight-medium: 500;
-  --font-weight-semibold: 600;
-  --font-weight-bold: 700;
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+
+  /* Radius */
+  --radius-default: 8px;
+  --radius-large: 16px;
+
+  /* Shadow */
+  --shadow-sm: 0px 1px 3px rgba(0,0,0,0.12);
+  --shadow-md: 0px 4px 6px rgba(0,0,0,0.15);
+  --shadow-lg: 0px 8px 10px rgba(0,0,0,0.2);
 
   /* Animations */
-  --animations-defaults-duration-ms: 200ms;
-  --animations-hover-scale: 1.03;
+  --animation-duration-fast: 150ms;
+  --animation-duration-medium: 300ms;
+  --animation-duration-slow: 500ms;
+  --animation-easing-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --animation-easing-in: cubic-bezier(0.4, 0, 1, 1);
+  --animation-easing-out: cubic-bezier(0, 0, 0.2, 1);
+
+  /* Typography */
+  --font-family-inter: 'Inter', sans-serif;
 }
 
+body {
+  font-family: var(--font-family-inter);
+}
+
+/* Interactive States */
+/* These will need to be applied to specific components or overridden in Bootstrap */
+/* For example, for buttons: */
+.btn:hover {
+  filter: brightness(90%); /* Darkens by 10% */
+}
+
+.btn:focus {
+  outline: 2px solid var(--color-primary); /* WCAG AA compliant blue outline */
+  outline-offset: 2px;
+}
+
+.btn:active {
+  transform: translateY(1px); /* Simple pressed effect */
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15); /* Inner shadow */
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* General styles for the main layout */
 .main-layout {
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  transition: background-color 0.3s, color 0.3s;
-  font-family: var(--font-family-base);
-}
-
-.main-layout.light {
-  background-color: var(--color-bg);
-  color: #000; /* Keep black for contrast on light background */
-}
-
-.main-layout.dark {
-  background-color: #212529; /* Keeping dark background for now, can be changed to var(--color-surface) or a darker custom color */
-  color: #fff;
-}
-
-.main-layout.high-contrast {
-  background-color: #000;
-  color: #0f0;
-}
-
-.main-layout.high-contrast .sidebar {
-  background-color: #000;
-  color: #0f0;
-  border-right: 1px solid #0f0;
-}
-
-.main-layout.high-contrast .navbar {
-  background-color: #000 !important;
-  color: #0f0 !important;
-  border-bottom: 1px solid #0f0;
-}
-
-.main-layout.high-contrast .navbar-brand,
-.main-layout.high-contrast .btn-outline-primary,
-.main-layout.high-contrast .btn-outline-secondary,
-.main-layout.high-contrast .form-control,
-.main-layout.high-contrast .dropdown-toggle,
-.main-layout.high-contrast .dropdown-item {
-  color: #0f0 !important;
-  border-color: #0f0 !important;
-  background-color: #000 !important;
-}
-
-.main-layout.high-contrast .form-control {
-  background-color: #000 !important;
-}
-
-.main-layout.high-contrast .list-group-item {
-  background-color: #000 !important;
-  color: #0f0 !important;
-  border-color: #0f0 !important;
-}
-
-.main-layout.high-contrast .list-group-item.active {
-  background-color: #0f0 !important;
-  color: #000 !important;
-}
-
-.main-layout.high-contrast .card {
-  background-color: #000 !important;
-  color: #0f0 !important;
-  border-color: #0f0 !important;
-}
-
-/* Color Blind Modes */
-.main-layout.protanopia {
-  filter: url(#protanopia);
-}
-
-.main-layout.deuteranopia {
-  filter: url(#deuteranopia);
-}
-
-.main-layout.tritanopia {
-  filter: url(#tritanopia);
-}
-
-.main-layout.achromatopsia {
-  filter: url(#achromatopsia);
+  min-height: 100vh;
 }
 
 .main-content {
-  display: flex;
-  flex: 1;
+  flex-grow: 1;
+  padding: var(--spacing-lg); /* Use spacing variable */
 }
 
-.sidebar {
-  width: 250px;
-  transition: background-color 0.3s;
+/* Dark theme adjustments */
+.main-layout.bg-dark {
+  background-color: var(--color-background-dark) !important;
+  color: var(--color-background-light);
 }
 
-.main-layout.light .sidebar {
-    background-color: var(--color-surface);
+.main-layout.bg-dark .navbar {
+  background-color: var(--color-background-dark) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.main-layout.dark .sidebar {
-    background-color: #343a40; /* Keeping dark background for now, can be changed to a custom dark surface color */
+.main-layout.bg-dark .navbar-brand,
+.main-layout.bg-dark .nav-link {
+  color: var(--color-background-light) !important;
 }
 
-.content-area {
-  flex: 1;
-  padding: 20px;
+.main-layout.bg-dark .form-control {
+  background-color: #343a40;
+  color: var(--color-background-light);
+  border-color: #495057;
 }
 
-.container-fluid {
-  max-width: 1440px;
+.main-layout.bg-dark .form-control::placeholder {
+  color: #ced4da;
 }
 
-/* Desktop - Fixed Sidebar */
-@media (min-width: 1025px) {
-  .sidebar {
-    position: sticky;
-    top: 0;
-    height: 100vh;
-    flex-shrink: 0;
-  }
-  .main-content {
-    margin-left: 250px; /* Adjust content to make space for fixed sidebar */
-  }
+.main-layout.bg-dark .btn-outline-secondary {
+  color: var(--color-background-light);
+  border-color: #6c757d;
 }
 
-/* Tablet - Collapsible Sidebar */
-@media (min-width: 641px) and (max-width: 1024px) {
-  .sidebar {
-    width: 0; /* Collapsed by default */
-    overflow: hidden;
-    transition: width 0.3s ease-in-out;
-  }
-  .sidebar.show { /* When sidebar is open */
-    width: 250px;
-  }
-  .main-content {
-    margin-left: 0; /* No margin when sidebar is collapsed */
-    transition: margin-left 0.3s ease-in-out;
-  }
-  .main-content.sidebar-open {
-    margin-left: 250px; /* Adjust content when sidebar is open */
-  }
+.main-layout.bg-dark .btn-outline-secondary:hover {
+  background-color: #6c757d;
+  color: var(--color-background-light);
 }
 
-/* Mobile - Overlay Sidebar (handled by Bootstrap offcanvas) */
-@media (max-width: 640px) {
-  .sidebar {
-    width: 250px; /* Offcanvas width */
-  }
-  .main-content {
-    margin-left: 0; /* No margin on mobile */
-  }
+/* High contrast mode adjustments */
+.main-layout.high-contrast {
+  filter: contrast(200%) grayscale(100%);
 }
 
-/* Login Page Styles */
-.login-background {
-  background: linear-gradient(45deg, var(--color-primary), var(--color-primary-dark)); /* Example gradient */
-  position: relative;
-  overflow: hidden;
-}
-
-.login-background::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image: radial-gradient(circle, #ffffff33 1px, transparent 1px);
-  background-size: 40px 40px;
-  opacity: 0.2;
-  z-index: 0;
-}
-
-.login-card {
-  position: relative;
-  z-index: 1;
-  animation: fade-in-up var(--animations-defaults-duration-ms) ease-out;
-}
-
-@keyframes fade-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.login-card .form-control:focus {
-  box-shadow: 0 0 0 0.25rem rgba(var(--color-primary-rgb), 0.25); /* Bootstrap primary color glow */
-  border-color: var(--color-primary);
-}
-
-/* Responsive styles for login card */
-@media (max-width: 640px) {
-  .login-card {
-    width: calc(100% - 32px); /* 16px padding on each side */
-    margin: 16px;
-  }
-}
-
-@media (min-width: 641px) and (max-width: 1024px) {
-  .login-card {
-    width: 400px;
-  }
-}
-
-@media (min-width: 1025px) {
-  .login-card {
-    width: 480px;
-  }
-}
-
-.dashboard-card {
-  transition: transform var(--animations-defaults-duration-ms) ease-in-out, box-shadow var(--animations-defaults-duration-ms) ease-in-out;
-}
-
-.dashboard-card:hover {
-  transform: scale(var(--animations-hover-scale)) translateY(-5px);
-  box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175) !important; /* shadow-lg equivalent */
-}
-
-/* AI Panel Responsive Styles */
-/* Tablet - Bottom Drawer */
-@media (min-width: 641px) and (max-width: 1024px) {
-  .ai-panel-bottom-drawer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 0; /* Collapsed by default */
-    overflow: hidden;
-    transition: height var(--animations-defaults-duration-ms) ease-in-out;
-    background-color: var(--color-surface); /* Use design token surface color */
-    z-index: 1040; /* Below modal, above navbar */
-    border-top: 1px solid var(--color-border);
-  }
-
-  .ai-panel-bottom-drawer.show {
-    height: 50vh; /* Example height when open */
-  }
-}
-
-/* Confetti Animation */
-.confetti-container {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  pointer-events: none;
-  z-index: 9999;
-}
-
-.confetti {
-  position: absolute;
-  width: 10px;
-  height: 10px;
-  background-color: #f00; /* Default color, overridden by inline style */
-  animation: confetti-fall 3s ease-out forwards;
-  opacity: 0;
-}
-
-@keyframes confetti-fall {
-  0% {
-    transform: translateY(-100px) rotateZ(0deg);
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(100vh) rotateZ(720deg);
-    opacity: 0;
-  }
-}
-
-/* Reduced Motion */
-.reduced-motion * {
+/* Reduced motion adjustments */
+.main-layout.reduced-motion * {
   transition: none !important;
   animation: none !important;
 }
-
-.card-body.dark {
-  background-color: #212529;
-  color: #fff;
-}
-
-.card-body.high-contrast {
-  background-color: #000;
-  color: #0f0;
-}
-
-.ai-highlight {
-  background-color: yellow;
-  padding: 1px 3px;
-  border-radius: 3px;
-  font-weight: bold;
-}
-
