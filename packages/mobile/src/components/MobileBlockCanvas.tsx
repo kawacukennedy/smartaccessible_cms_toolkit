@@ -10,6 +10,36 @@ interface MobileBlockCanvasProps {
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Image } from 'react-native';
 import { useOnboarding } from '@/contexts/OnboardingContext';
+import { AISuggestion } from '@/types/ai-suggestion'; // Import AISuggestion type
+
+const highlightContent = (content: string, aiSuggestions: AISuggestion[]) => {
+  let highlightedContent: (string | JSX.Element)[] = [content];
+
+  aiSuggestions.forEach(suggestion => {
+    const newHighlightedContent: (string | JSX.Element)[] = [];
+    highlightedContent.forEach(segment => {
+      if (typeof segment === 'string') {
+        const parts = segment.split(new RegExp(`(${suggestion.message})`, 'gi'));
+        parts.forEach((part, index) => {
+          if (part.toLowerCase() === suggestion.message.toLowerCase()) {
+            newHighlightedContent.push(
+              <Text key={`${suggestion.id}-${index}`} style={styles.aiHighlight} accessibilityLabel={suggestion.recommendation}>
+                {part}
+              </Text>
+            );
+          } else {
+            newHighlightedContent.push(part);
+          }
+        });
+      } else {
+        newHighlightedContent.push(segment);
+      }
+    });
+    highlightedContent = newHighlightedContent;
+  });
+
+  return highlightedContent;
+};
 
 interface Block {
   id: string;
@@ -22,9 +52,11 @@ interface MobileBlockCanvasProps {
   content: string;
   onContentChange: (newContent: string) => void;
   panHandlers?: any; // Add panHandlers prop
+  aiSuggestions: AISuggestion[]; // New prop for AI suggestions
+  onScroll?: (percentage: number) => void; // New prop for scroll synchronization
 }
 
-const MobileBlockCanvas: React.FC<MobileBlockCanvasProps> = ({ content, onContentChange }) => {
+const MobileBlockCanvas: React.FC<MobileBlockCanvasProps> = ({ content, onContentChange, panHandlers, aiSuggestions, onScroll }) => {
   const { completeStep } = useOnboarding();
   const [blocks, setBlocks] = useState<Block[]>(() => {
     try {
@@ -35,6 +67,14 @@ const MobileBlockCanvas: React.FC<MobileBlockCanvasProps> = ({ content, onConten
   });
   const [editingBlockId, setEditingBlockId] = useState<string | null>(null);
   const [editedContent, setEditedContent] = useState<string>('');
+
+  const handleScroll = (event: any) => {
+    if (onScroll) {
+      const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+      const percentage = contentOffset.y / (contentSize.height - layoutMeasurement.height);
+      onScroll(percentage);
+    }
+  };
 
   const handleSaveEdit = () => {
     if (editingBlockId) {
@@ -66,7 +106,7 @@ const MobileBlockCanvas: React.FC<MobileBlockCanvasProps> = ({ content, onConten
 
     switch (block.type) {
       case 'header':
-        return <Text style={styles.headerText}>{block.content}</Text>;
+        return <Text style={styles.headerText}>{highlightContent(block.content, aiSuggestions)}</Text>;
       case 'image':
         return (
           <View>
@@ -75,13 +115,13 @@ const MobileBlockCanvas: React.FC<MobileBlockCanvasProps> = ({ content, onConten
           </View>
         );
       default:
-        return <Text style={styles.contentText}>{block.content}</Text>;
+        return <Text style={styles.contentText}>{highlightContent(block.content, aiSuggestions)}</Text>;
     }
   };
 
   return (
     <View style={styles.container} {...panHandlers}>
-      <ScrollView style={styles.scrollView}>
+      <ScrollView style={styles.scrollView} onScroll={handleScroll} scrollEventThrottle={16}>
         {blocks.map(block => (
           <TouchableOpacity key={block.id} onPress={() => {
             setEditingBlockId(block.id);
@@ -152,6 +192,10 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     padding: 10,
     textAlignVertical: 'top',
+  },
+  aiHighlight: {
+    backgroundColor: 'yellow',
+    fontWeight: 'bold',
   },
 });
 

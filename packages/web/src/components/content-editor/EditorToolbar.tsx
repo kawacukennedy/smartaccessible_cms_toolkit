@@ -16,7 +16,7 @@ interface EditorToolbarProps {
 }
 
 const EditorToolbar: React.FC<EditorToolbarProps> = ({ onSave, onAISuggestion, onPreview, onPublish, isPreviewMode, onToggleAccessibilityPanel, onToggleMediaLibrary, onToggleVersionHistory }) => {
-  const { undo, redo, canUndo, canRedo, feedbackMessage } = useUndoRedo(); // Get feedbackMessage
+  const { undo, redo, canUndo, canRedo } = useUndoRedo(); // Get feedbackMessage
   const { addNotification } = useNotifications();
   const [hasValidationErrors, setHasValidationErrors] = useState(false); // Placeholder for validation errors
   const [autosaveStatus, setAutosaveStatus] = useState<'idle' | 'saving' | 'saved' | 'failed'>('idle'); // Autosave status
@@ -77,11 +77,6 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({ onSave, onAISuggestion, o
         <button className="btn btn-outline-secondary" onClick={redo} disabled={!canRedo} aria-label="Redo last action">
           Redo
         </button>
-        {feedbackMessage && (
-          <div role="status" aria-live="polite" className="ms-3 text-info">
-            {feedbackMessage}
-          </div>
-        )}
       </div>
       <div className="d-flex align-items-center">
         {autosaveStatus !== 'idle' && (

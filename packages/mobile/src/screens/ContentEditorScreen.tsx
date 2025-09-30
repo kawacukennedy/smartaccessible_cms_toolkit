@@ -6,6 +6,10 @@ import { useUndoRedo } from '@/contexts/UndoRedoContext';
 import { useNotifications } from '@/contexts/NotificationContext';
 import { useOnboarding } from '@/contexts/OnboardingContext';
 import MobileAISuggestionsPanel from '../components/MobileAISuggestionsPanel';
+import MobileLivePreviewPanel from '../components/MobileLivePreviewPanel'; // Import MobileLivePreviewPanel
+import ConflictResolutionModal from '../components/ConflictResolutionModal'; // Import ConflictResolutionModal
+import AIErrorModal from '../components/AIErrorModal'; // Import AIErrorModal
+import { trackEvent } from '../lib/telemetry'; // Import trackEvent
 
 import MobileMediaLibrary from '../components/MobileMediaLibrary';
 
@@ -17,7 +21,29 @@ const ContentEditorScreen = () => {
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [isMediaLibraryOpen, setIsMediaLibraryOpen] = useState(false);
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
+  const [isConflictModalOpen, setIsConflictModalOpen] = useState(false); // New state for conflict modal
+  const [isAIErrorModalOpen, setIsAIErrorModalOpen] = useState(false); // New state for AI error modal
   const [isSaving, setIsSaving] = useState(false);
+  const [scrollPercentage, setScrollPercentage] = useState(0);
+  const activeScroller = useRef<'editor' | 'preview' | null>(null);
+  const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  const handleScroll = (source: 'editor' | 'preview', percentage: number) => {
+    if (activeScroller.current && activeScroller.current !== source) {
+      return;
+    }
+
+    activeScroller.current = source;
+    setScrollPercentage(percentage);
+
+    if (scrollTimeout.current) {
+      clearTimeout(scrollTimeout.current);
+    }
+
+    scrollTimeout.current = setTimeout(() => {
+      activeScroller.current = null;
+    }, 150);
+  };
 
   const handleSave = () => {
     setIsSaving(true);
@@ -34,11 +60,10 @@ const ContentEditorScreen = () => {
         style: 'success',
         message: 'Content saved successfully!',
       });
-    }, 1000);
-  };
-
+      trackEvent('content_save', { type: 'manual' });
   const handleContentChange = (newContent: string) => {
     addChange(newContent);
+    trackEvent('content_save', { type: 'autosave' });
   };
 
   const toggleAIPanel = () => {
@@ -58,6 +83,7 @@ const ContentEditorScreen = () => {
       style: 'info',
       message: isPreviewMode ? 'Exiting Preview' : 'Entering Preview',
     });
+    trackEvent('preview', { mode: isPreviewMode ? 'exit' : 'enter' });
   };
 
   const toggleMediaLibrary = () => {
@@ -77,12 +103,14 @@ const ContentEditorScreen = () => {
     const updatedBlocks = [...currentBlocks, newBlock];
     addChange(JSON.stringify(updatedBlocks));
     toggleMediaLibrary();
+    trackEvent('media_upload', { type: 'select_image', imageUri: imageUri });
   };
 
   const handleApplySuggestion = (suggestion: { id: string; message: string; confidence: 'high' | 'medium' | 'low' }) => {
     const newContent = currentContent + '\n\n' + `[AI Suggestion Applied: ${suggestion.message}]`;
     addChange(newContent);
     completeStep('Use an AI suggestion');
+    trackEvent('ai_applied', { suggestionType: suggestion.id, confidence: suggestion.confidence });
   };
 
   const handleDismissSuggestion = (suggestion: { id: string; message: string; confidence: 'high' | 'medium' | 'low' }) => {
@@ -145,28 +173,72 @@ const ContentEditorScreen = () => {
           style: 'success',
           message: 'Content published successfully!' });
         completeStep('Publish your first piece');
+        trackEvent('publish', { status: 'success' });
       } else {
         // Simulate conflict handling
         const { conflict } = { conflict: Math.random() > 0.5 }; // 50% chance of conflict
         if (conflict) {
+          setIsConflictModalOpen(true); // Open conflict resolution modal
           addNotification({
             displayType: 'toast',
             style: 'warning',
-            message: 'Publish conflict detected. Please review and try again.',
+            message: 'Publish conflict detected. Please resolve.',
           });
+          trackEvent('publish', { status: 'failed', reason: 'conflict' });
         } else {
           addNotification({
             displayType: 'toast',
             style: 'error',
             message: 'Publish failed. Retry?',
           });
+          trackEvent('publish', { status: 'failed', reason: 'unknown' });
         }
       }
       setIsPublishModalOpen(false);
     }, 2000);
   };
 
+  const handleConflictResolution = (resolution: 'keep_mine' | 'keep_server' | 'merge', mergedContent?: string) => {
+    setIsConflictModalOpen(false);
+    if (resolution === 'keep_mine') {
+      addNotification({ displayType: 'toast', style: 'info', message: 'Keeping your version.' });
+      // Re-attempt publish with current content
+      handleConfirmPublish();
+    } else if (resolution === 'keep_server') {
+      addNotification({ displayType: 'toast', style: 'info', message: 'Keeping server version.' });
+      // In a real app, you would fetch the server content and update currentContent
+      // For simulation, we'll just consider it resolved and re-attempt publish
+      handleConfirmPublish();
+    } else if (resolution === 'merge' && mergedContent) {
+      addNotification({ displayType: 'toast', style: 'info', message: 'Merging content.' });
+      addChange(mergedContent); // Apply merged content to editor
+      handleConfirmPublish(); // Re-attempt publish with merged content
+    }
+  };
+
+  const handleAISuggestionRequest = () => {
+    addNotification({ displayType: 'toast', style: 'info', message: 'AI scan requested. Processing...' });
+    // Simulate AI scan process
+    setTimeout(() => {
+      const success = Math.random() > 0.1; // 90% success rate
+      if (success) {
+        // Mock AI suggestions
+        // For now, we'll just add a success notification
+        addNotification({ displayType: 'toast', style: 'success', message: 'AI scan complete. Suggestions ready.' });
+      } else {
+        setIsAIErrorModalOpen(true); // Show AI error modal
+        addNotification({ displayType: 'toast', style: 'error', message: 'AI scan failed.' });
+      }
+    }, 1500);
+  };
+
+  const handleRetryAIScan = () => {
+    setIsAIErrorModalOpen(false);
+    handleAISuggestionRequest(); // Re-trigger the AI scan
+  };
+
   const runValidationChecks = (): string[] => {
+    trackEvent('validation', { type: 'pre_publish' });
     const issues: string[] = [];
     const blocks = JSON.parse(currentContent);
 
@@ -198,11 +270,55 @@ const ContentEditorScreen = () => {
         canRedo={canRedo}
         isPreviewMode={isPreviewMode}
         isSaving={isSaving}
+        testID="mobile-editor-toolbar"
+        saveAccessibilityLabel="Save content"
+        saveAccessibilityHint="Saves the current content draft"
+        undoAccessibilityLabel="Undo last action"
+        undoAccessibilityHint="Reverts the last change made to the content"
+        redoAccessibilityLabel="Redo last action"
+        redoAccessibilityHint="Re-applies the last undone change to the content"
+        aiPanelAccessibilityLabel="Toggle AI Panel"
+        aiPanelAccessibilityHint="Opens or closes the AI suggestions panel"
+        previewAccessibilityLabel={isPreviewMode ? "Exit preview mode" : "Enter preview mode"}
+        previewAccessibilityHint={isPreviewMode ? "Switch back to content editor" : "View live preview of content"}
+        mediaLibraryAccessibilityLabel="Open Media Library"
+        mediaLibraryAccessibilityHint="Access and manage your media assets"
+        publishAccessibilityLabel="Publish content"
+        publishAccessibilityHint="Publishes the current content to make it live"
       />
       <MobileBlockCanvas
         content={JSON.stringify(currentContent)}
         onContentChange={handleContentChange}
         panHandlers={panResponder.panHandlers}
+        aiSuggestions={suggestions}
+        onScroll={(p) => handleScroll('editor', p)}
+        testID="mobile-block-canvas"
+        accessibilityLabel="Content editor canvas"
+        accessibilityHint="Double tap to edit a block, swipe left or right to undo or redo changes."
+      />
+      {/* PanResponder definition for swipe gestures */}
+      {(() => {
+        const panResponder = useRef(
+          PanResponder.create({
+            onStartShouldSetPanResponder: () => true,
+            onPanResponderRelease: (evt, gestureState) => {
+              const swipeThreshold = 50; // Minimum horizontal swipe distance to trigger undo/redo
+              if (gestureState.dx > swipeThreshold) {
+                // Swiped right, perform redo
+                redo();
+                addNotification({ displayType: 'toast', style: 'info', message: 'Redo action performed.' });
+                trackEvent('redo');
+              } else if (gestureState.dx < -swipeThreshold) {
+                // Swiped left, perform undo
+                undo();
+                addNotification({ displayType: 'toast', style: 'info', message: 'Undo action performed.' });
+                trackEvent('undo');
+              }
+            },
+          })
+        ).current;
+        return null; // PanResponder is attached to MobileBlockCanvas, no direct UI needed here
+      })()}
       />
       {isAIPanelOpen && (
         <MobileAISuggestionsPanel
@@ -210,23 +326,37 @@ const ContentEditorScreen = () => {
           onDismissSuggestion={handleDismissSuggestion}
           onApplyAllSuggestions={handleApplyAllSuggestions}
           onRevertAllSuggestions={handleRevertAllSuggestions}
+          testID="mobile-ai-panel"
+          accessibilityLabel="AI Suggestions Panel"
+          accessibilityHint="Displays AI-generated suggestions for content improvement."
         />
       )}
       {isPreviewMode && (
-        <View style={styles.overlayPanel}>
-          <Text style={styles.overlayText}>Live Preview Content</Text>
-        </View>
+        <MobileLivePreviewPanel
+          content={currentContent}
+          onScroll={(p) => handleScroll('preview', p)}
+          scrollPercentage={scrollPercentage}
+          testID="mobile-live-preview-panel"
+          accessibilityLabel="Live Preview Panel"
+          accessibilityHint="Shows how your content will appear on different devices."
+        />
       )}
       <MobileMediaLibrary
         isVisible={isMediaLibraryOpen}
         onClose={toggleMediaLibrary}
         onSelectImage={handleSelectImage}
+        testID="mobile-media-library"
+        accessibilityLabel="Media Library"
+        accessibilityHint="Access and manage your images and other media assets."
       />
       <Modal
         animationType="slide"
         transparent={true}
         visible={isPublishModalOpen}
         onRequestClose={() => setIsPublishModalOpen(false)}
+        testID="mobile-publish-confirmation-modal"
+        accessibilityLabel="Publish Confirmation Dialog"
+        accessibilityHint="Confirms if you want to publish your content."
       >
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
@@ -248,6 +378,14 @@ const ContentEditorScreen = () => {
           </View>
         </View>
       </Modal>
+
+      <AIErrorModal
+        isVisible={isAIErrorModalOpen}
+        onClose={() => setIsAIErrorModalOpen(false)}
+        onRetry={handleRetryAIScan}
+        accessibilityLabel="AI Error Dialog"
+        accessibilityHint="An error occurred with the AI service. You can retry or dismiss."
+      />
     </View>
   );
 };

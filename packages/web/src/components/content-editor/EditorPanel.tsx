@@ -8,34 +8,13 @@ import BlockContextMenu from './BlockContextMenu';
 import { generateMockAISuggestions } from '@/lib/ai-suggestions';
 import { useAISuggestions } from '@/contexts/AISuggestionContext';
 import { useUndoRedo } from '@/contexts/UndoRedoContext';
+import { AISuggestion } from '@/types/ai-suggestion';
 
 const highlightContent = (content: string, aiSuggestions: AISuggestion[]) => {
-  let highlightedContent: (string | JSX.Element)[] = [content];
-
-  aiSuggestions.forEach(suggestion => {
-    const newHighlightedContent: (string | JSX.Element)[] = [];
-    highlightedContent.forEach(segment => {
-      if (typeof segment === 'string') {
-        const parts = segment.split(new RegExp(`(${suggestion.message})`, 'gi'));
-        parts.forEach((part, index) => {
-          if (part.toLowerCase() === suggestion.message.toLowerCase()) {
-            newHighlightedContent.push(
-              <span key={`${suggestion.id}-${index}`} className="ai-highlight" title={suggestion.recommendation}>
-                {part}
-              </span>
-            );
-          } else {
-            newHighlightedContent.push(part);
-          }
-        });
-      } else {
-        newHighlightedContent.push(segment);
-      }
-    });
-    highlightedContent = newHighlightedContent;
-  });
-
-  return highlightedContent;
+  // Placeholder for actual highlighting logic
+  // In a real implementation, this would parse the content and apply highlights
+  // based on the AI suggestions (e.g., wrapping text in <span> with specific classes).
+  return content; // For now, just return the content as is
 };
 
 interface Block {
@@ -54,7 +33,7 @@ interface EditorPanelProps {
 }
 
 const EditorPanel: React.FC<EditorPanelProps> = ({ content, onContentChange, onScroll }) => {
-  const { addSuggestion } = useAISuggestions();
+  const { addSuggestion, suggestions: aiSuggestions } = useAISuggestions();
   const { addChange } = useUndoRedo();
 
   const [blocks, setBlocks] = useState<Block[]>([
@@ -282,7 +261,6 @@ const EditorPanel: React.FC<EditorPanelProps> = ({ content, onContentChange, onS
             </div>
           )}
         </div>
-        <MediaUploader />
         <AI_Toolbar onGenerateSuggestions={handleGenerateSuggestions} />
         <SEOPanel />
       </div>

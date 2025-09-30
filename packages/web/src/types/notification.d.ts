@@ -1,7 +1,7 @@
 export interface Notification {
   id: string;
   displayType: 'toast' | 'modal' | 'snackbar' | 'push' | 'email'; // New property to define how it's displayed
-  style: 'info' | 'warning' | 'error' | 'success' | 'ai_suggestion'; // Renamed from 'type' to 'style'
+  style: 'info' | 'warning' | 'error' | 'success' | 'ai_suggestion' | 'AI'; // Renamed from 'type' to 'style'
   message: string;
   read: boolean;
   timestamp: string;

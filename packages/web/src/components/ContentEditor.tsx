@@ -29,7 +29,7 @@ const ContentEditor: React.FC = () => {
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
   const [validationIssues, setValidationIssues] = useState<string[]>([]);
   const [aiScanStatus, setAiScanStatus] = useState<'idle' | 'queued' | 'running' | 'done' | 'failed'>('idle');
-  const { setSuggestions } = useAISuggestions();
+  const { setSuggestions, applySuggestion, suggestions } = useAISuggestions();
   const [scrollPercentage, setScrollPercentage] = useState(0);
   const activeScroller = useRef<'editor' | 'preview' | null>(null);
   const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -50,7 +50,7 @@ const ContentEditor: React.FC = () => {
             { id: '3', type: 'content', message: 'Break long paragraphs into shorter ones.', recommendation: 'Use shorter paragraphs for readability.', confidence: 90 },
             { id: '4', type: 'style', message: 'Check for passive voice.', recommendation: 'Rewrite sentences in active voice.', confidence: 40 },
           ]);
-          addNotification({ displayType: 'toast', style: 'AI', message: 'AI scan complete. Suggestions ready.' });
+          addNotification({ displayType: 'toast', style: 'ai_suggestion', message: 'AI scan complete. Suggestions ready.' });
         } else {
           setAiScanStatus('failed');
           addNotification({ displayType: 'toast', style: 'error', message: 'AI scan failed. Retry?' });

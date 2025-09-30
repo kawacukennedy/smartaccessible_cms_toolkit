@@ -77,7 +77,7 @@ const LivePreviewPanel: React.FC<LivePreviewPanelProps> = ({ content, scrollPerc
           <div className="btn-group me-2" role="group" aria-label="Theme Simulation">
             <button type="button" className={`btn btn-sm btn-outline-secondary ${theme === 'light' ? 'active' : ''}`} onClick={() => setTheme('light')}>Light</button>
             <button type="button" className={`btn btn-sm btn-outline-secondary ${theme === 'dark' ? 'active' : ''}`} onClick={() => setTheme('dark')}>Dark</button>
-            <button type="button" className={`btn btn-sm btn-outline-secondary ${theme === 'high-contrast' ? 'active' : ''}`} onClick={() => setTheme('high-contrast')}>High Contrast</button>
+            <button type="button" className={`btn btn-sm btn-outline-secondary ${theme === 'high_contrast' ? 'active' : ''}`} onClick={() => setTheme('high_contrast')}>High Contrast</button>
             <button type="button" className={`btn btn-sm btn-outline-secondary ${theme === 'sepia' ? 'active' : ''}`} onClick={() => setTheme('sepia')}>Sepia</button>
             <button type="button" className={`btn btn-sm btn-outline-secondary ${theme === 'solarized' ? 'active' : ''}`} onClick={() => setTheme('solarized')}>Solarized</button>
           </div>

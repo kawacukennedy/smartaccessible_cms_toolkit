@@ -3,14 +3,19 @@
 import React, { createContext, useState, useContext, useCallback, useMemo, useRef, useEffect } from 'react';
 import { useNotifications } from './NotificationContext';
 
+interface UndoRedoAction {
+  state: string;
+  metadata?: any;
+}
+
 interface UndoRedoContextType {
   canUndo: boolean;
   canRedo: boolean;
   undo: () => void;
   redo: () => void;
-  addChange: (newState: string) => void;
+  addChange: (newState: string, metadata?: any) => void;
   currentContent: string;
-  history: string[]; // Expose history for versioning
+  history: UndoRedoAction[]; // Expose history for versioning
   currentIndex: number; // Expose current index
   goToState: (index: number) => void; // Function to jump to a specific state
 }
@@ -18,7 +23,7 @@ interface UndoRedoContextType {
 const UndoRedoContext = createContext<UndoRedoContextType | undefined>(undefined);
 
 export const UndoRedoProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const history = useRef<string[]>([]);
+  const history = useRef<UndoRedoAction[]>([]);
   const [currentIndex, setCurrentIndex] = useState(-1);
   const [currentContent, setCurrentContent] = useState('');
   const { addNotification } = useNotifications();
@@ -26,15 +31,15 @@ export const UndoRedoProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   // Update currentContent when currentIndex or history changes
   useEffect(() => {
     if (currentIndex >= 0 && history.current[currentIndex] !== undefined) {
-      setCurrentContent(history.current[currentIndex]);
+      setCurrentContent(history.current[currentIndex].state);
     } else {
       setCurrentContent(''); // Or initial content if applicable
     }
   }, [currentIndex, history]);
 
-  const addChange = useCallback((newState: string) => {
+  const addChange = useCallback((newState: string, metadata?: any) => {
     // Only add if the new state is different from the current state
-    if (newState === history.current[currentIndex]) {
+    if (newState === history.current[currentIndex]?.state) {
       return;
     }
 
@@ -42,7 +47,7 @@ export const UndoRedoProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     if (currentIndex < history.current.length - 1) {
       history.current = history.current.slice(0, currentIndex + 1);
     }
-    history.current.push(newState);
+    history.current.push({ state: newState, metadata });
     setCurrentIndex(history.current.length - 1);
   }, [currentIndex]);
 

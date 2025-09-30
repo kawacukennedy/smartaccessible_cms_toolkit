@@ -13,6 +13,21 @@ interface MobileEditorToolbarProps {
   canRedo: boolean;
   isPreviewMode: boolean;
   isSaving: boolean; // New prop for autosave spinner
+  // Accessibility props
+  saveAccessibilityLabel?: string;
+  saveAccessibilityHint?: string;
+  undoAccessibilityLabel?: string;
+  undoAccessibilityHint?: string;
+  redoAccessibilityLabel?: string;
+  redoAccessibilityHint?: string;
+  aiPanelAccessibilityLabel?: string;
+  aiPanelAccessibilityHint?: string;
+  previewAccessibilityLabel?: string;
+  previewAccessibilityHint?: string;
+  mediaLibraryAccessibilityLabel?: string;
+  mediaLibraryAccessibilityHint?: string;
+  publishAccessibilityLabel?: string;
+  publishAccessibilityHint?: string;
 }
 
 const MobileEditorToolbar: React.FC<MobileEditorToolbarProps> = ({
@@ -27,6 +42,20 @@ const MobileEditorToolbar: React.FC<MobileEditorToolbarProps> = ({
   canRedo,
   isPreviewMode,
   isSaving,
+  saveAccessibilityLabel,
+  saveAccessibilityHint,
+  undoAccessibilityLabel,
+  undoAccessibilityHint,
+  redoAccessibilityLabel,
+  redoAccessibilityHint,
+  aiPanelAccessibilityLabel,
+  aiPanelAccessibilityHint,
+  previewAccessibilityLabel,
+  previewAccessibilityHint,
+  mediaLibraryAccessibilityLabel,
+  mediaLibraryAccessibilityHint,
+  publishAccessibilityLabel,
+  publishAccessibilityHint,
 }) => {
   const [scaleValue] = useState(new Animated.Value(1));
 
@@ -37,16 +66,20 @@ const MobileEditorToolbar: React.FC<MobileEditorToolbarProps> = ({
     ]).start();
   };
 
-  const ToolbarButton: React.FC<{ onPress: () => void; disabled?: boolean; children: React.ReactNode }> = ({
+  const ToolbarButton: React.FC<{ onPress: () => void; disabled?: boolean; children: React.ReactNode; accessibilityLabel?: string; accessibilityHint?: string }> = ({
     onPress,
     disabled,
     children,
+    accessibilityLabel,
+    accessibilityHint,
   }) => (
     <TouchableOpacity
       onPressIn={animateButton}
       onPress={onPress}
       disabled={disabled}
       style={styles.toolbarButton}
+      accessibilityLabel={accessibilityLabel}
+      accessibilityHint={accessibilityHint}
     >
       <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
         {children}
@@ -57,28 +90,28 @@ const MobileEditorToolbar: React.FC<MobileEditorToolbarProps> = ({
   return (
     <View style={styles.toolbarContainer}>
       <View style={styles.leftControls}>
-        <ToolbarButton onPress={onUndo} disabled={!canUndo}>
+        <ToolbarButton onPress={onUndo} disabled={!canUndo} accessibilityLabel={undoAccessibilityLabel} accessibilityHint={undoAccessibilityHint}>
           <Text style={styles.buttonText}>Undo</Text>
         </ToolbarButton>
-        <ToolbarButton onPress={onRedo} disabled={!canRedo}>
+        <ToolbarButton onPress={onRedo} disabled={!canRedo} accessibilityLabel={redoAccessibilityLabel} accessibilityHint={redoAccessibilityHint}>
           <Text style={styles.buttonText}>Redo</Text>
         </ToolbarButton>
       </View>
       <View style={styles.rightControls}>
-        {isSaving && <ActivityIndicator size="small" color="#0000ff" style={styles.spinner} />}
-        <ToolbarButton onPress={onSave}>
+        {isSaving && <ActivityIndicator size="small" color="#0000ff" style={styles.spinner} accessibilityLabel="Saving content indicator" />}
+        <ToolbarButton onPress={onSave} accessibilityLabel={saveAccessibilityLabel} accessibilityHint={saveAccessibilityHint}>
           <Text style={styles.buttonText}>Save</Text>
         </ToolbarButton>
-        <ToolbarButton onPress={onToggleAIPanel}>
+        <ToolbarButton onPress={onToggleAIPanel} accessibilityLabel={aiPanelAccessibilityLabel} accessibilityHint={aiPanelAccessibilityHint}>
           <Text style={styles.buttonText}>AI</Text>
         </ToolbarButton>
-        <ToolbarButton onPress={onTogglePreview}>
+        <ToolbarButton onPress={onTogglePreview} accessibilityLabel={previewAccessibilityLabel} accessibilityHint={previewAccessibilityHint}>
           <Text style={styles.buttonText}>{isPreviewMode ? 'Editor' : 'Preview'}</Text>
         </ToolbarButton>
-        <ToolbarButton onPress={onToggleMediaLibrary}>
+        <ToolbarButton onPress={onToggleMediaLibrary} accessibilityLabel={mediaLibraryAccessibilityLabel} mediaLibraryAccessibilityHint={mediaLibraryAccessibilityHint}>
           <Text style={styles.buttonText}>Media</Text>
         </ToolbarButton>
-        <ToolbarButton onPress={onPublish}>
+        <ToolbarButton onPress={onPublish} accessibilityLabel={publishAccessibilityLabel} accessibilityHint={publishAccessibilityHint}>
           <Text style={styles.buttonText}>Publish</Text>
         </ToolbarButton>
       </View>

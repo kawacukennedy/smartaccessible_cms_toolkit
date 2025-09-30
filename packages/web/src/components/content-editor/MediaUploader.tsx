@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { useNotifications } from '@/contexts/NotificationContext';
 import { trackEvent } from '@/lib/telemetry';
 
-interface MediaUploaderProps {
+export interface MediaUploaderProps {
   onUploadComplete: (file: { id: string; name: string; altText?: string; }) => void;
 }
 
@@ -56,7 +56,7 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({ onUploadComplete }) => {
       const success = Math.random() > 0.2;
       setFiles(prev => prev.map(f => {
         if (f.id === uploadableFile.id) {
-          const updatedFile = { ...f, progress: 100, status: success ? 'success' : 'failed' };
+          const updatedFile = { ...f, progress: 100, status: (success ? 'success' : 'failed') as UploadableFile['status'] };
           if (success) {
             onUploadComplete({ id: updatedFile.id, name: updatedFile.file.name, altText: updatedFile.altText });
           }

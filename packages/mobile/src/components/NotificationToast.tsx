@@ -37,7 +37,11 @@ const NotificationToast: React.FC<{ notification: Notification; onClose: () => v
   const getIconName = (style: Notification['style']) => {
     switch (style) {
       case 'info': return 'information-circle';
-      case 'success': return 'checkmark-circle';
+      case 'ai_suggestion':
+        backgroundColor = '#E0F7FA'; // Light blue for AI suggestions
+        iconName = 'auto-awesome';
+        iconColor = '#00BCD4';
+        break;
       case 'warning': return 'warning';
       case 'error': return 'close-circle';
       case 'AI': return 'sparkles';

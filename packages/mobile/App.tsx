@@ -9,6 +9,8 @@ import { NotificationProvider, useNotifications } from './src/contexts/Notificat
 import { AISuggestionProvider } from './src/contexts/AISuggestionContext';
 import { UndoRedoProvider } from './src/contexts/UndoRedoContext';
 import { AccessibilityProvider } from './src/contexts/AccessibilityContext';
+import TelemetryConsentModal from './src/components/TelemetryConsentModal'; // Import TelemetryConsentModal
+import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
 
 import MobileNotificationRenderer from './src/components/MobileNotificationRenderer';
 
@@ -173,6 +175,37 @@ function AppContent() {
 }
 
 export default function App() {
+  const [telemetryConsent, setTelemetryConsent] = useState<boolean | null>(null);
+  const [showConsentModal, setShowConsentModal] = useState(false);
+
+  useEffect(() => {
+    const loadConsent = async () => {
+      try {
+        const consent = await AsyncStorage.getItem('telemetryConsent');
+        if (consent !== null) {
+          setTelemetryConsent(JSON.parse(consent));
+        } else {
+          setShowConsentModal(true);
+        }
+      } catch (e) {
+        console.error('Failed to load telemetry consent', e);
+        setShowConsentModal(true);
+      }
+    };
+    loadConsent();
+  }, []);
+
+  const handleConsent = async (consent: boolean) => {
+    try {
+      await AsyncStorage.setItem('telemetryConsent', JSON.stringify(consent));
+      setTelemetryConsent(consent);
+      setTelemetryEnabled(consent); // Update telemetry.ts
+      setShowConsentModal(false);
+    } catch (e) {
+      console.error('Failed to save telemetry consent', e);
+    }
+  };
+
   return (
     <NotificationProvider>
       <ThemeProvider>
@@ -182,6 +215,11 @@ export default function App() {
               <AccessibilityProvider>
                 <AppContent />
                 <MobileNotificationRenderer />
+                <TelemetryConsentModal
+                  isVisible={showConsentModal}
+                  onAccept={() => handleConsent(true)}
+                  onDecline={() => handleConsent(false)}
+                />
               </AccessibilityProvider>
             </UndoRedoProvider>
           </OnboardingProvider>
