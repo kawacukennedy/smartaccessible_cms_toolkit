@@ -1,5 +1,7 @@
+'use client';
+
 import React, { createContext, useState, useContext, ReactNode, useCallback } from 'react';
-import { AISuggestestion } from '@/types/ai-suggestion';
+import { AISuggestion } from '@/types/ai-suggestion';
 import { useUndoRedo } from './UndoRedoContext';
 
 interface AISuggestionContextType {
@@ -44,9 +46,18 @@ export const AISuggestionProvider: React.FC<{ children: ReactNode }> = ({ childr
   return (
     <AISuggestionContext.Provider
       value={{
+        suggestions,
+        addSuggestion,
+        applySuggestion,
+        rejectSuggestion,
+        clearSuggestions,
+        setSuggestions,
+      }}
+    >
       {children}
     </AISuggestionContext.Provider>
   );
+
 };
 
 export const useAISuggestions = () => {

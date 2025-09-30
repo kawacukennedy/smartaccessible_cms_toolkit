@@ -13,6 +13,7 @@ import VersionHistoryPanel from './VersionHistoryPanel'; // Import VersionHistor
 import { useUndoRedo } from '@/contexts/UndoRedoContext';
 import { AISuggestion } from '@/types/ai-suggestion';
 import { useNotifications } from '@/contexts/NotificationContext'; // Import useNotifications
+import { useAISuggestions } from '@/contexts/AISuggestionContext';
 import { useOnboarding } from '@/contexts/OnboardingContext'; // Import useOnboarding
 import { trackEvent } from '@/lib/telemetry';
 
@@ -302,12 +303,12 @@ const ContentEditor: React.FC = () => {
             <BlockListPanel onBlockSelect={handleBlockSelect} />
           </div>
           <div className="col-md-6 h-100">
-            <EditorPanel content={currentContent} onContentChange={debouncedAddChange} onScroll={(p) => handleScroll('editor', p)} />
+            <EditorPanel content={currentContent} onContentChange={debouncedAddChange} onScroll={(p) => handleScroll('editor', p)} aiSuggestions={suggestions} />
           </div>
           {/* AI Panel & Accessibility Dashboard - visible on desktop */}
           <div className="col-md-3 h-100 d-none d-lg-block">
             {isAIPanelOpen && (
-                <AIPanel onApplySuggestion={handleApplyAISuggestion} onAIScanRequest={handleAISuggestionRequest} />
+                <AIPanel onApplySuggestion={handleApplyAISuggestion} onAIScanRequest={handleAISuggestionRequest} contentBefore={currentContent} contentAfter={currentContent} />
             )}
             {isAccessibilityPanelOpen && (
                 <AccessibilityDashboard />

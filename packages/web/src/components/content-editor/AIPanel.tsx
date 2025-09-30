@@ -13,41 +13,27 @@ interface AIPanelProps {
   togglePanel?: () => void; // Added for responsive control
   isResponsive?: boolean; // Added to indicate responsive rendering
   onAIScanRequest?: () => void; // New prop to trigger AI scan status updates
+  aiScanStatus: 'idle' | 'queued' | 'running' | 'done' | 'failed'; // AI Scan status from ContentEditor
 }
 
-const AIPanel: React.FC<AIPanelProps> = ({ onApplySuggestion, isOpen, togglePanel, isResponsive, onAIScanRequest }) => {
+const AIPanel: React.FC<AIPanelProps> = ({ onApplySuggestion, isOpen, togglePanel, isResponsive, onAIScanRequest, aiScanStatus }) => {
   const offcanvasRef = useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
   const [variationPrompt, setVariationPrompt] = useState('');
   const [generatedVariation, setGeneratedVariation] = useState('');
-  const [aiScanStatus, setAiScanStatus] = useState<'idle' | 'queued' | 'running' | 'done' | 'failed'>('idle'); // AI Scan status
   const { currentContent } = useUndoRedo(); // Get current content from UndoRedoContext
   const { addNotification } = useNotifications(); // Use notifications for AI scan feedback
 
   const handleGenerateVariation = () => {
-    setAiScanStatus('queued');
-    addNotification({ displayType: 'toast', style: 'info', message: 'AI scan queued.' });
-    // In a real application, this would involve an API call to an AI model
+    if (onAIScanRequest) {
+      onAIScanRequest(); // Trigger AI scan in ContentEditor
+    }
     // For now, we'll just simulate a variation based on the prompt and current content
-    setTimeout(() => {
-      setAiScanStatus('running');
-      addNotification({ displayType: 'toast', style: 'info', message: 'AI scan in progress…' });
-      setTimeout(() => {
-        const success = Math.random() > 0.2; // 80% success rate
-        if (success) {
-          const simulatedVariation = `Based on your prompt: "${variationPrompt}" and current content: "${currentContent.substring(0, 50)}...", here is a generated variation.`;
-          setGeneratedVariation(simulatedVariation);
-          setAiScanStatus('done');
-          addNotification({ displayType: 'toast', style: 'success', message: 'AI scan complete.' });
-        } else {
-          setGeneratedVariation('Failed to generate variation. Please try again.');
-          setAiScanStatus('failed');
-          addNotification({ displayType: 'toast', style: 'error', message: 'AI scan failed. Retry?' });
-        }
-        setTimeout(() => setAiScanStatus('idle'), 3000); // Reset status after 3 seconds
-      }, 2000); // Simulate AI processing delay
-    }, 500); // Simulate queue delay
+    // In a real application, this would involve an API call to an AI model
+    // and the result would be passed back via a prop or context.
+    const simulatedVariation = `Based on your prompt: "${variationPrompt}" and current content: "${currentContent.substring(0, 50)}...", here is a generated variation.`;
+    setGeneratedVariation(simulatedVariation);
   };
 
   useEffect(() => {

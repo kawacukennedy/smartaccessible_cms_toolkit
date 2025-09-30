@@ -325,3 +325,11 @@
   background-color: #000;
   color: #0f0;
 }
+
+.ai-highlight {
+  background-color: yellow;
+  padding: 1px 3px;
+  border-radius: 3px;
+  font-weight: bold;
+}
+

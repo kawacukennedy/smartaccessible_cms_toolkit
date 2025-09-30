@@ -155,7 +155,7 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({ onUploadComplete }) => {
                   type="text"
                   className="form-control form-control-sm mt-2"
                   value={f.altText || ''}
-                  onChange={(e) => handleAltTextChange(f.id, e.target.value)}
+                  onChange={(e) => handleAltTextChange(e.target.value, f.id)}
                   placeholder="Generated alt text"
                 />
               )}
@@ -166,3 +166,5 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({ onUploadComplete }) => {
     </div>
   );
 };
+
+export default MediaUploader;

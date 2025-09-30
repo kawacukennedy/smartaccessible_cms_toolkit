@@ -9,6 +9,35 @@ import { generateMockAISuggestions } from '@/lib/ai-suggestions';
 import { useAISuggestions } from '@/contexts/AISuggestionContext';
 import { useUndoRedo } from '@/contexts/UndoRedoContext';
 
+const highlightContent = (content: string, aiSuggestions: AISuggestion[]) => {
+  let highlightedContent: (string | JSX.Element)[] = [content];
+
+  aiSuggestions.forEach(suggestion => {
+    const newHighlightedContent: (string | JSX.Element)[] = [];
+    highlightedContent.forEach(segment => {
+      if (typeof segment === 'string') {
+        const parts = segment.split(new RegExp(`(${suggestion.message})`, 'gi'));
+        parts.forEach((part, index) => {
+          if (part.toLowerCase() === suggestion.message.toLowerCase()) {
+            newHighlightedContent.push(
+              <span key={`${suggestion.id}-${index}`} className="ai-highlight" title={suggestion.recommendation}>
+                {part}
+              </span>
+            );
+          } else {
+            newHighlightedContent.push(part);
+          }
+        });
+      } else {
+        newHighlightedContent.push(segment);
+      }
+    });
+    highlightedContent = newHighlightedContent;
+  });
+
+  return highlightedContent;
+};
+
 interface Block {
   id: string;
   type: 'text' | 'image'; // Extend with more types as needed
@@ -21,6 +50,7 @@ interface EditorPanelProps {
   content: string; // This will now represent the joined content of all blocks
   onContentChange: (content: string) => void;
   onScroll: (percentage: number) => void;
+  aiSuggestions: AISuggestion[]; // New prop for AI suggestions
 }
 
 const EditorPanel: React.FC<EditorPanelProps> = ({ content, onContentChange, onScroll }) => {
@@ -206,10 +236,11 @@ const EditorPanel: React.FC<EditorPanelProps> = ({ content, onContentChange, onS
                 {block.type === 'text' && (
                   <div
                     contentEditable="true"
-                    dangerouslySetInnerHTML={{ __html: block.content }}
                     onBlur={(e) => handleBlockContentChange(block.id, e.currentTarget.innerHTML)}
                     className="form-control-plaintext"
-                  />
+                  >
+                    {highlightContent(block.content, aiSuggestions)}
+                  </div>
                 )}
                 {/* Inline AI Suggestions Display */}
                 {activeSuggestionsBlockId === block.id && block.suggestions && block.suggestions.length > 0 && (

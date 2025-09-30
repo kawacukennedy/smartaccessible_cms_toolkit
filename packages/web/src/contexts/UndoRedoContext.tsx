@@ -81,6 +81,13 @@ export const UndoRedoProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     [canUndo, canRedo, undo, redo, addChange, currentContent, history.current, currentIndex, goToState]
   );
 
+  return (
+    <UndoRedoContext.Provider value={value}>
+      {children}
+    </UndoRedoContext.Provider>
+  );
+};
+
 export const useUndoRedo = () => {
   const context = useContext(UndoRedoContext);
   if (context === undefined) {
