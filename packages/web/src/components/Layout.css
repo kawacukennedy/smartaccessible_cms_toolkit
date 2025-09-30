@@ -69,6 +69,10 @@ body {
   min-height: 100vh;
 }
 
+.app-header {
+  height: 64px;
+}
+
 .main-content {
   flex-grow: 1;
   padding: var(--spacing-lg); /* Use spacing variable */

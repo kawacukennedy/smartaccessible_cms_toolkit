@@ -85,37 +85,34 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, startTour }) => {
 
   return (
     <header>
-      <nav className={`navbar navbar-expand-lg sticky-top shadow-sm ${navbarClass}`}>
+      <nav className={`navbar navbar-expand-lg sticky-top shadow-sm ${navbarClass} app-header`}>
         <div className="container-fluid">
           <button className="btn btn-primary me-2" onClick={toggleSidebar} aria-controls="sidebarOffcanvas" aria-label="Toggle sidebar">
             <i className="bi bi-list"></i>
           </button>
-          <Link href="/" className="navbar-brand" aria-label="Go to dashboard">
-            SmartAccessible CMS
+          <Link href="/" className="navbar-brand" aria-label="SmartAccessible CMS Home">
+            SmartAccessible CMS Toolkit
           </Link>
           <div className="collapse navbar-collapse" id="navbarNav">
             <ul className="navbar-nav me-auto mb-2 mb-lg-0">
               {/* Primary Navigation Items */}
               <li className="nav-item">
-                <Link href="/dashboard" className="nav-link">Dashboard</Link>
+                <Link href="/dashboard" className="nav-link" aria-label="Go to Dashboard">Dashboard</Link>
               </li>
               <li className="nav-item">
-                <Link href="/content" className="nav-link">Content</Link>
+                <Link href="/content" className="nav-link" aria-label="Manage Pages">Pages</Link>
               </li>
               <li className="nav-item">
-                <Link href="/accessibility" className="nav-link">Accessibility</Link>
+                <Link href="/templates" className="nav-link" aria-label="Browse Templates">Templates</Link>
               </li>
               <li className="nav-item">
-                <Link href="/preview" className="nav-link">Preview</Link>
+                <Link href="/assets" className="nav-link" aria-label="Manage Assets">Assets</Link>
               </li>
               <li className="nav-item">
-                <Link href="/ai-assistant" className="nav-link">AI Assistant</Link>
+                <Link href="/analytics" className="nav-link" aria-label="View Analytics">Analytics</Link>
               </li>
               <li className="nav-item">
-                <Link href="/analytics" className="nav-link">Analytics</Link>
-              </li>
-              <li className="nav-item">
-                <Link href="/settings" className="nav-link">Settings</Link>
+                <Link href="/settings" className="nav-link" aria-label="Change Settings">Settings</Link>
               </li>
             </ul>
             <div className="d-flex">
@@ -127,6 +124,9 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, startTour }) => {
                   type="search"
                   placeholder="Search... (Ctrl+/)"
                   aria-label="Search"
+                  role="combobox"
+                  aria-expanded="false"
+                  aria-controls="search-results-list"
                 />
                 <button className="btn btn-outline-secondary" type="submit">
                   <i className="bi bi-search"></i>
@@ -161,14 +161,15 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, startTour }) => {
                     aria-expanded="false"
                     ref={profileDropdownRef}
                     aria-label="User menu"
+                    role="menu"
+                    aria-haspopup="true"
                   >
                     <i className="bi bi-person-circle"></i> {user?.name || 'Profile'}
                   </button>
                   <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
                     <li><Link href="/profile" className="dropdown-item">Profile</Link></li>
                     <li><Link href="/notifications" className="dropdown-item">Notifications</Link></li>
-                    <li><Link href="/help" className="dropdown-item">Help</Link></li>
-                    <li><button className="dropdown-item" onClick={startTour}>Start Tour</button></li>
+                    <li><Link href="/preferences" className="dropdown-item">Preferences</Link></li>
                     <li><hr className="dropdown-divider" /></li>
                     <li><button className="dropdown-item" onClick={logout}>Logout</button></li>
                   </ul>
