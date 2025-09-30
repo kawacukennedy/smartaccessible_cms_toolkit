@@ -31,6 +31,9 @@ const EditorToolbar = dynamic(() => import('./content-editor/EditorToolbar'), { 
 // Dynamically import EditorPanel to ensure it's treated as a client component
 const EditorPanel = dynamic(() => import('./content-editor/EditorPanel'), { ssr: false });
 
+// Dynamically import PreviewPane to ensure it's treated as a client component
+const PreviewPane = dynamic(() => import('./content-editor/PreviewPane'), { ssr: false });
+
 const ContentEditor: React.FC = () => {
   const { currentContent, addChange, undo, redo } = useUndoRedo();
   const { addNotification } = useNotifications();
@@ -76,12 +79,9 @@ const ContentEditor: React.FC = () => {
         <div className="flex-grow-1 p-3 border-end">
           <EditorPanel onContentChange={addChange} initialContent={currentContent} />
         </div>
-        {/* Placeholder for Preview Pane */}
+        {/* Preview Pane */}
         <div className="p-3" style={{ width: '30%' }}>
-          <h5>Preview</h5>
-          <div className="border p-2" style={{ minHeight: '200px' }}>
-            {currentContent}
-          </div>
+          <PreviewPane content={currentContent} />
         </div>
       </div>
     </div>
