@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useEffect, useState, useRef } from 'react';
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
 import MediaUploader from './MediaUploader';
 import AI_Toolbar from './AI_Toolbar';
 import SEOPanel from './SEOPanel';
@@ -10,11 +11,16 @@ import { useAISuggestions } from '@/contexts/AISuggestionContext';
 import { useUndoRedo } from '@/contexts/UndoRedoContext';
 import { AISuggestion } from '@/types/ai-suggestion';
 
-const highlightContent = (content: string, aiSuggestions: AISuggestion[]) => {
-  // Placeholder for actual highlighting logic
-  // In a real implementation, this would parse the content and apply highlights
-  // based on the AI suggestions (e.g., wrapping text in <span> with specific classes).
-  return content; // For now, just return the content as is
+const TiptapBlock: React.FC<{ content: string; onChange: (content: string) => void }> = ({ content, onChange }) => {
+  const editor = useEditor({
+    extensions: [StarterKit],
+    content: content,
+    onUpdate: ({ editor }) => {
+      onChange(editor.getHTML());
+    },
+  });
+
+  return <EditorContent editor={editor} />;
 };
 
 interface Block {
@@ -213,13 +219,10 @@ const EditorPanel: React.FC<EditorPanelProps> = ({ content, onContentChange, onS
                   />
                 </div>
                 {block.type === 'text' && (
-                  <div
-                    contentEditable="true"
-                    onBlur={(e) => handleBlockContentChange(block.id, e.currentTarget.innerHTML)}
-                    className="form-control-plaintext"
-                  >
-                    {highlightContent(block.content, aiSuggestions)}
-                  </div>
+                  <TiptapBlock
+                    content={block.content}
+                    onChange={(newContent) => handleBlockContentChange(block.id, newContent)}
+                  />
                 )}
                 {/* Inline AI Suggestions Display */}
                 {activeSuggestionsBlockId === block.id && block.suggestions && block.suggestions.length > 0 && (

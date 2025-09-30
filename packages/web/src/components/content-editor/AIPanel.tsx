@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import AISuggestionsPanel from './AISuggestionsPanel';
-import SEOPanel from './SEOPanel'; // Assuming SEOPanel exists and is relevant for Accessibility
+import AccessibilityDashboard from './AccessibilityDashboard';
 import { AISuggestion } from '@/types/ai-suggestion';
 import { useUndoRedo } from '@/contexts/UndoRedoContext'; // Import useUndoRedo
 import { useNotifications } from '@/contexts/NotificationContext'; // Import useNotifications

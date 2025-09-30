@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import AISuggestionsPanel from '@/components/content-editor/AISuggestionsPanel';
-import SEOPanel from '@/components/content-editor/SEOPanel';
+import AccessibilityDashboard from '@/components/content-editor/AccessibilityDashboard';
 import { AISuggestion } from '@/types/ai-suggestion';
 import { useUndoRedo } from '@/contexts/UndoRedoContext';
 
@@ -51,7 +51,7 @@ const AIAssistantPage: React.FC = () => {
                 <AISuggestionsPanel onApplySuggestion={handleApplySuggestion} />
               )}
               {activeTab === 'accessibility' && (
-                <SEOPanel /> // Reusing SEOPanel for accessibility for now
+                <AccessibilityDashboard />
               )}
               {activeTab === 'variations' && (
                 <div className="p-3">
