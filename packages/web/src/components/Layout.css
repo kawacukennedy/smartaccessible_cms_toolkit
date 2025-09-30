@@ -92,6 +92,17 @@ body {
   flex-shrink: 0; /* Prevent footer from shrinking */
 }
 
+/* AI Glow Effect */
+@keyframes glow {
+  0% { box-shadow: 0 0 5px var(--color-secondary); }
+  50% { box-shadow: 0 0 20px var(--color-secondary); }
+  100% { box-shadow: 0 0 5px var(--color-secondary); }
+}
+
+.ai-glow {
+  animation: glow 1.5s infinite alternate;
+}
+
 /* Dark theme adjustments */
 .main-layout.bg-dark {
   background-color: var(--color-background-dark) !important;

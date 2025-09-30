@@ -10,7 +10,8 @@ interface EditorToolbarProps {
   isAiAssistEnabled: boolean;
   toggleAiAssist: () => void;
   isSaving: boolean;
-  isPublishing: boolean; // New prop
+  isPublishing: boolean;
+  hasAiSuggestions: boolean; // New prop
 }
 
 const EditorToolbar: React.FC<EditorToolbarProps> = ({
@@ -20,7 +21,8 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({
   isAiAssistEnabled,
   toggleAiAssist,
   isSaving,
-  isPublishing, // Destructure new prop
+  isPublishing,
+  hasAiSuggestions, // Destructure new prop
 }) => {
   const { canUndo, canRedo, undo, redo } = useUndoRedo();
   const [showSavedCheck, setShowSavedCheck] = useState(false);
@@ -42,6 +44,9 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({
     if (score < 80) return 'warning';
     return 'success';
   };
+
+  const aiAssistButtonClass = `btn me-2 ${isAiAssistEnabled ? 'btn-primary' : 'btn-outline-primary'} ${isAiAssistEnabled && hasAiSuggestions ? 'ai-glow' : ''}`;
+  const aiAssistButtonTitle = isAiAssistEnabled && hasAiSuggestions ? 'AI Suggestion available' : 'Toggle AI Assist';
 
   return (
     <div className="d-flex flex-wrap align-items-center mb-3">
@@ -80,9 +85,9 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({
 
       {/* AI Assist Toggle */}
       <button
-        className={`btn me-2 ${isAiAssistEnabled ? 'btn-primary' : 'btn-outline-primary'}`}
+        className={aiAssistButtonClass}
         onClick={toggleAiAssist}
-        title="Toggle AI Assist"
+        title={aiAssistButtonTitle}
       >
         <i className="bi bi-robot"></i> AI Assist {isAiAssistEnabled ? 'On' : 'Off'}
       </button>

@@ -11,6 +11,7 @@ import TiptapBlock from './TiptapBlock';
 import { useAISuggestions } from '@/contexts/AISuggestionContext';
 import { useUndoRedo } from '@/contexts/UndoRedoContext';
 import { AISuggestion } from '@/types/ai-suggestion';
+import AISuggestionModal from '@/components/AISuggestionModal'; // Import AI Suggestion Modal
 
 interface Block {
   id: string;
@@ -24,9 +25,10 @@ interface EditorPanelProps {
   initialContent: string;
   onContentChange: (content: string) => void;
   onScroll: (percentage: number) => void;
+  isAiAssistEnabled: boolean; // New prop
 }
 
-const EditorPanel: React.FC<EditorPanelProps> = ({ initialContent, onContentChange, onScroll }) => {
+const EditorPanel: React.FC<EditorPanelProps> = ({ initialContent, onContentChange, onScroll, isAiAssistEnabled }) => {
   const { addSuggestion, suggestions: aiSuggestions } = useAISuggestions();
   const { addChange } = useUndoRedo();
 
@@ -37,6 +39,8 @@ const EditorPanel: React.FC<EditorPanelProps> = ({ initialContent, onContentChan
   const [isDragging, setIsDragging] = useState(false);
   const [activeSuggestionsBlockId, setActiveSuggestionsBlockId] = useState<string | null>(null);
   const [activeAlertsBlockId, setActiveAlertsBlockId] = useState<string | null>(null);
+  const [showAISuggestionModal, setShowAISuggestionModal] = useState(false); // State for AI Suggestion Modal
+  const [currentAISuggestion, setCurrentAISuggestion] = useState<{ blockId: string; suggestion: string; currentContent: string; previewContent: string } | null>(null);
 
   const dragItem = useRef<number | null>(null);
   const dragOverItem = useRef<number | null>(null);
@@ -48,12 +52,6 @@ const EditorPanel: React.FC<EditorPanelProps> = ({ initialContent, onContentChan
     onContentChange(joinedContent); // Notify parent of content change
   }, [blocks, addChange, onContentChange]);
 
-  const handleBlockContentChange = (id: string, newContent: string) => {
-    setBlocks(prevBlocks =>
-      prevBlocks.map(block => (block.id === id ? { ...block, content: newContent } : block))
-    );
-  };
-
   const handleGenerateSuggestions = () => {
     setBlocks(prevBlocks =>
       prevBlocks.map(block => ({
@@ -62,6 +60,16 @@ const EditorPanel: React.FC<EditorPanelProps> = ({ initialContent, onContentChan
         accessibilityAlerts: block.id === 'block-1' ? ['Missing alt text', 'Low contrast'] : [], // Mock alerts
       }))
     );
+  };
+
+  const handleOpenAISuggestionModal = (blockId: string, suggestion: string) => {
+    const block = blocks.find(b => b.id === blockId);
+    if (block) {
+      // Simulate preview fix
+      const previewContent = block.content + ' [AI FIX: ' + suggestion + ']';
+      setCurrentAISuggestion({ blockId, suggestion, currentContent: block.content, previewContent });
+      setShowAISuggestionModal(true);
+    }
   };
 
   const handleApplySuggestion = (blockId: string, suggestion: string) => {
@@ -73,6 +81,12 @@ const EditorPanel: React.FC<EditorPanelProps> = ({ initialContent, onContentChan
       )
     );
     setActiveSuggestionsBlockId(null);
+    setShowAISuggestionModal(false);
+  };
+
+  const handleRejectSuggestion = () => {
+    setShowAISuggestionModal(false);
+    setCurrentAISuggestion(null);
   };
 
   const handleIgnoreSuggestions = (blockId: string) => {
@@ -213,14 +227,14 @@ const EditorPanel: React.FC<EditorPanelProps> = ({ initialContent, onContentChan
                   />
                 )}
                 {/* Inline AI Suggestions Display */}
-                {activeSuggestionsBlockId === block.id && block.suggestions && block.suggestions.length > 0 && (
+                {isAiAssistEnabled && activeSuggestionsBlockId === block.id && block.suggestions && block.suggestions.length > 0 && (
                   <div className="ai-suggestions-inline mt-2 p-2 bg-light border rounded">
                     <p className="fw-bold">AI Suggestions:</p>
                     {block.suggestions.map((suggestion, sIndex) => (
                       <div key={sIndex} className="d-flex justify-content-between align-items-center mb-1">
                         <span className="text-muted">{suggestion}</span>
                         <div>
-                          <button className="btn btn-sm btn-success me-1" onClick={() => handleApplySuggestion(block.id, suggestion)}>Apply</button>
+                          <button className="btn btn-sm btn-success me-1" onClick={() => handleOpenAISuggestionModal(block.id, suggestion)}>Preview Fix</button>
                           <button className="btn btn-sm btn-danger" onClick={() => handleIgnoreSuggestions(block.id)}>Ignore</button>
                         </div>
                       </div>
@@ -255,6 +269,16 @@ const EditorPanel: React.FC<EditorPanelProps> = ({ initialContent, onContentChan
         <AI_Toolbar onGenerateSuggestions={handleGenerateSuggestions} />
         <SEOPanel />
       </div>
+
+      <AISuggestionModal
+        show={showAISuggestionModal}
+        onClose={handleRejectSuggestion}
+        onApply={(suggestion) => currentAISuggestion && handleApplySuggestion(currentAISuggestion.blockId, suggestion)}
+        onReject={handleRejectSuggestion}
+        suggestion={currentAISuggestion?.suggestion || ''}
+        currentContent={currentAISuggestion?.currentContent || ''}
+        previewContent={currentAISuggestion?.previewContent || ''}
+      />
     </div>
   );
 };

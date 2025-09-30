@@ -13,16 +13,11 @@ import VersionHistoryPanel from './VersionHistoryPanel'; // Import VersionHistor
 import { useUndoRedo } from '@/contexts/UndoRedoContext';
 import { AISuggestion } from '@/types/ai-suggestion';
 import { useNotifications } from '@/contexts/NotificationContext'; // Import useNotifications
-import { useAISuggestions } from '@/contexts/AISuggestionContext';
+import { useAISuggestions }@/contexts/AISuggestionContext';
 import { useOnboarding } from '@/contexts/OnboardingContext'; // Import useOnboarding
 import ConflictResolutionModal from './ConflictResolutionModal';
 import { trackEvent } from '@/lib/telemetry';
-
-import React, { useState, useEffect, useCallback } from 'react';
-import { useUndoRedo } from '@/contexts/UndoRedoContext';
-import { useNotifications } from '@/contexts/NotificationContext';
 import dynamic from 'next/dynamic';
-import PublishConfirmationModal from '@/components/PublishConfirmationModal'; // Import confirmation modal
 import PublishErrorModal from '@/components/PublishErrorModal'; // Import error modal
 
 // Dynamically import EditorToolbar to ensure it's treated as a client component
@@ -42,8 +37,9 @@ const ContentEditor: React.FC = () => {
   const [isAiAssistEnabled, setIsAiAssistEnabled] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
-  const [showPublishConfirmation, setShowPublishConfirmation] = useState(false); // State for confirmation modal
-  const [publishError, setPublishError] = useState<{ message: string; logs?: string } | null>(null); // State for publish error
+  const [showPublishConfirmation, setShowPublishConfirmation] = useState(false);
+  const [publishError, setPublishError] = useState<{ message: string; logs?: string } | null>(null);
+  const [hasAiSuggestions, setHasAiSuggestions] = useState(false); // New state for AI suggestions
 
   const handleSaveDraft = useCallback(async () => {
     setIsSaving(true);
@@ -103,6 +99,12 @@ const ContentEditor: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Mock AI suggestions availability
+  useEffect(() => {
+    // Simulate AI suggestions becoming available based on content
+    setHasAiSuggestions(currentContent.includes('AI') || currentContent.includes('suggestion'));
+  }, [currentContent]);
+
   return (
     <div className="d-flex flex-column h-100">
       <EditorToolbar
@@ -113,10 +115,11 @@ const ContentEditor: React.FC = () => {
         toggleAiAssist={toggleAiAssist}
         isSaving={isSaving}
         isPublishing={isPublishing}
+        hasAiSuggestions={hasAiSuggestions} // Pass hasAiSuggestions state
       />
       <div className="flex-grow-1 d-flex">
         <div className="flex-grow-1 p-3 border-end">
-          <EditorPanel onContentChange={addChange} initialContent={currentContent} />
+          <EditorPanel onContentChange={addChange} initialContent={currentContent} isAiAssistEnabled={isAiAssistEnabled} />
         </div>
         <div className="p-3" style={{ width: '30%' }}>
           <PreviewPane content={currentContent} />
