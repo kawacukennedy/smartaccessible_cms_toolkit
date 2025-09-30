@@ -202,6 +202,7 @@ const ContentEditorScreen = () => {
       <MobileBlockCanvas
         content={JSON.stringify(currentContent)}
         onContentChange={handleContentChange}
+        panHandlers={panResponder.panHandlers}
       />
       {isAIPanelOpen && (
         <MobileAISuggestionsPanel

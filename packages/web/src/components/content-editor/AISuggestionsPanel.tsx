@@ -6,8 +6,6 @@ import { AISuggestion } from '@/types/ai-suggestion';
 
 interface AISuggestionsPanelProps {
   onApplySuggestion: (suggestion: AISuggestion) => void;
-  contentBefore: string;
-  contentAfter: string; // This will be the content after the suggestion is applied
 }
 
 const getConfidenceColorClass = (confidence: number) => {
@@ -16,12 +14,12 @@ const getConfidenceColorClass = (confidence: number) => {
   return 'list-group-item-danger'; // Low confidence
 };
 
-const AISuggestionsPanel: React.FC<AISuggestionsPanelProps> = ({ onApplySuggestion, contentBefore, contentAfter }) => {
+const AISuggestionsPanel: React.FC<AISuggestionsPanelProps> = ({ onApplySuggestion }) => {
   const { suggestions, applySuggestion, rejectSuggestion, clearSuggestions } = useAISuggestions();
 
   const handleApply = (suggestion: AISuggestion) => {
     onApplySuggestion(suggestion); // Call the passed handler
-    applySuggestion(suggestion.id, contentBefore, contentAfter); // Pass all arguments
+    applySuggestion(suggestion.id); // Remove from panel
   };
 
   const handleApplyAllSafe = () => {

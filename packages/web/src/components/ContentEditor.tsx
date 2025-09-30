@@ -144,15 +144,10 @@ const ContentEditor: React.FC = () => {
   const handleApplyAISuggestion = (suggestion: AISuggestion) => {
     const contentBefore = currentContent;
     const newContent = currentContent + '\n\n' + `[AI Suggestion Applied: ${suggestion.message}]`;
-    addChange(newContent);
+    addChange(newContent, { type: 'ai-suggestion', payload: { id: suggestion.id, contentBefore, contentAfter: newContent } });
     completeStep('Use an AI suggestion');
     trackEvent('ai_applied', { suggestionType: suggestion.type, confidence: suggestion.confidence });
-    // Pass contentBefore and newContent to AISuggestionContext's applySuggestion
-    // This is a conceptual call, as AISuggestionContext doesn't directly modify content
-    // but it could be used to record the change for undo/redo purposes.
-    // For now, we'll just call the applySuggestion from AISuggestionContext to remove it from the panel.
-    // The actual content change is handled by addChange.
-    applySuggestion(suggestion.id, contentBefore, newContent);
+    applySuggestion(suggestion.id); // Remove from panel
   };
 
   const [autosaveStatus, setAutosaveStatus] = useState<'idle' | 'saving' | 'saved' | 'failed'>('idle');

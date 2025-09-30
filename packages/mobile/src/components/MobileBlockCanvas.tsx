@@ -21,6 +21,7 @@ interface Block {
 interface MobileBlockCanvasProps {
   content: string;
   onContentChange: (newContent: string) => void;
+  panHandlers?: any; // Add panHandlers prop
 }
 
 const MobileBlockCanvas: React.FC<MobileBlockCanvasProps> = ({ content, onContentChange }) => {
@@ -79,7 +80,7 @@ const MobileBlockCanvas: React.FC<MobileBlockCanvasProps> = ({ content, onConten
   };
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} {...panHandlers}>
       <ScrollView style={styles.scrollView}>
         {blocks.map(block => (
           <TouchableOpacity key={block.id} onPress={() => {
