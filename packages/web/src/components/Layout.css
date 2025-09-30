@@ -38,6 +38,19 @@
 
 body {
   font-family: var(--font-family-inter);
+  font-size: 16px; /* Default medium font size */
+}
+
+html.font-size-small body {
+  font-size: 14px;
+}
+
+html.font-size-medium body {
+  font-size: 16px;
+}
+
+html.font-size-large body {
+  font-size: 18px;
 }
 
 /* Interactive States */

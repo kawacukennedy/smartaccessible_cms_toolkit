@@ -182,6 +182,13 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, startTour }) => {
               <button className="btn btn-outline-secondary ms-2" onClick={cycleTheme} title="Switch light/dark">
                 <i className={`bi ${theme === 'dark' ? 'bi-sun' : 'bi-moon'}`}></i>
               </button>
+              {/* Font Size Controls */}
+              <button className="btn btn-outline-secondary ms-2" onClick={increaseFontSize} title="Increase Font Size">
+                <i className="bi bi-plus-circle"></i>
+              </button>
+              <button className="btn btn-outline-secondary ms-2" onClick={decreaseFontSize} title="Decrease Font Size">
+                <i className="bi bi-dash-circle"></i>
+              </button>
               {/* Reduced Motion Toggle */}
               <button className="btn btn-outline-secondary ms-2" onClick={toggleReducedMotion} title="Toggle Reduced Motion">
                 <i className={`bi ${reducedMotion ? 'bi-hand-thumbs-down-fill' : 'bi-hand-thumbs-up'}`}></i>
