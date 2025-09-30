@@ -39,12 +39,147 @@ const ContentEditor: React.FC = () => {
   const activeScroller = useRef<'editor' | 'preview' | null>(null);
   const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
 
+  // Debounce function
+  const debounce = (func: (...args: any[]) => void, delay: number) => {
+    let timeout: NodeJS.Timeout;
+    return (...args: any[]) => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func(...args), delay);
+    };
+  };
 
+  const debouncedAddChange = useCallback(debounce((newContent: string) => {
+    addChange(newContent);
+    trackEvent('content_save', { type: 'autosave' });
+    // Trigger AI scan on content change
+    setAiScanStatus('queued');
+  }, 200), [addChange]); // Debounce for 200ms
 
+  const handleScroll = (source: 'editor' | 'preview', percentage: number) => {
+    if (activeScroller.current && activeScroller.current !== source) {
+      return;
+    }
 
+    activeScroller.current = source;
+    setScrollPercentage(percentage);
 
+    if (scrollTimeout.current) {
+      clearTimeout(scrollTimeout.current);
+    }
 
-  const handleConfirmPublish = () => {
+    scrollTimeout.current = setTimeout(() => {
+      activeScroller.current = null;
+    }, 150);
+  };
+
+  // Initialize content in UndoRedoContext if it's empty
+  useEffect(() => {
+    if (currentContent === '') {
+      addChange(''); // Add an initial empty state
+    }
+  }, [currentContent, addChange]);
+
+  const toggleAIPanel = () => {
+    setIsAIPanelOpen(!isAIPanelOpen);
+    setIsAccessibilityPanelOpen(false);
+    setIsMediaLibraryOpen(false);
+    setIsVersionHistoryOpen(false);
+  };
+
+  const toggleAccessibilityPanel = () => {
+    setIsAccessibilityPanelOpen(!isAccessibilityPanelOpen);
+    setIsAIPanelOpen(false);
+    setIsMediaLibraryOpen(false);
+    setIsVersionHistoryOpen(false);
+  };
+
+  const toggleMediaLibrary = () => {
+    setIsMediaLibraryOpen(!isMediaLibraryOpen);
+    setIsAIPanelOpen(false);
+    setIsAccessibilityPanelOpen(false);
+    setIsVersionHistoryOpen(false);
+    completeStep('Explore the media library');
+  };
+
+  const toggleVersionHistory = () => {
+    setIsVersionHistoryOpen(!isVersionHistoryOpen);
+    setIsAIPanelOpen(false);
+    setIsAccessibilityPanelOpen(false);
+    setIsMediaLibraryOpen(false);
+  };
+
+  const togglePreviewMode = () => {
+    setIsPreviewMode(!isPreviewMode);
+    completeStep('Preview your content');
+    trackEvent('preview', { mode: isPreviewMode ? 'exit' : 'enter' });
+  };
+
+  const handleBlockSelect = (blockContent: string) => {
+    addChange(blockContent);
+    completeStep('Create your first block');
+    trackEvent('content_save', { type: 'block_select' });
+  };
+
+  const handleApplyAISuggestion = (suggestion: AISuggestion) => {
+    const contentBefore = currentContent;
+    const newContent = currentContent + '\n\n' + `[AI Suggestion Applied: ${suggestion.message}]`;
+    addChange(newContent, { type: 'ai-suggestion', payload: { id: suggestion.id, contentBefore, contentAfter: newContent } });
+    completeStep('Use an AI suggestion');
+    trackEvent('ai_applied', { suggestionType: suggestion.type, confidence: suggestion.confidence });
+    applySuggestion(suggestion.id); // Remove from panel
+  };
+
+  const [autosaveStatus, setAutosaveStatus] = useState<'idle' | 'saving' | 'saved' | 'failed'>('idle');
+
+  const handleSave = () => {
+    setAutosaveStatus('saving');
+    addNotification({ displayType: 'toast', style: 'info', message: 'Saving draft…' });
+    console.log('Saving content:', currentContent);
+    // Simulate API call for saving
+    setTimeout(() => {
+      const success = Math.random() > 0.1; // 90% success rate
+      if (success) {
+        setAutosaveStatus('saved');
+        addNotification({ displayType: 'toast', style: 'success', message: 'Draft saved' });
+        trackEvent('content_save', { type: 'manual' });
+      } else {
+        setAutosaveStatus('failed');
+        addNotification({ displayType: 'toast', style: 'error', message: 'Save failed. Retry?' });
+        trackEvent('error', { type: 'manual_save_failed' });
+      }
+    }, 1000);
+  };
+
+  const handleAISuggestionRequest = () => {
+    addNotification({ displayType: 'toast', style: 'info', message: 'AI Suggestion requested.' });
+    // In a real app, this would trigger an AI scan
+  };
+
+  const runValidationChecks = (): string[] => {
+    trackEvent('validation', { type: 'pre_publish' });
+    const issues: string[] = [];
+    if (currentContent.length < 10) {
+      issues.push('Content is too short.');
+    }
+    if (!currentContent.includes('title')) {
+      issues.push('Missing a clear title.');
+    }
+    // Mock accessibility checks
+    if (currentContent.includes('img') && !currentContent.includes('alt=')) {
+      issues.push('Image missing alt text.');
+    }
+    if (currentContent.includes('low contrast')) {
+      issues.push('Potential low contrast text detected.');
+    }
+    return issues;
+  };
+
+  const handlePublish = () => {
+    const issues = runValidationChecks();
+    setValidationIssues(issues);
+    setIsPublishModalOpen(true);
+    addNotification({ displayType: 'toast', style: 'info', message: 'Publish content? Final accessibility checks will run.' });
+  };
     console.log('Publishing content confirmed:', currentContent);
     addNotification({ displayType: 'toast', style: 'info', message: 'Publishing content...' });
     // Simulate API call for publishing
