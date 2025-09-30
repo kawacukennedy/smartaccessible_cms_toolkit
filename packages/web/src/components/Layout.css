@@ -116,6 +116,14 @@ html.font-size-large body {
   animation: glow 1.5s infinite alternate;
 }
 
+/* Dragging effect for blocks */
+.editor-block.is-dragging {
+  transform: scale(1.02);
+  box-shadow: var(--shadow-lg);
+  transition: transform var(--animation-duration-fast) var(--animation-easing-in-out),
+              box-shadow var(--animation-duration-fast) var(--animation-easing-in-out);
+}
+
 /* Dark theme adjustments */
 .main-layout.bg-dark {
   background-color: var(--color-background-dark) !important;
