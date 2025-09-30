@@ -18,7 +18,7 @@ interface EditorToolbarProps {
   isOffline: boolean;
 }
 
-const EditorToolbar: React.FC<EditorToolbarProps> = ({ onSave, onAISuggestion, onPreview, onPublish, isPreviewMode, onToggleAccessibilityPanel, onToggleMediaLibrary, onToggleVersionHistory }) => {
+const EditorToolbar: React.FC<EditorToolbarProps> = ({ onSave, onAISuggestion, onPreview, onPublish, isPreviewMode, onToggleAccessibilityPanel, onToggleMediaLibrary, onToggleVersionHistory, onSimulateConflict, onToggleOffline, isOffline }) => {
   const { undo, redo, canUndo, canRedo } = useUndoRedo(); // Get feedbackMessage
   const { addNotification } = useNotifications();
   const [hasValidationErrors, setHasValidationErrors] = useState(false); // Placeholder for validation errors

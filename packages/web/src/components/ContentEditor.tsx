@@ -16,6 +16,7 @@ import { useNotifications } from '@/contexts/NotificationContext'; // Import use
 import { useAISuggestions } from '@/contexts/AISuggestionContext';
 import { useOnboarding } from '@/contexts/OnboardingContext'; // Import useOnboarding
 import ConflictResolutionModal from './ConflictResolutionModal';
+import { trackEvent } from '@/lib/telemetry';
 
 const ContentEditor: React.FC = () => {
   const { currentContent, addChange, undo, redo } = useUndoRedo(); // Destructure undo and redo
@@ -31,32 +32,6 @@ const ContentEditor: React.FC = () => {
   const [isConflictModalOpen, setIsConflictModalOpen] = useState(false);
   const [serverContent, setServerContent] = useState('');
   const [isOffline, setIsOffline] = useState(false);
-
-  const simulateConflict = () => {
-    setServerContent(currentContent + '\n\nThis is a change from the server.');
-    setIsConflictModalOpen(true);
-  };
-
-  const toggleOffline = () => {
-    setIsOffline(!isOffline);
-    addNotification({
-      displayType: 'toast',
-      style: isOffline ? 'success' : 'warning',
-      message: isOffline ? 'Back online' : 'You are now in offline mode',
-    });
-  };
-
-  const commands = [
-    { id: 'save', name: 'Save', action: handleSave },
-    { id: 'publish', name: 'Publish', action: handlePublish },
-    { id: 'toggle-preview', name: 'Toggle Preview', action: togglePreviewMode },
-    { id: 'toggle-ai-panel', name: 'Toggle AI Panel', action: toggleAIPanel },
-    { id: 'toggle-accessibility-panel', name: 'Toggle Accessibility Panel', action: toggleAccessibilityPanel },
-    { id: 'toggle-media-library', name: 'Toggle Media Library', action: toggleMediaLibrary },
-    { id: 'toggle-version-history', name: 'Toggle Version History', action: toggleVersionHistory },
-    { id: 'undo', name: 'Undo', action: undo },
-    { id: 'redo', name: 'Redo', action: redo },
-  ];
   const [validationIssues, setValidationIssues] = useState<string[]>([]);
   const [aiScanStatus, setAiScanStatus] = useState<'idle' | 'queued' | 'running' | 'done' | 'failed'>('idle');
   const { setSuggestions, applySuggestion, suggestions } = useAISuggestions();
@@ -64,31 +39,147 @@ const ContentEditor: React.FC = () => {
   const activeScroller = useRef<'editor' | 'preview' | null>(null);
   const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  // Simulate AI scanning process
-  useEffect(() => {
-    if (aiScanStatus === 'queued') {
-      setAiScanStatus('running');
-      // Simulate API call for AI scan
-      setTimeout(() => {
-        const success = Math.random() > 0.1; // 90% success rate
-        if (success) {
-          setAiScanStatus('done');
-          // Mock AI suggestions
-          setSuggestions([
-            { id: '1', type: 'accessibility', message: 'Consider adding alt text to images.', recommendation: 'Add descriptive alt text.', confidence: 85 },
-            { id: '2', type: 'seo', message: 'Improve keyword density.', recommendation: 'Include relevant keywords naturally.', confidence: 70 },
-            { id: '3', type: 'content', message: 'Break long paragraphs into shorter ones.', recommendation: 'Use shorter paragraphs for readability.', confidence: 90 },
-            { id: '4', type: 'style', message: 'Check for passive voice.', recommendation: 'Rewrite sentences in active voice.', confidence: 40 },
-          ]);
-          addNotification({ displayType: 'toast', style: 'ai_suggestion', message: 'AI scan complete. Suggestions ready.' });
-        } else {
-          setAiScanStatus('failed');
-          addNotification({ displayType: 'toast', style: 'error', message: 'AI scan failed. Retry?' });
-          trackEvent('error', { type: 'ai_scan_failed' });
-        }
-      }, 1500);
+  // Debounce function
+  const debounce = (func: (...args: any[]) => void, delay: number) => {
+    let timeout: NodeJS.Timeout;
+    return (...args: any[]) => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func(...args), delay);
+    };
+  };
+
+  const debouncedAddChange = useCallback(debounce((newContent: string) => {
+    addChange(newContent);
+    trackEvent('content_save', { type: 'autosave' });
+    // Trigger AI scan on content change
+    setAiScanStatus('queued');
+  }, 200), [addChange]); // Debounce for 200ms
+
+  const handleScroll = (source: 'editor' | 'preview', percentage: number) => {
+    if (activeScroller.current && activeScroller.current !== source) {
+      return;
     }
-  }, [aiScanStatus, setSuggestions, addNotification]);
+
+    activeScroller.current = source;
+    setScrollPercentage(percentage);
+
+    if (scrollTimeout.current) {
+      clearTimeout(scrollTimeout.current);
+    }
+
+    scrollTimeout.current = setTimeout(() => {
+      activeScroller.current = null;
+    }, 150);
+  };
+
+  // Initialize content in UndoRedoContext if it's empty
+  useEffect(() => {
+    if (currentContent === '') {
+      addChange(''); // Add an initial empty state
+    }
+  }, [currentContent, addChange]);
+
+  const toggleAIPanel = () => {
+    setIsAIPanelOpen(!isAIPanelOpen);
+    setIsAccessibilityPanelOpen(false);
+    setIsMediaLibraryOpen(false);
+    setIsVersionHistoryOpen(false);
+  };
+
+  const toggleAccessibilityPanel = () => {
+    setIsAccessibilityPanelOpen(!isAccessibilityPanelOpen);
+    setIsAIPanelOpen(false);
+    setIsMediaLibraryOpen(false);
+    setIsVersionHistoryOpen(false);
+  };
+
+  const toggleMediaLibrary = () => {
+    setIsMediaLibraryOpen(!isMediaLibraryOpen);
+    setIsAIPanelOpen(false);
+    setIsAccessibilityPanelOpen(false);
+    setIsVersionHistoryOpen(false);
+    completeStep('Explore the media library');
+  };
+
+  const toggleVersionHistory = () => {
+    setIsVersionHistoryOpen(!isVersionHistoryOpen);
+    setIsAIPanelOpen(false);
+    setIsAccessibilityPanelOpen(false);
+    setIsMediaLibraryOpen(false);
+  };
+
+  const togglePreviewMode = () => {
+    setIsPreviewMode(!isPreviewMode);
+    completeStep('Preview your content');
+    trackEvent('preview', { mode: isPreviewMode ? 'exit' : 'enter' });
+  };
+
+  const handleBlockSelect = (blockContent: string) => {
+    addChange(blockContent);
+    completeStep('Create your first block');
+    trackEvent('content_save', { type: 'block_select' });
+  };
+
+  const handleApplyAISuggestion = (suggestion: AISuggestion) => {
+    const contentBefore = currentContent;
+    const newContent = currentContent + '\n\n' + `[AI Suggestion Applied: ${suggestion.message}]`;
+    addChange(newContent, { type: 'ai-suggestion', payload: { id: suggestion.id, contentBefore, contentAfter: newContent } });
+    completeStep('Use an AI suggestion');
+    trackEvent('ai_applied', { suggestionType: suggestion.type, confidence: suggestion.confidence });
+    applySuggestion(suggestion.id); // Remove from panel
+  };
+
+  const [autosaveStatus, setAutosaveStatus] = useState<'idle' | 'saving' | 'saved' | 'failed'>('idle');
+
+  const handleSave = () => {
+    setAutosaveStatus('saving');
+    addNotification({ displayType: 'toast', style: 'info', message: 'Saving draft…' });
+    console.log('Saving content:', currentContent);
+    // Simulate API call for saving
+    setTimeout(() => {
+      const success = Math.random() > 0.1; // 90% success rate
+      if (success) {
+        setAutosaveStatus('saved');
+        addNotification({ displayType: 'toast', style: 'success', message: 'Draft saved' });
+        trackEvent('content_save', { type: 'manual' });
+      } else {
+        setAutosaveStatus('failed');
+        addNotification({ displayType: 'toast', style: 'error', message: 'Save failed. Retry?' });
+        trackEvent('error', { type: 'manual_save_failed' });
+      }
+    }, 1000);
+  };
+
+  const handleAISuggestionRequest = () => {
+    addNotification({ displayType: 'toast', style: 'info', message: 'AI Suggestion requested.' });
+    // In a real app, this would trigger an AI scan
+  };
+
+  const runValidationChecks = (): string[] => {
+    trackEvent('validation', { type: 'pre_publish' });
+    const issues: string[] = [];
+    if (currentContent.length < 10) {
+      issues.push('Content is too short.');
+    }
+    if (!currentContent.includes('title')) {
+      issues.push('Missing a clear title.');
+    }
+    // Mock accessibility checks
+    if (currentContent.includes('img') && !currentContent.includes('alt=')) {
+      issues.push('Image missing alt text.');
+    }
+    if (currentContent.includes('low contrast')) {
+      issues.push('Potential low contrast text detected.');
+    }
+    return issues;
+  };
+
+  const handlePublish = () => {
+    const issues = runValidationChecks();
+    setValidationIssues(issues);
+    setIsPublishModalOpen(true);
+    addNotification({ displayType: 'toast', style: 'info', message: 'Publish content? Final accessibility checks will run.' });
+  };
 
   // Debounce function
   const debounce = (func: (...args: any[]) => void, delay: number) => {
@@ -250,6 +341,18 @@ const ContentEditor: React.FC = () => {
     }, 2000);
   };
 
+  const commands = [
+    { id: 'save', name: 'Save', action: handleSave },
+    { id: 'publish', name: 'Publish', action: handlePublish },
+    { id: 'toggle-preview', name: 'Toggle Preview', action: togglePreviewMode },
+    { id: 'toggle-ai-panel', name: 'Toggle AI Panel', action: toggleAIPanel },
+    { id: 'toggle-accessibility-panel', name: 'Toggle Accessibility Panel', action: toggleAccessibilityPanel },
+    { id: 'toggle-media-library', name: 'Toggle Media Library', action: toggleMediaLibrary },
+    { id: 'toggle-version-history', name: 'Toggle Version History', action: toggleVersionHistory },
+    { id: 'undo', name: 'Undo', action: undo },
+    { id: 'redo', name: 'Redo', action: redo },
+  ];
+
   // New useEffect for keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -306,92 +409,11 @@ const ContentEditor: React.FC = () => {
     };
   }, [handleSave, handlePublish, undo, redo, toggleAIPanel, addNotification]); // Dependencies for useEffect
 
-
   return (
-    <div className="container-fluid h-100 py-3">
-      <EditorToolbar
-        onSave={handleSave}
-        onAISuggestion={handleAISuggestionRequest}
-        onPreview={togglePreviewMode}
-        onPublish={handlePublish} // Pass handlePublish to EditorToolbar
-        isPreviewMode={isPreviewMode}
-        onToggleAccessibilityPanel={toggleAccessibilityPanel}
-        onToggleMediaLibrary={toggleMediaLibrary}
-        onToggleVersionHistory={toggleVersionHistory}
-        onSimulateConflict={simulateConflict}
-        onToggleOffline={toggleOffline}
-        isOffline={isOffline}
-      />
-      {isPreviewMode ? (
-        <LivePreviewPanel content={currentContent} scrollPercentage={scrollPercentage} onScroll={(p) => handleScroll('preview', p)} />
-      ) : (
-        <div className="row h-100">
-          <div className="col-md-3 h-100">
-            <BlockListPanel onBlockSelect={handleBlockSelect} />
-          </div>
-          <div className="col-md-6 h-100">
-            <EditorPanel content={currentContent} onContentChange={debouncedAddChange} onScroll={(p) => handleScroll('editor', p)} aiSuggestions={suggestions} />
-          </div>
-          {/* AI Panel & Accessibility Dashboard - visible on desktop */}
-          <div className="col-md-3 h-100 d-none d-lg-block">
-            {isAIPanelOpen && (
-                <AIPanel onApplySuggestion={handleApplyAISuggestion} onAIScanRequest={handleAISuggestionRequest} contentBefore={currentContent} contentAfter={currentContent} />
-            )}
-            {isAccessibilityPanelOpen && (
-                <AccessibilityDashboard />
-            )}
-            {isMediaLibraryOpen && (
-                <MediaLibrary />
-            )}
-            {isVersionHistoryOpen && (
-                <VersionHistoryPanel />
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* AI Panel Toggle Button for mobile/tablet */}
-      {!isPreviewMode && (
-        <>
-          <button
-            className="btn btn-primary d-lg-none position-fixed bottom-0 end-0 m-3" // Show on md and below, hide on lg and above
-            type="button"
-            onClick={toggleAIPanel}
-          >
-            Toggle AI Panel
-          </button>
-
-          {/* AI Panel for mobile/tablet (rendered as offcanvas/bottom drawer) */}
-          {/* This will be handled within AIPanel.tsx using props */}
-          <AIPanel
-            onApplySuggestion={handleApplyAISuggestion}
-            isOpen={isAIPanelOpen}
-            togglePanel={toggleAIPanel}
-            isResponsive={true} // Indicate that it's being rendered responsively
-            onAIScanRequest={handleAISuggestionRequest}
-          />
-        </>
-      )}
-
-      <PublishConfirmationModal
-        isOpen={isPublishModalOpen}
-        onClose={() => setIsPublishModalOpen(false)}
-        onConfirm={handleConfirmPublish}
-        validationIssues={validationIssues}
-      />
-      <ConflictResolutionModal
-        isOpen={isConflictModalOpen}
-        onClose={() => setIsConflictModalOpen(false)}
-        onResolve={(resolvedContent) => {
-          addChange(resolvedContent);
-          setIsConflictModalOpen(false);
-        }}
-        serverContent={serverContent}
-        localContent={currentContent}
-      />
+    <div>
+      <h1>Content Editor Placeholder</h1>
     </div>
   );
 };
-
 
 export default ContentEditor;

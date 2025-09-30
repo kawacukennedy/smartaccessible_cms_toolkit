@@ -8,21 +8,12 @@ import AI_Toolbar from './AI_Toolbar';
 import SEOPanel from './SEOPanel';
 import BlockContextMenu from './BlockContextMenu';
 import { generateMockAISuggestions } from '@/lib/ai-suggestions';
+import TiptapBlock from './TiptapBlock';
 import { useAISuggestions } from '@/contexts/AISuggestionContext';
 import { useUndoRedo } from '@/contexts/UndoRedoContext';
 import { AISuggestion } from '@/types/ai-suggestion';
 
-const TiptapBlock = ({ content, onChange }: { content: string; onChange: (content: string) => void }) => {
-  const editor = useEditor({
-    extensions: [StarterKit],
-    content: content,
-    onUpdate: ({ editor }) => {
-      onChange(editor.getHTML());
-    },
-  });
 
-  return <EditorContent editor={editor} as={any} />;
-};
 
 interface Block {
   id: string;
