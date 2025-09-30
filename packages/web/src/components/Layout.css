@@ -87,6 +87,11 @@ body {
   padding: var(--spacing-lg); /* Use spacing variable */
 }
 
+.app-footer {
+  height: 40px;
+  flex-shrink: 0; /* Prevent footer from shrinking */
+}
+
 /* Dark theme adjustments */
 .main-layout.bg-dark {
   background-color: var(--color-background-dark) !important;

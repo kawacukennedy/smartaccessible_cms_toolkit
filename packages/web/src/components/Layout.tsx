@@ -8,6 +8,7 @@ import './Layout.css';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAccessibility } from '@/contexts/AccessibilityContext';
 import BootstrapClient from '@/components/BootstrapClient'; // Import BootstrapClient
+import Footer from './Footer'; // Import Footer component
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { theme } = useTheme();
@@ -52,6 +53,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       </div>
       <InteractiveTour run={runTour} setRunTour={setRunTour} />
       <BootstrapClient />
+      <Footer /> {/* Render the Footer component */}
     </div>
   );
 };
