@@ -1,42 +1,84 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
+import MediaUploader from './MediaUploader';
+import { trackEvent } from '@/lib/telemetry';
+
+interface MediaItem {
+  id: string;
+  name: string;
+  url: string;
+  altText: string;
+  status: 'uploaded' | 'generating-alt' | 'alt-generated' | 'failed';
+}
 
 const MediaLibrary = () => {
+  const [mediaItems, setMediaItems] = useState<MediaItem[]>([
+    { id: '1', name: 'image1.jpg', url: '/images/image1.jpg', altText: 'A placeholder image', status: 'uploaded' },
+    { id: '2', name: 'image2.png', url: '/images/image2.png', altText: 'Another placeholder image', status: 'uploaded' },
+  ]);
+
+  const handleUploadComplete = useCallback((uploadedFile: { id: string; name: string; altText?: string; }) => {
+    const newMediaItem: MediaItem = {
+      id: uploadedFile.id,
+      name: uploadedFile.name,
+      url: `/uploads/${uploadedFile.name}`, // Simulate URL
+      altText: uploadedFile.altText || '',
+      status: 'uploaded',
+    };
+    setMediaItems(prev => [...prev, newMediaItem]);
+    trackEvent('media_upload', { fileName: uploadedFile.name, status: 'success' });
+  }, []);
+
+  const handleGenerateAltText = useCallback((id: string) => {
+    setMediaItems(prev => prev.map(item => item.id === id ? { ...item, status: 'generating-alt' } : item));
+    // Simulate AI alt text generation
+    setTimeout(() => {
+      setMediaItems(prev => prev.map(item => {
+        if (item.id === id) {
+          const generatedAltText = `AI-generated alt text for ${item.name}`;
+          trackEvent('ai_applied', { type: 'alt_text', mediaId: item.id });
+          return { ...item, altText: generatedAltText, status: 'alt-generated' };
+        }
+        return item;
+      }));
+    }, 1500);
+  }, []);
+
   return (
-    <div className="bg-gray-50 dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100">
-      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-        <h2 className="text-lg font-semibold">Media Library</h2>
+    <div className="card h-100">
+      <div className="card-header">
+        <h2 className="card-title">Media Library</h2>
       </div>
-      <div className="p-4">
-        <div className="border-dashed border-2 border-gray-400 rounded-lg p-8 text-center mb-4">
-          <p className="text-gray-500">Drag & drop files here or click to upload</p>
-          <button className="mt-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
-            Bulk Upload
-          </button>
-        </div>
-        {/* Placeholder for media items */}
-        <div className="grid grid-cols-3 gap-4">
-          <div className="bg-white dark:bg-gray-700 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 p-2">
-            <div className="w-full h-24 bg-gray-200 dark:bg-gray-600 rounded-md mb-2"></div>
-            <p className="text-sm text-gray-800 dark:text-gray-200">image1.jpg</p>
-            <button className="text-xs text-blue-500 hover:underline">AI alt text</button>
+      <div className="card-body overflow-auto">
+        <MediaUploader onUploadComplete={handleUploadComplete} />
+
+        <h5 className="mt-4">Your Media</h5>
+        {mediaItems.length === 0 ? (
+          <p>No media items yet. Upload some!</p>
+        ) : (
+          <div className="row row-cols-3 g-3">
+            {mediaItems.map(item => (
+              <div key={item.id} className="col">
+                <div className="card h-100">
+                  <img src={item.url} className="card-img-top" alt={item.altText || item.name} style={{ height: '100px', objectFit: 'cover' }} />
+                  <div className="card-body p-2">
+                    <p className="card-text text-truncate"><small>{item.name}</small></p>
+                    {item.status === 'uploaded' && (
+                      <button className="btn btn-sm btn-outline-primary w-100" onClick={() => handleGenerateAltText(item.id)}>
+                        Generate AI Alt Text
+                      </button>
+                    )}
+                    {item.status === 'generating-alt' && (
+                      <span className="badge bg-info w-100">Generating Alt Text...</span>
+                    )}
+                    {item.status === 'alt-generated' && (
+                      <p className="text-muted text-sm mt-1">Alt: {item.altText}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-          <div className="bg-white dark:bg-gray-700 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 p-2">
-            <div className="w-full h-24 bg-gray-200 dark:bg-gray-600 rounded-md mb-2"></div>
-            <p className="text-sm text-gray-800 dark:text-gray-200">image2.png</p>
-            <button className="text-xs text-blue-500 hover:underline">AI alt text</button>
-          </div>
-          <div className="bg-white dark:bg-gray-700 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 p-2">
-            <div className="w-full h-24 bg-gray-200 dark:bg-gray-600 rounded-md mb-2"></div>
-            <p className="text-sm text-gray-800 dark:text-gray-200">video1.mp4</p>
-            <button className="text-xs text-blue-500 hover:underline">AI alt text</button>
-          </div>
-        </div>
-        <div className="mt-4">
-            <p className="text-sm">Uploading image3.gif...</p>
-            <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-                <div className="bg-blue-600 h-2.5 rounded-full" style={{width: '45%'}}></div>
-            </div>
-        </div>
+        )}
       </div>
     </div>
   );

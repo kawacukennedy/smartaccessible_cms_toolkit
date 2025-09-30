@@ -1,52 +1,49 @@
-'use client';
-
-import React, { createContext, useState, useContext, useCallback, useMemo } from 'react';
-import { AISuggestion } from '@/types/ai-suggestion';
+import React, { createContext, useState, useContext, ReactNode, useCallback } from 'react';
+import { AISuggestestion } from '@/types/ai-suggestion';
+import { useUndoRedo } from './UndoRedoContext';
 
 interface AISuggestionContextType {
   suggestions: AISuggestion[];
   addSuggestion: (suggestion: Omit<AISuggestion, 'id'>) => void;
-  applySuggestion: (id: string) => void;
+  applySuggestion: (id: string, contentBefore: string, contentAfter: string) => void;
   rejectSuggestion: (id: string) => void;
-  clearSuggestions: () => void; // Added
+  clearSuggestions: () => void;
+  setSuggestions: (suggestions: AISuggestion[]) => void; // New method to set suggestions directly
 }
 
 const AISuggestionContext = createContext<AISuggestionContextType | undefined>(undefined);
 
-export const AISuggestionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [suggestions, setSuggestions] = useState<AISuggestion[]>([]);
+export const AISuggestionProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [suggestions, setSuggestionsState] = useState<AISuggestion[]>([]);
+  const { addChange } = useUndoRedo();
 
   const addSuggestion = useCallback((suggestion: Omit<AISuggestion, 'id'>) => {
-    const newSuggestion: AISuggestion = {
-      id: Date.now().toString(),
-      ...suggestion,
-    };
-    setSuggestions((prev) => [...prev, newSuggestion]);
+    const newSuggestion: AISuggestion = { ...suggestion, id: Date.now().toString() };
+    setSuggestionsState((prev) => [...prev, newSuggestion]);
   }, []);
 
-  const applySuggestion = useCallback((id: string) => {
-    setSuggestions((prev) => prev.filter((s) => s.id !== id));
-    // In a real app, apply the suggestion to the content
-    console.log(`Applied suggestion: ${id}`);
-  }, []);
+  const applySuggestion = useCallback((id: string, contentBefore: string, contentAfter: string) => {
+    setSuggestionsState((prev) => prev.filter((s) => s.id !== id));
+    // The actual content change is handled by addChange in ContentEditor.
+    // Here, we just record the change for undo/redo purposes.
+    addChange(contentAfter, { type: 'ai-suggestion', payload: { id, contentBefore, contentAfter } });
+  }, [addChange]);
 
   const rejectSuggestion = useCallback((id: string) => {
-    setSuggestions((prev) => prev.filter((s) => s.id !== id));
-    console.log(`Rejected suggestion: ${id}`);
+    setSuggestionsState((prev) => prev.filter((s) => s.id !== id));
   }, []);
 
   const clearSuggestions = useCallback(() => {
-    setSuggestions([]);
-    console.log('Cleared all suggestions.');
+    setSuggestionsState([]);
   }, []);
 
-  const value = useMemo(
-    () => ({ suggestions, addSuggestion, applySuggestion, rejectSuggestion, clearSuggestions }),
-    [suggestions, addSuggestion, applySuggestion, rejectSuggestion, clearSuggestions]
-  );
+  const setSuggestions = useCallback((newSuggestions: AISuggestion[]) => {
+    setSuggestionsState(newSuggestions);
+  }, []);
 
   return (
-    <AISuggestionContext.Provider value={value}>
+    <AISuggestionContext.Provider
+      value={{
       {children}
     </AISuggestionContext.Provider>
   );

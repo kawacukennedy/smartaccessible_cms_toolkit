@@ -7,15 +7,17 @@ exports.previewCommand = void 0;
 const commander_1 = require("commander");
 const fs_1 = require("fs");
 const path_1 = __importDefault(require("path"));
+const logger_1 = require("../lib/logger");
+const telemetry_1 = require("../lib/telemetry");
 exports.previewCommand = new commander_1.Command()
     .command('preview')
     .description('Preview a piece of content')
     .requiredOption('--id <id>', 'The ID of the content to preview')
     .action(async (options) => {
-    console.log(`Generating preview for content ID: ${options.id}`);
+    (0, logger_1.log)(`Generating preview for content ID: ${options.id}`);
     try {
         // 1. Fetch content (simulated from project.json)
-        console.log('Fetching content...');
+        (0, logger_1.log)('Fetching content...');
         const projectJsonPath = path_1.default.join(process.cwd(), '..', '..', 'project.json');
         const fileContents = await fs_1.promises.readFile(projectJsonPath, 'utf8');
         const projectData = JSON.parse(fileContents);
@@ -43,11 +45,12 @@ exports.previewCommand = new commander_1.Command()
         // 3. Save the preview to a file
         const previewPath = path_1.default.join(process.cwd(), 'preview.html');
         await fs_1.promises.writeFile(previewPath, html);
-        console.log(`\nPreview generated successfully!`);
-        console.log(`Open this file in your browser: ${previewPath}`);
+        (0, logger_1.log)(`\nPreview generated successfully!`);
+        (0, logger_1.log)(`Open this file in your browser: ${previewPath}`);
+        (0, telemetry_1.trackEvent)('preview', { contentId: options.id });
     }
     catch (error) {
-        console.error('Error during preview generation:', error);
+        (0, logger_1.logError)('Error during preview generation:', error);
         process.exit(1);
     }
 });

@@ -1,5 +1,6 @@
 
 import { Command } from 'commander';
+import { log } from '../lib/logger';
 
 const dummyMedia = [
   { id: 1, name: 'image1.jpg', size: '1.2MB', created_at: '2025-09-26T10:00:00Z' },
@@ -11,7 +12,7 @@ export const listMediaCommand = new Command()
   .command('list-media')
   .description('List all media assets')
   .action(() => {
-    console.log('Listing all media assets:\n');
-    console.table(dummyMedia);
+    log('Listing all media assets:\n');
+    console.table(dummyMedia); // console.table is fine here as it's for structured data display
   });
 

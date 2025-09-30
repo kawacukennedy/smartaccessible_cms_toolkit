@@ -1,7 +1,10 @@
 import inquirer from 'inquirer';
+import { undoRedoStack } from '../lib/undoRedoStack';
+import { log } from '../lib/logger';
+import { trackEvent } from '../lib/telemetry';
 
 export const edit = async (contentId: string, options: any) => {
-  console.log(`Executing edit command for content ID: ${contentId} with options:`, options);
+  log(`Executing edit command for content ID: ${contentId} with options:` + JSON.stringify(options));
 
   const answers = await inquirer.prompt([
     {
@@ -22,7 +25,9 @@ export const edit = async (contentId: string, options: any) => {
   const value = options.value || answers.value;
 
   // Placeholder for edit logic
-  console.log(`\nEditing field: ${field}`);
-  console.log(`New value: ${value}`);
-  console.log('Content edited successfully!');
+  log(`\nEditing field: ${field}`);
+  log(`New value: ${value}`);
+  log('Content edited successfully!');
+  undoRedoStack.execute({ type: 'edit', payload: { contentId, field, value } });
+  trackEvent('content_save', { type: 'edit', contentId, field });
 };

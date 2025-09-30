@@ -14,18 +14,24 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ toggleSidebar, startTour }) => {
-  const { theme, setTheme, toggleTheme } = useTheme(); // Destructure setTheme
+  const { theme, setTheme } = useTheme(); // Destructure setTheme
   // const { i18n } = useTranslation(); // Removed
   const { addNotification } = useNotifications();
   const { isLoggedIn, user, logout } = useAuth();
-  const { highContrast, toggleHighContrast, increaseFontSize, decreaseFontSize, colorBlindMode, setColorBlindMode } = useAccessibility();
+  const { highContrast, toggleHighContrast, increaseFontSize, decreaseFontSize, colorBlindMode, setColorBlindMode, reducedMotion, toggleReducedMotion } = useAccessibility();
 
   const searchInputRef = useRef<HTMLInputElement>(null); // Ref for search input
   const profileDropdownRef = useRef<HTMLButtonElement>(null); // Ref for profile dropdown button
 
   const navbarClass = theme === 'dark' ? 'navbar-dark bg-dark' : 'navbar-light bg-light';
 
-  
+  const cycleTheme = () => {
+    if (theme === 'light') setTheme('dark');
+    else if (theme === 'dark') setTheme('high-contrast');
+    else if (theme === 'high-contrast') setTheme('sepia');
+    else if (theme === 'sepia') setTheme('solarized');
+    else setTheme('light');
+  };
 
   const triggerSampleNotification = () => {
     addNotification({
@@ -55,7 +61,7 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, startTour }) => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.ctrlKey && event.shiftKey && event.key === 'T') {
         event.preventDefault();
-        toggleTheme();
+        cycleTheme();
       }
       // Keyboard shortcut for search focus
       if (event.ctrlKey && event.key === '/') {
@@ -75,7 +81,7 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, startTour }) => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [toggleTheme, searchInputRef, profileDropdownRef]); // Added refs to dependencies
+  }, [cycleTheme, searchInputRef, profileDropdownRef]); // Added refs to dependencies
 
   return (
     <header>
@@ -129,7 +135,7 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, startTour }) => {
 
               {/* Persistent Toolbar / Quick Actions */}
               <button className="btn btn-outline-success me-2" title="Save current draft (Ctrl+S)">
-                <i className="bi bi-save"></i> Save
+                <i className="bi bi-save"></i> Save Draft
               </button>
               <button className="btn btn-outline-secondary me-2" title="Undo last action (Ctrl+Z)">
                 <i className="bi bi-arrow-counterclockwise"></i> Undo
@@ -137,11 +143,11 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, startTour }) => {
               <button className="btn btn-outline-secondary me-2" title="Redo last action (Ctrl+Shift+Z)">
                 <i className="bi bi-arrow-clockwise"></i> Redo
               </button>
-              <button className="btn btn-outline-info me-2" title="Preview device (Ctrl+Shift+P)">
+              <button className="btn btn-outline-info me-2" title="Preview device">
                 <i className="bi bi-eye"></i> Preview
               </button>
-              <button className="btn btn-outline-primary me-2" title="AI suggestions (Ctrl+Alt+A)">
-                <i className="bi bi-robot"></i> AI Suggest
+              <button className="btn btn-outline-primary me-2" title="AI suggestions">
+                <i className="bi bi-robot"></i> AI suggestions
               </button>
 
               {/* Secondary Navigation / User Actions */}
@@ -172,8 +178,12 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, startTour }) => {
               )}
 
               {/* Theme Toggle */}
-              <button className="btn btn-outline-secondary ms-2" onClick={toggleTheme} title="Switch light/dark (Ctrl+Shift+T)">
+              <button className="btn btn-outline-secondary ms-2" onClick={cycleTheme} title="Switch light/dark">
                 <i className={`bi ${theme === 'dark' ? 'bi-sun' : 'bi-moon'}`}></i>
+              </button>
+              {/* Reduced Motion Toggle */}
+              <button className="btn btn-outline-secondary ms-2" onClick={toggleReducedMotion} title="Toggle Reduced Motion">
+                <i className={`bi ${reducedMotion ? 'bi-hand-thumbs-down-fill' : 'bi-hand-thumbs-up'}`}></i>
               </button>
               {/* Sample Notification Trigger */}
               <button className="btn btn-outline-info ms-2" onClick={triggerSampleNotification} title="Trigger Sample Notifications">

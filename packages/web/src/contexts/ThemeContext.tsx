@@ -4,12 +4,11 @@
 
 import React, { createContext, useState, useMemo, useContext, useEffect } from 'react';
 
-type Theme = 'light' | 'dark' | 'high_contrast';
+type Theme = 'light' | 'dark' | 'high_contrast' | 'sepia' | 'solarized';
 
 interface ThemeContextType {
   theme: Theme;
   setTheme: (theme: Theme) => void;
-  toggleTheme: () => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -32,15 +31,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setThemeState(newTheme);
   };
 
-  const toggleTheme = () => {
-    setThemeState((prevTheme) => {
-      if (prevTheme === 'light') return 'dark';
-      if (prevTheme === 'dark') return 'high_contrast';
-      return 'light';
-    });
-  };
-
-  const value = useMemo(() => ({ theme, setTheme, toggleTheme }), [theme]);
+  const value = useMemo(() => ({ theme, setTheme }), [theme]);
 
   return (
     <ThemeContext.Provider value={value}>

@@ -6,6 +6,7 @@ import React, { createContext, useContext, useState, ReactNode } from 'react';
 interface OnboardingStep {
   title: string;
   completed: boolean;
+  tooltip?: string;
 }
 
 interface OnboardingContextType {
@@ -29,11 +30,11 @@ interface OnboardingProviderProps {
 
 export const OnboardingProvider = ({ children }: OnboardingProviderProps) => {
   const [steps, setSteps] = useState<OnboardingStep[]>([
-    { title: 'Create your first block', completed: false },
-    { title: 'Use an AI suggestion', completed: false },
-    { title: 'Explore the media library', completed: false },
-    { title: 'Preview your content', completed: false },
-    { title: 'Publish your first piece', completed: false },
+    { title: 'Create your first block', completed: false, tooltip: 'Add a new content block to the editor.' },
+    { title: 'Use an AI suggestion', completed: false, tooltip: 'Apply an AI-generated suggestion to your content.' },
+    { title: 'Explore the media library', completed: false, tooltip: 'Upload and manage your media assets.' },
+    { title: 'Preview your content', completed: false, tooltip: 'See how your content looks on different devices.' },
+    { title: 'Publish your first piece', completed: false, tooltip: 'Make your content live for the world to see.' },
   ]);
 
   const completeStep = (title: string) => {

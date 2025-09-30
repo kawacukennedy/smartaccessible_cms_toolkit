@@ -14,6 +14,7 @@ import { useUndoRedo } from '@/contexts/UndoRedoContext';
 import { AISuggestion } from '@/types/ai-suggestion';
 import { useNotifications } from '@/contexts/NotificationContext'; // Import useNotifications
 import { useOnboarding } from '@/contexts/OnboardingContext'; // Import useOnboarding
+import { trackEvent } from '@/lib/telemetry';
 
 const ContentEditor: React.FC = () => {
   const { currentContent, addChange, undo, redo } = useUndoRedo(); // Destructure undo and redo
@@ -26,10 +27,37 @@ const ContentEditor: React.FC = () => {
   const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
   const [validationIssues, setValidationIssues] = useState<string[]>([]);
-  const [aiScanStatus, setAiScanStatus] = useState<'idle' | 'queued' | 'running' | 'done' | 'failed'>('idle'); // AI Scan status for ContentEditor
+  const [aiScanStatus, setAiScanStatus] = useState<'idle' | 'queued' | 'running' | 'done' | 'failed'>('idle');
+  const { setSuggestions } = useAISuggestions();
   const [scrollPercentage, setScrollPercentage] = useState(0);
   const activeScroller = useRef<'editor' | 'preview' | null>(null);
   const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  // Simulate AI scanning process
+  useEffect(() => {
+    if (aiScanStatus === 'queued') {
+      setAiScanStatus('running');
+      // Simulate API call for AI scan
+      setTimeout(() => {
+        const success = Math.random() > 0.1; // 90% success rate
+        if (success) {
+          setAiScanStatus('done');
+          // Mock AI suggestions
+          setSuggestions([
+            { id: '1', type: 'accessibility', message: 'Consider adding alt text to images.', recommendation: 'Add descriptive alt text.', confidence: 85 },
+            { id: '2', type: 'seo', message: 'Improve keyword density.', recommendation: 'Include relevant keywords naturally.', confidence: 70 },
+            { id: '3', type: 'content', message: 'Break long paragraphs into shorter ones.', recommendation: 'Use shorter paragraphs for readability.', confidence: 90 },
+            { id: '4', type: 'style', message: 'Check for passive voice.', recommendation: 'Rewrite sentences in active voice.', confidence: 40 },
+          ]);
+          addNotification({ displayType: 'toast', style: 'AI', message: 'AI scan complete. Suggestions ready.' });
+        } else {
+          setAiScanStatus('failed');
+          addNotification({ displayType: 'toast', style: 'error', message: 'AI scan failed. Retry?' });
+          trackEvent('error', { type: 'ai_scan_failed' });
+        }
+      }, 1500);
+    }
+  }, [aiScanStatus, setSuggestions, addNotification]);
 
   // Debounce function
   const debounce = (func: (...args: any[]) => void, delay: number) => {
@@ -42,6 +70,9 @@ const ContentEditor: React.FC = () => {
 
   const debouncedAddChange = useCallback(debounce((newContent: string) => {
     addChange(newContent);
+    trackEvent('content_save', { type: 'autosave' });
+    // Trigger AI scan on content change
+    setAiScanStatus('queued');
   }, 200), [addChange]); // Debounce for 200ms
 
   const handleScroll = (source: 'editor' | 'preview', percentage: number) => {
@@ -100,25 +131,48 @@ const ContentEditor: React.FC = () => {
   const togglePreviewMode = () => {
     setIsPreviewMode(!isPreviewMode);
     completeStep('Preview your content');
+    trackEvent('preview', { mode: isPreviewMode ? 'exit' : 'enter' });
   };
 
   const handleBlockSelect = (blockContent: string) => {
     addChange(blockContent);
     completeStep('Create your first block');
+    trackEvent('content_save', { type: 'block_select' });
   };
 
   const handleApplyAISuggestion = (suggestion: AISuggestion) => {
-    // For simplicity, let's just append the suggestion message to the content
-    // In a real application, this would involve more sophisticated content manipulation
+    const contentBefore = currentContent;
     const newContent = currentContent + '\n\n' + `[AI Suggestion Applied: ${suggestion.message}]`;
     addChange(newContent);
     completeStep('Use an AI suggestion');
+    trackEvent('ai_applied', { suggestionType: suggestion.type, confidence: suggestion.confidence });
+    // Pass contentBefore and newContent to AISuggestionContext's applySuggestion
+    // This is a conceptual call, as AISuggestionContext doesn't directly modify content
+    // but it could be used to record the change for undo/redo purposes.
+    // For now, we'll just call the applySuggestion from AISuggestionContext to remove it from the panel.
+    // The actual content change is handled by addChange.
+    applySuggestion(suggestion.id, contentBefore, newContent);
   };
 
+  const [autosaveStatus, setAutosaveStatus] = useState<'idle' | 'saving' | 'saved' | 'failed'>('idle');
+
   const handleSave = () => {
+    setAutosaveStatus('saving');
+    addNotification({ displayType: 'toast', style: 'info', message: 'Saving draft…' });
     console.log('Saving content:', currentContent);
-    // addNotification({ displayType: 'toast', style: 'info', message: 'Content save initiated.' }); // Handled by EditorToolbar now
-    // In a real app, this would trigger an API call to save the content
+    // Simulate API call for saving
+    setTimeout(() => {
+      const success = Math.random() > 0.1; // 90% success rate
+      if (success) {
+        setAutosaveStatus('saved');
+        addNotification({ displayType: 'toast', style: 'success', message: 'Draft saved' });
+        trackEvent('content_save', { type: 'manual' });
+      } else {
+        setAutosaveStatus('failed');
+        addNotification({ displayType: 'toast', style: 'error', message: 'Save failed. Retry?' });
+        trackEvent('error', { type: 'manual_save_failed' });
+      }
+    }, 1000);
   };
 
   const handleAISuggestionRequest = () => {
@@ -127,6 +181,7 @@ const ContentEditor: React.FC = () => {
   };
 
   const runValidationChecks = (): string[] => {
+    trackEvent('validation', { type: 'pre_publish' });
     const issues: string[] = [];
     if (currentContent.length < 10) {
       issues.push('Content is too short.');
@@ -148,6 +203,7 @@ const ContentEditor: React.FC = () => {
     const issues = runValidationChecks();
     setValidationIssues(issues);
     setIsPublishModalOpen(true);
+    addNotification({ displayType: 'toast', style: 'info', message: 'Publish content? Final accessibility checks will run.' });
   };
 
   const handleConfirmPublish = () => {
@@ -157,10 +213,12 @@ const ContentEditor: React.FC = () => {
     setTimeout(() => {
       const success = Math.random() > 0.2; // 80% success rate
       if (success) {
-        addNotification({ displayType: 'toast', style: 'success', message: 'Content published successfully!' });
+        addNotification({ displayType: 'toast', style: 'success', message: 'Content published successfully.' });
         completeStep('Publish your first piece');
+        trackEvent('publish', { status: 'success' });
       } else {
         addNotification({ displayType: 'toast', style: 'error', message: 'Publish failed. Retry?' });
+        trackEvent('error', { type: 'publish_failed' });
       }
       setIsPublishModalOpen(false);
     }, 2000);
@@ -179,16 +237,18 @@ const ContentEditor: React.FC = () => {
           case 'z': // Ctrl+Z or Cmd+Z
             event.preventDefault();
             undo();
+            trackEvent('undo');
             break;
           case 'Z': // Ctrl+Shift+Z or Cmd+Shift+Z
             event.preventDefault();
             redo();
+            trackEvent('redo');
             break;
           case 'k': // Ctrl+K or Cmd+K for search
             event.preventDefault();
-            console.log('Search shortcut triggered');
-            addNotification({ displayType: 'toast', style: 'info', message: 'Search triggered.' });
-            // Implement search functionality here
+            addNotification({ displayType: 'toast', style: 'info', message: 'Search functionality triggered (placeholder).' });
+            // TODO: Implement actual search functionality here
+            trackEvent('search_shortcut');
             break;
         }
       }
@@ -208,9 +268,9 @@ const ContentEditor: React.FC = () => {
 
       if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 'P') { // Ctrl+Shift+P or Cmd+Shift+P for command palette
         event.preventDefault();
-        console.log('Command Palette shortcut triggered');
-        addNotification({ displayType: 'toast', style: 'info', message: 'Command Palette triggered.' });
-        // Implement command palette functionality here
+        addNotification({ displayType: 'toast', style: 'info', message: 'Command Palette triggered (placeholder).' });
+        // TODO: Implement actual command palette functionality here
+        trackEvent('command_palette_shortcut');
       }
     };
 

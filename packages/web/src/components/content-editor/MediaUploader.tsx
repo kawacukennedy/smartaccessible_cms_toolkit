@@ -1,7 +1,10 @@
-'use client';
-
 import React, { useState, useCallback } from 'react';
 import { useNotifications } from '@/contexts/NotificationContext';
+import { trackEvent } from '@/lib/telemetry';
+
+interface MediaUploaderProps {
+  onUploadComplete: (file: { id: string; name: string; altText?: string; }) => void;
+}
 
 interface UploadableFile {
   file: File;
@@ -11,7 +14,7 @@ interface UploadableFile {
   altText?: string;
 }
 
-const MediaUploader: React.FC = () => {
+const MediaUploader: React.FC<MediaUploaderProps> = ({ onUploadComplete }) => {
   const [files, setFiles] = useState<UploadableFile[]>([]);
   const { addNotification } = useNotifications();
 
@@ -53,7 +56,11 @@ const MediaUploader: React.FC = () => {
       const success = Math.random() > 0.2;
       setFiles(prev => prev.map(f => {
         if (f.id === uploadableFile.id) {
-          return { ...f, progress: 100, status: success ? 'success' : 'failed' };
+          const updatedFile = { ...f, progress: 100, status: success ? 'success' : 'failed' };
+          if (success) {
+            onUploadComplete({ id: updatedFile.id, name: updatedFile.file.name, altText: updatedFile.altText });
+          }
+          return updatedFile;
         }
         return f;
       }));
@@ -159,5 +166,3 @@ const MediaUploader: React.FC = () => {
     </div>
   );
 };
-
-export default MediaUploader;

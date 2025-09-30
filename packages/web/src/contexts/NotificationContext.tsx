@@ -36,6 +36,7 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({
       timestamp: new Date().toISOString(),
       read: false,
     };
+
     setNotifications((prevNotifications) => [
       ...prevNotifications,
       newNotification,
@@ -46,15 +47,28 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({
       liveRegionRef.current.textContent = newNotification.message;
     }
 
-    // Auto-remove toast notifications after a delay
-    if (newNotification.displayType === 'toast') {
-      setTimeout(() => {
-        removeNotification(id);
-        // Clear live region after announcement
-        if (liveRegionRef.current && liveRegionRef.current.textContent === newNotification.message) {
-          liveRegionRef.current.textContent = '';
-        }
-      }, 5000); // 5 seconds
+    // Handle different display types
+    switch (newNotification.displayType) {
+      case 'toast':
+        // Auto-remove toast notifications after a delay
+        setTimeout(() => {
+          removeNotification(id);
+          // Clear live region after announcement
+          if (liveRegionRef.current && liveRegionRef.current.textContent === newNotification.message) {
+            liveRegionRef.current.textContent = '';
+          }
+        }, 5000); // 5 seconds
+        break;
+      case 'push':
+        console.log('Simulating push notification:', newNotification.message);
+        // In a real app, this would trigger a push notification service
+        break;
+      case 'email':
+        console.log('Simulating email notification:', newNotification.message);
+        // In a real app, this would trigger an email service
+        break;
+      default:
+        break;
     }
   }, []);
 
@@ -74,9 +88,13 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
   }, []);
 
+  const bulkDismiss = useCallback(() => {
+    setNotifications([]); // Clear all notifications
+  }, []);
+
   return (
     <NotificationContext.Provider
-      value={{ notifications, addNotification, removeNotification, markAsRead, markAllAsRead }}
+      value={{ notifications, addNotification, removeNotification, markAsRead, markAllAsRead, bulkDismiss }}
     >
       {children}
       {/* Hidden ARIA live region for screen reader announcements */}

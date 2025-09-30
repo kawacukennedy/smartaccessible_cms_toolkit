@@ -1,6 +1,6 @@
 export interface Notification {
   id: string;
-  displayType: 'toast' | 'modal' | 'snackbar'; // New property to define how it's displayed
+  displayType: 'toast' | 'modal' | 'snackbar' | 'push' | 'email'; // New property to define how it's displayed
   style: 'info' | 'warning' | 'error' | 'success' | 'ai_suggestion'; // Renamed from 'type' to 'style'
   message: string;
   read: boolean;

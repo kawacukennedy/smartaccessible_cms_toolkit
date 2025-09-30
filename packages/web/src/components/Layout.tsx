@@ -11,7 +11,7 @@ import BootstrapClient from '@/components/BootstrapClient'; // Import BootstrapC
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { theme } = useTheme();
-  const { highContrast, fontSize, colorBlindMode } = useAccessibility();
+  const { highContrast, fontSize, colorBlindMode, reducedMotion } = useAccessibility();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // State for sidebar visibility
   const [runTour, setRunTour] = useState(false);
 
@@ -21,6 +21,16 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       setRunTour(true);
       localStorage.setItem('tourHasRun', 'true');
     }
+
+    const handleStartTourEvent = () => {
+      setRunTour(true);
+    };
+
+    window.addEventListener('startTour', handleStartTourEvent);
+
+    return () => {
+      window.removeEventListener('startTour', handleStartTourEvent);
+    };
   }, []);
 
   const toggleSidebar = () => {
@@ -32,7 +42,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   };
 
   return (
-    <div className={`main-layout d-flex flex-column min-vh-100 bg-${theme === 'dark' ? 'dark' : 'light'} ${highContrast ? 'high-contrast' : ''}`}>
+    <div className={`main-layout d-flex flex-column min-vh-100 bg-${theme === 'dark' ? 'dark' : 'light'} ${highContrast ? 'high-contrast' : ''} ${reducedMotion ? 'reduced-motion' : ''}`}>
       <Header toggleSidebar={toggleSidebar} startTour={startTour} />
       <div className="d-flex flex-grow-1">
         <Sidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />

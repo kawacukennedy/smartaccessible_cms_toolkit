@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useAccessibility } from '@/contexts/AccessibilityContext';
 
 interface LivePreviewPanelProps {
   content: string;
@@ -21,6 +22,7 @@ const deviceDimensions: Record<Device, { width: string; height: string }> = {
 const LivePreviewPanel: React.FC<LivePreviewPanelProps> = ({ content, scrollPercentage, onScroll }) => {
   const [selectedDevice, setSelectedDevice] = useState<Device>('desktop');
   const { theme, setTheme } = useTheme();
+  const { reducedMotion, toggleReducedMotion, colorBlindMode, setColorBlindMode } = useAccessibility();
   const previewRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -49,7 +51,7 @@ const LivePreviewPanel: React.FC<LivePreviewPanelProps> = ({ content, scrollPerc
     border: '1px solid #ccc',
     overflow: 'auto',
     margin: 'auto',
-    transition: 'width 0.3s, height 0.3s',
+    transition: reducedMotion ? 'none' : 'width 0.3s, height 0.3s',
   };
 
   return (
@@ -58,13 +60,26 @@ const LivePreviewPanel: React.FC<LivePreviewPanelProps> = ({ content, scrollPerc
         <span>Live Preview</span>
         <div>
           <div className="btn-group me-2" role="group" aria-label="Accessibility Simulation">
-            <button type="button" className="btn btn-sm btn-outline-secondary">Reduced Motion</button>
-            <button type="button" className="btn btn-sm btn-outline-secondary">Colorblind Friendly</button>
+            <button type="button" className={`btn btn-sm btn-outline-secondary ${reducedMotion ? 'active' : ''}`} onClick={toggleReducedMotion}>Reduced Motion</button>
+            <div className="dropdown d-inline-block">
+              <button className={`btn btn-sm btn-outline-secondary dropdown-toggle ${colorBlindMode !== 'none' ? 'active' : ''}`} type="button" id="colorblindModeDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                Colorblind Friendly
+              </button>
+              <ul className="dropdown-menu" aria-labelledby="colorblindModeDropdown">
+                <li><button className={`dropdown-item ${colorBlindMode === 'none' ? 'active' : ''}`} onClick={() => setColorBlindMode('none')}>None</button></li>
+                <li><button className={`dropdown-item ${colorBlindMode === 'protanopia' ? 'active' : ''}`} onClick={() => setColorBlindMode('protanopia')}>Protanopia</button></li>
+                <li><button className={`dropdown-item ${colorBlindMode === 'deuteranopia' ? 'active' : ''}`} onClick={() => setColorBlindMode('deuteranopia')}>Deuteranopia</button></li>
+                <li><button className={`dropdown-item ${colorBlindMode === 'tritanopia' ? 'active' : ''}`} onClick={() => setColorBlindMode('tritanopia')}>Tritanopia</button></li>
+                <li><button className={`dropdown-item ${colorBlindMode === 'achromatopsia' ? 'active' : ''}`} onClick={() => setColorBlindMode('achromatopsia')}>Achromatopsia</button></li>
+              </ul>
+            </div>
           </div>
           <div className="btn-group me-2" role="group" aria-label="Theme Simulation">
             <button type="button" className={`btn btn-sm btn-outline-secondary ${theme === 'light' ? 'active' : ''}`} onClick={() => setTheme('light')}>Light</button>
             <button type="button" className={`btn btn-sm btn-outline-secondary ${theme === 'dark' ? 'active' : ''}`} onClick={() => setTheme('dark')}>Dark</button>
-            <button type="button" className={`btn btn-sm btn-outline-secondary ${theme === 'high_contrast' ? 'active' : ''}`} onClick={() => setTheme('high_contrast')}>High Contrast</button>
+            <button type="button" className={`btn btn-sm btn-outline-secondary ${theme === 'high-contrast' ? 'active' : ''}`} onClick={() => setTheme('high-contrast')}>High Contrast</button>
+            <button type="button" className={`btn btn-sm btn-outline-secondary ${theme === 'sepia' ? 'active' : ''}`} onClick={() => setTheme('sepia')}>Sepia</button>
+            <button type="button" className={`btn btn-sm btn-outline-secondary ${theme === 'solarized' ? 'active' : ''}`} onClick={() => setTheme('solarized')}>Solarized</button>
           </div>
           <div className="btn-group" role="group" aria-label="Device Simulation">
             {Object.keys(deviceDimensions).map((device) => (
@@ -80,7 +95,7 @@ const LivePreviewPanel: React.FC<LivePreviewPanelProps> = ({ content, scrollPerc
           </div>
         </div>
       </div>
-      <div className={`card-body d-flex flex-column align-items-center justify-content-center ${theme}`}>
+      <div className={`card-body d-flex flex-column align-items-center justify-content-center ${theme} ${colorBlindMode !== 'none' ? colorBlindMode : ''}`}>
         <div style={previewStyle} ref={previewRef} onScroll={handleScroll}>
           <div dangerouslySetInnerHTML={{ __html: content }} />
           {/* Placeholder for AI Suggestion Highlight */}

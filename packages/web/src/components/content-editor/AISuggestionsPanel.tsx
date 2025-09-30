@@ -8,6 +8,12 @@ interface AISuggestionsPanelProps {
   onApplySuggestion: (suggestion: AISuggestion) => void;
 }
 
+const getConfidenceColorClass = (confidence: number) => {
+  if (confidence > 75) return 'list-group-item-success'; // High confidence
+  if (confidence >= 50) return 'list-group-item-warning'; // Medium confidence
+  return 'list-group-item-danger'; // Low confidence
+};
+
 const AISuggestionsPanel: React.FC<AISuggestionsPanelProps> = ({ onApplySuggestion }) => {
   const { suggestions, applySuggestion, rejectSuggestion, clearSuggestions } = useAISuggestions();
 
@@ -16,8 +22,9 @@ const AISuggestionsPanel: React.FC<AISuggestionsPanelProps> = ({ onApplySuggesti
     applySuggestion(suggestion.id); // Remove from panel
   };
 
-  const handleApplyAll = () => {
-    suggestions.forEach(suggestion => onApplySuggestion(suggestion));
+  const handleApplyAllSafe = () => {
+    const safeSuggestions = suggestions.filter(s => s.confidence > 75); // Assuming >75% is 'safe'
+    safeSuggestions.forEach(suggestion => onApplySuggestion(suggestion));
     clearSuggestions(); // Clear all suggestions after applying
   };
 
@@ -31,29 +38,33 @@ const AISuggestionsPanel: React.FC<AISuggestionsPanelProps> = ({ onApplySuggesti
           <>
             <ul className="list-group mb-3">
               {suggestions.map((suggestion: AISuggestion) => (
-                <li key={suggestion.id} className="list-group-item d-flex justify-content-between align-items-center">
+                <li key={suggestion.id} className={`list-group-item d-flex justify-content-between align-items-center ${getConfidenceColorClass(suggestion.confidence)}`}>
                   <div>
-                    <strong>{suggestion.type}:</strong> {suggestion.message} (Confidence: {suggestion.confidence}%)
+                    <strong>{suggestion.type}:</strong> {suggestion.message} (Confidence: {suggestion.confidence}%)<br/>
+                    <small>Recommendation: {suggestion.recommendation}</small>
                   </div>
                   <div>
                     <button
                       className="btn btn-success btn-sm me-2"
                       onClick={() => handleApply(suggestion)}
                     >
-                      Apply
+                      Apply Suggestion
                     </button>
                     <button
                       className="btn btn-danger btn-sm"
                       onClick={() => rejectSuggestion(suggestion.id)}
                     >
-                      Reject
+                      Reject Suggestion
                     </button>
                   </div>
                 </li>
               ))}
             </ul>
-            <button className="btn btn-primary w-100" onClick={handleApplyAll}>
-              Apply All Suggestions
+            <button className="btn btn-primary w-100 mb-2" onClick={handleApplyAllSafe}>
+              Apply All Safe Suggestions
+            </button>
+            <button className="btn btn-outline-secondary w-100" onClick={clearSuggestions}>
+              Clear All Suggestions
             </button>
           </>
         )}

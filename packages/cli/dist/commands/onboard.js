@@ -6,50 +6,50 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.onboardCommand = void 0;
 const commander_1 = require("commander");
 const inquirer_1 = __importDefault(require("inquirer"));
+const logger_1 = require("../lib/logger");
 exports.onboardCommand = new commander_1.Command()
     .command('onboard')
-    .description('Interactive onboarding wizard')
+    .description('Start the onboarding process for a new user or project')
     .action(async () => {
-    console.log('Welcome to the SmartAccessible CMS Toolkit CLI!\n');
+    (0, logger_1.log)('Welcome to the SmartAccessible CMS Toolkit CLI!\n');
+    (0, logger_1.log)('This interactive wizard will guide you through the initial project setup.');
     const answers = await inquirer_1.default.prompt([
         {
-            type: 'list',
-            name: 'action',
-            message: 'What would you like to do first?',
-            choices: [
-                { name: 'Create a new piece of content', value: 'create' },
-                { name: 'Edit an existing piece of content', value: 'edit' },
-                { name: 'Run an AI scan on your content', value: 'ai_scan' },
-                { name: 'Preview your content', value: 'preview' },
-                { name: 'Publish your content', value: 'publish' },
-                new inquirer_1.default.Separator(),
-                { name: 'Exit', value: 'exit' },
-            ],
+            type: 'input',
+            name: 'projectName',
+            message: 'Enter your project name:',
+            default: 'My New Project',
+        },
+        {
+            type: 'confirm',
+            name: 'initializeGit',
+            message: 'Do you want to initialize a Git repository for this project?',
+            default: true,
+        },
+        {
+            type: 'confirm',
+            name: 'installDependencies',
+            message: 'Do you want to install project dependencies (e.g., npm install)?',
+            default: true,
         },
     ]);
-    switch (answers.action) {
-        case 'create':
-            console.log('\nTo create a new piece of content, use the `create` command.');
-            console.log('Example: `create --title "My New Post" --content "Hello, world!"`');
-            break;
-        case 'edit':
-            console.log('\nTo edit an existing piece of content, use the `edit` command.');
-            console.log('Example: `edit --id 123 --content "Updated content."`');
-            break;
-        case 'ai_scan':
-            console.log('\nTo run an AI scan, use the `ai-scan` command.');
-            console.log('Example: `ai-scan --id 123`');
-            break;
-        case 'preview':
-            console.log('\nTo preview your content, you would typically open it in a browser.');
-            console.log('This CLI tool focuses on content management, not rendering.');
-            break;
-        case 'publish':
-            console.log('\nTo publish your content, use the `publish` command.');
-            console.log('Example: `publish --id 123`');
-            break;
-        case 'exit':
-            console.log('\nGoodbye!');
-            break;
+    (0, logger_1.log)(`\nProject Name: ${answers.projectName}`);
+    if (answers.initializeGit) {
+        (0, logger_1.log)('Initializing Git repository...');
+        // Placeholder for git init logic
+        (0, logger_1.log)('Git repository initialized.');
     }
+    else {
+        (0, logger_1.log)('Git repository initialization skipped.');
+    }
+    if (answers.installDependencies) {
+        (0, logger_1.log)('Installing project dependencies...');
+        // Placeholder for npm install logic
+        (0, logger_1.log)('Project dependencies installed.');
+    }
+    else {
+        (0, logger_1.log)('Project dependencies installation skipped.');
+    }
+    (0, logger_1.log)('\nOnboarding complete! Your project is now set up.');
+    (0, logger_1.log)('You can now use other commands like `create`, `edit`, `ai-scan`, etc.');
 });

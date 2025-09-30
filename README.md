@@ -120,41 +120,45 @@ cd packages/cli
 # Build the CLI tool
 npm run build
 
-# Run the interactive onboarding wizard
-npm start onboard
+# Run the CLI tool (after building)
+# When running for the first time, you will be prompted to consent to anonymous telemetry data collection.
+node dist/index.js
+
+# Example: Run the interactive onboarding wizard
+node dist/index.js onboard
 
 # Example: Create new content
-npm start create -- --title "My New Article" --type post
+node dist/index.js create --title "My New Article" --type post
 
 # Example: Edit existing content
-npm start edit -- 123 --field content --value "Updated content here."
+node dist/index.js edit 123 --field content --value "Updated content here."
 
 # Example: Run an AI scan on content
-npm start ai-scan -- --id 123
+node dist/index.js ai-scan --id 123
 
 # Example: List media assets
-npm start list-media
+node dist/index.js list-media
 
 # Example: Preview content
-npm start preview -- --id 123
+node dist/index.js preview --id 123
 
 # Example: Publish content
-npm start publish -- --id 123
+node dist/index.js publish --id 123
 
 # Example: Undo the last action
-npm start undo
+node dist/index.js undo
 
 # Example: Redo the last undone action
-npm start redo
+node dist/index.js redo
 
 # Example: Migrate content
-npm start migrate-content -- --source-space your-source-space-id --destination-space your-destination-space-id
+node dist/index.js migrate-content --source-space your-source-space-id --destination-space your-destination-space-id
 
 # Example: Audit accessibility
-npm start audit-accessibility -- --space your-space-id --output-file report.json
+node dist/index.js audit-accessibility --space your-space-id --output-file report.json
 
 # Example: Upload media
-npm start upload-media -- path/to/your/file.jpg --generate-alt-text
+node dist/index.js upload-media path/to/your/file.jpg --generate-alt-text
 ```
 
 ## Architecture

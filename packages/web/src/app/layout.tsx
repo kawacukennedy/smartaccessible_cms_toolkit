@@ -10,6 +10,7 @@ import { AISuggestionProvider } from "@/contexts/AISuggestionContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { UndoRedoProvider } from "@/contexts/UndoRedoContext";
 import { AccessibilityProvider } from "@/contexts/AccessibilityContext";
+import { initializeTelemetry } from '@/lib/telemetry';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,6 +20,10 @@ export const metadata: Metadata = {
 };
 
 import { OnboardingProvider } from '@/contexts/OnboardingContext';
+
+(async () => {
+  await initializeTelemetry();
+})();
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

@@ -1,16 +1,18 @@
 
 import { Command } from 'commander';
-
-// This is a placeholder for the actual redo logic.
-// In a real application, this would interact with a state management system.
-const redoLastAction = () => {
-  console.log('Redoing the last undone action...');
-  // In a real implementation, you would push to an action stack.
-};
+import { undoRedoStack } from '../lib/undoRedoStack';
+import { log } from '../lib/logger';
+import { trackEvent } from '../lib/telemetry';
 
 export const redoCommand = new Command()
   .command('redo')
   .description('Redo the last undone action')
   .action(() => {
-    redoLastAction();
+    const redoneAction = undoRedoStack.redo();
+    if (redoneAction) {
+      log('Action redone');
+      trackEvent('redo', { actionType: redoneAction.type });
+    } else {
+      log('No action to redo.');
+    }
   });

@@ -7,31 +7,46 @@ type ColorBlindMode = 'none' | 'protanopia' | 'deuteranopia' | 'tritanopia' | 'a
 interface AccessibilityContextType {
   highContrast: boolean;
   toggleHighContrast: () => void;
-  fontSize: number;
+  fontSize: 'small' | 'medium' | 'large';
   increaseFontSize: () => void;
   decreaseFontSize: () => void;
   colorBlindMode: ColorBlindMode;
   setColorBlindMode: (mode: ColorBlindMode) => void;
+  reducedMotion: boolean;
+  toggleReducedMotion: () => void;
 }
 
 const AccessibilityContext = createContext<AccessibilityContextType | undefined>(undefined);
 
-export const AccessibilityProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AccessibilityProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [highContrast, setHighContrast] = useState(false);
-  const [fontSize, setFontSize] = useState(16); // Default font size
+  const [fontSize, setFontSize] = useState<'small' | 'medium' | 'large'>('medium');
   const [colorBlindMode, setColorBlindMode] = useState<ColorBlindMode>('none');
+  const [reducedMotion, setReducedMotion] = useState(false);
 
-  const toggleHighContrast = useCallback(() => {
+  const toggleHighContrast = () => {
     setHighContrast((prev) => !prev);
-  }, []);
+  };
 
-  const increaseFontSize = useCallback(() => {
-    setFontSize((prev) => Math.min(prev + 2, 24)); // Max font size 24px
-  }, []);
+  const increaseFontSize = () => {
+    setFontSize((prev) => {
+      if (prev === 'small') return 'medium';
+      if (prev === 'medium') return 'large';
+      return 'large';
+    });
+  };
 
-  const decreaseFontSize = useCallback(() => {
-    setFontSize((prev) => Math.max(prev - 2, 12)); // Min font size 12px
-  }, []);
+  const decreaseFontSize = () => {
+    setFontSize((prev) => {
+      if (prev === 'large') return 'medium';
+      if (prev === 'medium') return 'small';
+      return 'small';
+    });
+  };
+
+  const toggleReducedMotion = () => {
+    setReducedMotion((prev) => !prev);
+  };
 
   const value = useMemo(
     () => ({
@@ -42,8 +57,10 @@ export const AccessibilityProvider: React.FC<{ children: React.ReactNode }> = ({
       decreaseFontSize,
       colorBlindMode,
       setColorBlindMode,
+      reducedMotion,
+      toggleReducedMotion,
     }),
-    [highContrast, toggleHighContrast, fontSize, increaseFontSize, decreaseFontSize, colorBlindMode, setColorBlindMode]
+    [highContrast, fontSize, colorBlindMode, reducedMotion]
   );
 
   return (

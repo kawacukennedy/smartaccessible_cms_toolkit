@@ -5,8 +5,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.create = void 0;
 const inquirer_1 = __importDefault(require("inquirer"));
+const undoRedoStack_1 = require("../lib/undoRedoStack");
+const logger_1 = require("../lib/logger");
+const telemetry_1 = require("../lib/telemetry");
 const create = async (options) => {
-    console.log('Executing create command with options:', options);
+    (0, logger_1.log)('Executing create command with options:' + JSON.stringify(options));
     const answers = await inquirer_1.default.prompt([
         {
             type: 'input',
@@ -23,8 +26,10 @@ const create = async (options) => {
     const title = options.title || answers.title;
     const content = answers.content;
     // Placeholder for create logic
-    console.log(`\nCreating content with title: ${title}`);
-    console.log(`Content: ${content}`);
-    console.log('Content created successfully!');
+    (0, logger_1.log)(`\nCreating content with title: ${title}`);
+    (0, logger_1.log)(`Content: ${content}`);
+    (0, logger_1.log)('Content created successfully!');
+    undoRedoStack_1.undoRedoStack.execute({ type: 'create', payload: { title, content } });
+    (0, telemetry_1.trackEvent)('content_save', { type: 'create', title });
 };
 exports.create = create;

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useState, useContext, useCallback, useMemo, useRef, useEffect } from 'react';
+import { useNotifications } from './NotificationContext';
 
 interface UndoRedoContextType {
   canUndo: boolean;
@@ -9,7 +10,6 @@ interface UndoRedoContextType {
   redo: () => void;
   addChange: (newState: string) => void;
   currentContent: string;
-  feedbackMessage: string; // New: feedback message for undo/redo actions
   history: string[]; // Expose history for versioning
   currentIndex: number; // Expose current index
   goToState: (index: number) => void; // Function to jump to a specific state
@@ -21,7 +21,7 @@ export const UndoRedoProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const history = useRef<string[]>([]);
   const [currentIndex, setCurrentIndex] = useState(-1);
   const [currentContent, setCurrentContent] = useState('');
-  const [feedbackMessage, setFeedbackMessage] = useState(''); // New state for feedback message
+  const { addNotification } = useNotifications();
 
   // Update currentContent when currentIndex or history changes
   useEffect(() => {
@@ -49,22 +49,20 @@ export const UndoRedoProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const undo = useCallback(() => {
     if (currentIndex > 0) {
       setCurrentIndex((prev) => prev - 1);
-      setFeedbackMessage('Undo successful.');
+      addNotification({ displayType: 'toast', style: 'info', message: 'Action undone' });
     } else {
-      setFeedbackMessage('Cannot undo further.');
+      addNotification({ displayType: 'toast', style: 'warning', message: 'Cannot undo further.' });
     }
-    setTimeout(() => setFeedbackMessage(''), 2000); // Clear feedback after 2 seconds
-  }, [currentIndex]);
+  }, [currentIndex, addNotification]);
 
   const redo = useCallback(() => {
     if (currentIndex < history.current.length - 1) {
       setCurrentIndex((prev) => prev + 1);
-      setFeedbackMessage('Redo successful.');
+      addNotification({ displayType: 'toast', style: 'info', message: 'Action redone' });
     } else {
-      setFeedbackMessage('Cannot redo further.');
+      addNotification({ displayType: 'toast', style: 'warning', message: 'Cannot redo further.' });
     }
-    setTimeout(() => setFeedbackMessage(''), 2000); // Clear feedback after 2 seconds
-  }, [currentIndex]);
+  }, [currentIndex, addNotification]);
 
   const canUndo = currentIndex > 0;
   const canRedo = currentIndex < history.current.length - 1;
@@ -72,24 +70,16 @@ export const UndoRedoProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const goToState = useCallback((index: number) => {
     if (index >= 0 && index < history.current.length) {
       setCurrentIndex(index);
-      setFeedbackMessage(`Jumped to state ${index + 1}.`);
+      addNotification({ displayType: 'toast', style: 'info', message: `Jumped to state ${index + 1}.` });
     } else {
-      setFeedbackMessage('Invalid state index.');
+      addNotification({ displayType: 'toast', style: 'error', message: 'Invalid state index.' });
     }
-    setTimeout(() => setFeedbackMessage(''), 2000); // Clear feedback after 2 seconds
-  }, []);
+  }, [addNotification]);
 
   const value = useMemo(
-    () => ({ canUndo, canRedo, undo, redo, addChange, currentContent, feedbackMessage, history: history.current, currentIndex, goToState }),
-    [canUndo, canRedo, undo, redo, addChange, currentContent, feedbackMessage, history.current, currentIndex, goToState]
+    () => ({ canUndo, canRedo, undo, redo, addChange, currentContent, history: history.current, currentIndex, goToState }),
+    [canUndo, canRedo, undo, redo, addChange, currentContent, history.current, currentIndex, goToState]
   );
-
-  return (
-    <UndoRedoContext.Provider value={value}>
-      {children}
-    </UndoRedoContext.Provider>
-  );
-};
 
 export const useUndoRedo = () => {
   const context = useContext(UndoRedoContext);

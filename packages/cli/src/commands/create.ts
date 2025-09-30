@@ -1,7 +1,10 @@
 import inquirer from 'inquirer';
+import { undoRedoStack } from '../lib/undoRedoStack';
+import { log } from '../lib/logger';
+import { trackEvent } from '../lib/telemetry';
 
 export const create = async (options: any) => {
-  console.log('Executing create command with options:', options);
+  log('Executing create command with options:' + JSON.stringify(options));
 
   const answers = await inquirer.prompt([
     {
@@ -21,7 +24,9 @@ export const create = async (options: any) => {
   const content = answers.content;
 
   // Placeholder for create logic
-  console.log(`\nCreating content with title: ${title}`);
-  console.log(`Content: ${content}`);
-  console.log('Content created successfully!');
+  log(`\nCreating content with title: ${title}`);
+  log(`Content: ${content}`);
+  log('Content created successfully!');
+  undoRedoStack.execute({ type: 'create', payload: { title, content } });
+  trackEvent('content_save', { type: 'create', title });
 };
