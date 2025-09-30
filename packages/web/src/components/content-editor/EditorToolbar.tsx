@@ -1,129 +1,62 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useUndoRedo } from '@/contexts/UndoRedoContext';
-import { useNotifications } from '@/contexts/NotificationContext';
 
 interface EditorToolbarProps {
-  onSave: () => void;
-  onAISuggestion: () => void;
-  onPreview: () => void;
-  onPublish: () => void; // Added onPublish prop
-  isPreviewMode: boolean;
-  onToggleAccessibilityPanel: () => void;
-  onToggleMediaLibrary: () => void;
-  onToggleVersionHistory: () => void;
-  onSimulateConflict: () => void;
-  onToggleOffline: () => void;
-  isOffline: boolean;
+  onSaveDraft: () => void;
+  onPublish: () => void;
+  accessibilityScore: number;
+  isAiAssistEnabled: boolean;
+  toggleAiAssist: () => void;
 }
 
-const EditorToolbar: React.FC<EditorToolbarProps> = ({ onSave, onAISuggestion, onPreview, onPublish, isPreviewMode, onToggleAccessibilityPanel, onToggleMediaLibrary, onToggleVersionHistory, onSimulateConflict, onToggleOffline, isOffline }) => {
-  const { undo, redo, canUndo, canRedo } = useUndoRedo(); // Get feedbackMessage
-  const { addNotification } = useNotifications();
-  const [hasValidationErrors, setHasValidationErrors] = useState(false); // Placeholder for validation errors
-  const [autosaveStatus, setAutosaveStatus] = useState<'idle' | 'saving' | 'saved' | 'failed'>('idle'); // Autosave status
-  const [publishStatus, setPublishStatus] = useState<'idle' | 'publishing' | 'success' | 'failed'>('idle'); // Publish status
+const EditorToolbar: React.FC<EditorToolbarProps> = ({
+  onSaveDraft,
+  onPublish,
+  accessibilityScore,
+  isAiAssistEnabled,
+  toggleAiAssist,
+}) => {
+  const { canUndo, canRedo, undo, redo } = useUndoRedo();
 
-  const handleSave = () => {
-    setAutosaveStatus('saving');
-    onSave();
-    // Simulate API call
-    setTimeout(() => {
-      const success = Math.random() > 0.1; // 90% success rate
-      if (success) {
-        setAutosaveStatus('saved');
-        addNotification({ displayType: 'toast', style: 'success', message: 'Content saved successfully!' });
-      } else {
-        setAutosaveStatus('failed');
-        addNotification({ displayType: 'toast', style: 'error', message: 'Save failed. Please try again.' });
-      }
-      setTimeout(() => setAutosaveStatus('idle'), 3000); // Reset status after 3 seconds
-    }, 1500);
+  const getAccessibilityBadgeColor = (score: number) => {
+    if (score < 50) return 'danger';
+    if (score < 80) return 'warning';
+    return 'success';
   };
-
-  const handleAISuggestion = () => {
-    onAISuggestion();
-    addNotification({ displayType: 'toast', style: 'info', message: 'Generating AI suggestions...' });
-  };
-
-  const handlePreview = () => {
-    onPreview();
-    addNotification({ displayType: 'toast', style: 'info', message: isPreviewMode ? 'Exiting preview...' : 'Opening preview...' });
-  };
-
-  const handlePublish = () => {
-    setPublishStatus('publishing');
-    onPublish();
-    addNotification({ displayType: 'toast', style: 'info', message: 'Publishing content...' });
-    setTimeout(() => {
-      const success = Math.random() > 0.2; // 80% success rate
-      if (success) {
-        setPublishStatus('success');
-        addNotification({ displayType: 'toast', style: 'success', message: 'Content published successfully!' });
-      } else {
-        setPublishStatus('failed');
-        addNotification({ displayType: 'toast', style: 'error', message: 'Publish failed. Retry?' });
-      }
-      setTimeout(() => setPublishStatus('idle'), 3000); // Reset status after 3 seconds
-    }, 2000);
-  };
-
-  const isPublishDisabled = hasValidationErrors || publishStatus === 'publishing';
 
   return (
-    <div className="d-flex justify-content-between align-items-center mb-3">
-      <div>
-        <button className="btn btn-outline-secondary me-2" onClick={undo} disabled={!canUndo} aria-label="Undo last action">
-          Undo
-        </button>
-        <button className="btn btn-outline-secondary" onClick={redo} disabled={!canRedo} aria-label="Redo last action">
-          Redo
-        </button>
-      </div>
-      <div className="d-flex align-items-center">
-        {autosaveStatus !== 'idle' && (
-          <div role="status" aria-live="polite" className="me-3 text-muted">
-            {autosaveStatus === 'saving' && 'Saving draft…'}
-            {autosaveStatus === 'saved' && 'Draft saved'}
-            {autosaveStatus === 'failed' && 'Save failed. Retry?'}
-          </div>
-        )}
-        {publishStatus !== 'idle' && (
-          <div role="status" aria-live="polite" className="me-3 text-muted">
-            {publishStatus === 'publishing' && 'Publishing content…'}
-            {publishStatus === 'success' && 'Content published successfully.'}
-            {publishStatus === 'failed' && 'Publish failed. Retry?'}
-          </div>
-        )}
-        <button className="btn btn-outline-primary me-2" onClick={handlePreview} aria-label={isPreviewMode ? "Back to Editor" : "Preview content"}>
-          {isPreviewMode ? 'Editor' : 'Preview'}
-        </button>
-        <button className="btn btn-success me-2" onClick={handleSave} aria-label="Save draft" disabled={isOffline}>
-          Save Draft
-        </button>
-        <button className="btn btn-info me-2" onClick={handleAISuggestion} aria-label="Get AI suggestions">
-          AI Suggestion
-        </button>
-        <button className="btn btn-secondary me-2" onClick={onToggleAccessibilityPanel} aria-label="Toggle Accessibility Panel">
-            Accessibility
-        </button>
-        <button className="btn btn-secondary me-2" onClick={onToggleMediaLibrary} aria-label="Toggle Media Library">
-            Media
-        </button>
-        <button className="btn btn-secondary me-2" onClick={onToggleVersionHistory} aria-label="Toggle Version History">
-            History
-        </button>
-        <button className="btn btn-danger me-2" onClick={onSimulateConflict} aria-label="Simulate Conflict">
-            Conflict
-        </button>
-        <button className="btn btn-warning me-2" onClick={onToggleOffline} aria-label="Toggle Offline Mode">
-            Offline
-        </button>
-        <button className="btn btn-primary" onClick={handlePublish} disabled={isPublishDisabled || isOffline} title="Publish (Ctrl+Alt+P)" aria-label="Publish content">
-          <i className="bi bi-upload"></i> Publish
-        </button>
-      </div>
+    <div className="d-flex flex-wrap align-items-center mb-3">
+      {/* Undo/Redo */}
+      <button className="btn btn-outline-secondary me-2" onClick={undo} disabled={!canUndo} title="Undo (Ctrl+Z)">
+        <i className="bi bi-arrow-counterclockwise"></i> Undo
+      </button>
+      <button className="btn btn-outline-secondary me-2" onClick={redo} disabled={!canRedo} title="Redo (Ctrl+Shift+Z)">
+        <i className="bi bi-arrow-clockwise"></i> Redo
+      </button>
+
+      {/* Save/Publish */}
+      <button className="btn btn-success me-2" onClick={onSaveDraft} title="Save Draft">
+        <i className="bi bi-save"></i> Save Draft
+      </button>
+      <button className="btn btn-primary me-2" onClick={onPublish} title="Publish">
+        <i className="bi bi-cloud-upload"></i> Publish
+      </button>
+
+      {/* Accessibility Score */}
+      <span className={`badge bg-${getAccessibilityBadgeColor(accessibilityScore)} me-2`} title="Accessibility Score">
+        Accessibility: {accessibilityScore}%
+      </span>
+
+      {/* AI Assist Toggle */}
+      <button
+        className={`btn me-2 ${isAiAssistEnabled ? 'btn-primary' : 'btn-outline-primary'}`}
+        onClick={toggleAiAssist}
+        title="Toggle AI Assist"
+      >
+        <i className="bi bi-robot"></i> AI Assist {isAiAssistEnabled ? 'On' : 'Off'}
+      </button>
     </div>
   );
 };
