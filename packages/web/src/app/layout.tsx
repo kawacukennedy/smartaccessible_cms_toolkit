@@ -11,6 +11,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { UndoRedoProvider } from "@/contexts/UndoRedoContext";
 import { AccessibilityProvider } from "@/contexts/AccessibilityContext";
 import { initializeTelemetry } from '@/lib/telemetry';
+import OfflineBanner from '@/components/OfflineBanner'; // Import OfflineBanner
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -26,6 +27,21 @@ import { OnboardingProvider } from '@/contexts/OnboardingContext';
 })();
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const [isOnline, setIsOnline] = useState(true); // Manage online state here
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
   return (
     <html lang="en">
       <body>
@@ -36,6 +52,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <UndoRedoProvider>
                   <AISuggestionProvider>
                     <AccessibilityProvider>
+                      <OfflineBanner isOnline={isOnline} syncQueueCount={5} /> {/* Render OfflineBanner */}
                       <Layout>
                         {children}
                       </Layout>
