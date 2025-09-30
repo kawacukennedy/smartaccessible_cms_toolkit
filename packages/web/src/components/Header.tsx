@@ -68,14 +68,48 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, startTour }) => {
         event.preventDefault();
         searchInputRef.current?.focus();
       }
-      // Keyboard shortcut for navigation focus (Alt+N)
-      if (event.altKey && event.key === 'N') {
-        event.preventDefault();
-        // Focus the profile dropdown button as a proxy for navigation focus
-        // In a more complex app, this might focus the sidebar or a dedicated nav element
-        profileDropdownRef.current?.focus();
-      }
-    };
+        // Keyboard navigation for header links
+        useEffect(() => {
+          const navLinks = Array.from(document.querySelectorAll<HTMLElement>('.navbar-nav .nav-link'));
+          let focusedIndex = -1;
+      
+          const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.altKey && event.key === 'N') {
+              event.preventDefault();
+              if (navLinks.length > 0) {
+                focusedIndex = 0;
+                navLinks[focusedIndex].focus();
+              }
+              return;
+            }
+      
+            if (document.activeElement && navLinks.includes(document.activeElement as HTMLElement)) {
+              focusedIndex = navLinks.indexOf(document.activeElement as HTMLElement);
+      
+              if (event.key === 'ArrowRight') {
+                event.preventDefault();
+                focusedIndex = (focusedIndex + 1) % navLinks.length;
+                navLinks[focusedIndex].focus();
+              } else if (event.key === 'ArrowLeft') {
+                event.preventDefault();
+                focusedIndex = (focusedIndex - 1 + navLinks.length) % navLinks.length;
+                navLinks[focusedIndex].focus();
+              } else if (event.key === 'Enter') {
+                event.preventDefault();
+                (document.activeElement as HTMLElement).click();
+              } else if (event.key === 'Escape') {
+                event.preventDefault();
+                (document.activeElement as HTMLElement).blur();
+                focusedIndex = -1;
+              }
+            }
+          };
+      
+          window.addEventListener('keydown', handleKeyDown);
+          return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+          };
+        }, []);    };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => {
@@ -94,30 +128,30 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, startTour }) => {
             SmartAccessible CMS Toolkit
           </Link>
           <div className="collapse navbar-collapse" id="navbarNav">
-            <ul className="navbar-nav me-auto mb-2 mb-lg-0">
+            <ul className="navbar-nav me-auto mb-2 mb-lg-0" role="menubar">
               {/* Primary Navigation Items */}
-              <li className="nav-item">
-                <Link href="/dashboard" className="nav-link" aria-label="Go to Dashboard">Dashboard</Link>
+              <li className="nav-item" role="none">
+                <Link href="/dashboard" className="nav-link" role="menuitem" aria-label="Go to Dashboard">Dashboard</Link>
               </li>
-              <li className="nav-item">
-                <Link href="/content" className="nav-link" aria-label="Manage Pages">Pages</Link>
+              <li className="nav-item" role="none">
+                <Link href="/pages" className="nav-link" role="menuitem" aria-label="Manage Pages">Pages</Link>
               </li>
-              <li className="nav-item">
-                <Link href="/templates" className="nav-link" aria-label="Browse Templates">Templates</Link>
+              <li className="nav-item" role="none">
+                <Link href="/templates" className="nav-link" role="menuitem" aria-label="Browse Templates">Templates</Link>
               </li>
-              <li className="nav-item">
-                <Link href="/assets" className="nav-link" aria-label="Manage Assets">Assets</Link>
+              <li className="nav-item" role="none">
+                <Link href="/assets" className="nav-link" role="menuitem" aria-label="Manage Assets">Assets</Link>
               </li>
-              <li className="nav-item">
-                <Link href="/analytics" className="nav-link" aria-label="View Analytics">Analytics</Link>
+              <li className="nav-item" role="none">
+                <Link href="/analytics" className="nav-link" role="menuitem" aria-label="View Analytics">Analytics</Link>
               </li>
-              <li className="nav-item">
-                <Link href="/settings" className="nav-link" aria-label="Change Settings">Settings</Link>
+              <li className="nav-item" role="none">
+                <Link href="/settings" className="nav-link" role="menuitem" aria-label="Change Settings">Settings</Link>
               </li>
             </ul>
-            <div className="d-flex">
+            <div className="d-flex align-items-center">
               {/* Global Search Bar */}
-              <form className="d-flex me-2" role="search">
+              <form className="d-flex me-2 position-relative" role="search">
                 <input
                   ref={searchInputRef}
                   className="form-control me-2"
@@ -125,11 +159,19 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, startTour }) => {
                   placeholder="Search... (Ctrl+/)"
                   aria-label="Search"
                   role="combobox"
-                  aria-expanded="false"
+                  aria-expanded="false" // Will be dynamically set
                   aria-controls="search-results-list"
                 />
+                {/* Placeholder for Autocomplete/AI-ranked results */}
+                <div id="search-results-list" className="position-absolute w-100 bg-white border rounded shadow-sm" style={{ zIndex: 1000, top: '100%', display: 'none' }}>
+                  {/* Search results will be rendered here */}
+                </div>
                 <button className="btn btn-outline-secondary" type="submit">
                   <i className="bi bi-search"></i>
+                </button>
+                {/* Placeholder for Voice Input */}
+                <button className="btn btn-outline-secondary ms-1" type="button" title="Voice Input">
+                  <i className="bi bi-mic"></i>
                 </button>
               </form>
 
@@ -166,12 +208,12 @@ const Header: React.FC<HeaderProps> = ({ toggleSidebar, startTour }) => {
                   >
                     <i className="bi bi-person-circle"></i> {user?.name || 'Profile'}
                   </button>
-                  <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
-                    <li><Link href="/profile" className="dropdown-item">Profile</Link></li>
-                    <li><Link href="/notifications" className="dropdown-item">Notifications</Link></li>
-                    <li><Link href="/preferences" className="dropdown-item">Preferences</Link></li>
+                  <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown" role="menu">
+                    <li><Link href="/profile" className="dropdown-item" role="menuitem">Profile</Link></li>
+                    <li><Link href="/notifications" className="dropdown-item" role="menuitem">Notifications</Link></li>
+                    <li><Link href="/preferences" className="dropdown-item" role="menuitem">Preferences</Link></li>
                     <li><hr className="dropdown-divider" /></li>
-                    <li><button className="dropdown-item" onClick={logout}>Logout</button></li>
+                    <li><button className="dropdown-item" onClick={logout} role="menuitem">Logout</button></li>
                   </ul>
                 </div>
               ) : (

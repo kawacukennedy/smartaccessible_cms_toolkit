@@ -1,59 +1,88 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { Modal, Button, Row, Col, Form } from 'react-bootstrap';
 
 interface ConflictResolutionModalProps {
-  isOpen: boolean;
+  show: boolean;
   onClose: () => void;
-  onResolve: (resolvedContent: string) => void;
-  serverContent: string;
-  localContent: string;
+  onResolve: (resolution: 'yours' | 'theirs' | 'merged', mergedContent?: string) => void;
+  yourContent: string;
+  theirContent: string;
 }
 
-const ConflictResolutionModal: React.FC<ConflictResolutionModalProps> = ({ isOpen, onClose, onResolve, serverContent, localContent }) => {
-  if (!isOpen) return null;
+const ConflictResolutionModal: React.FC<ConflictResolutionModalProps> = ({
+  show,
+  onClose,
+  onResolve,
+  yourContent,
+  theirContent,
+}) => {
+  const [mergedContent, setMergedContent] = useState(yourContent);
+
+  useEffect(() => {
+    if (show) {
+      setMergedContent(yourContent); // Reset merged content when modal opens
+    }
+  }, [show, yourContent]);
+
+  const handleKeepYours = () => {
+    onResolve('yours', yourContent);
+  };
+
+  const handleKeepTheirs = () => {
+    onResolve('theirs', theirContent);
+  };
+
+  const handleMergeManually = () => {
+    onResolve('merged', mergedContent);
+  };
 
   return (
-    <div className="modal fade show d-block" tabIndex={-1}>
-      <div className="modal-dialog modal-xl">
-        <div className="modal-content">
-          <div className="modal-header">
-            <h5 className="modal-title">Resolve Conflicts</h5>
-            <button type="button" className="btn-close" onClick={onClose}></button>
-          </div>
-          <div className="modal-body">
-            <p>A conflict was detected. Please resolve the differences below.</p>
-            <div className="row">
-              <div className="col-md-6">
-                <h6>Server Version</h6>
-                <pre className="bg-light p-3">{serverContent}</pre>
-              </div>
-              <div className="col-md-6">
-                <h6>Your Version</h6>
-                <pre className="bg-light p-3">{localContent}</pre>
-              </div>
+    <Modal show={show} onHide={onClose} size="xl" centered backdrop="static" keyboard={false}> {/* Prevent closing without resolution */}
+      <Modal.Header>
+        <Modal.Title>Conflict Detected!</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <p>It looks like there's a conflict between your local changes and the server's version. Please choose how to resolve it.</p>
+        <Row>
+          <Col md={6}>
+            <h5>Your Version</h5>
+            <div className="border p-3 bg-light" style={{ height: '300px', overflowY: 'auto' }}>
+              <pre>{yourContent}</pre>
             </div>
-            <div className="mt-3">
-              <h6>Resolved Content</h6>
-              <textarea
-                className="form-control"
-                rows={10}
-                defaultValue={`${localContent}
----MERGED---
-${serverContent}`}
-              ></textarea>
+            <Button variant="success" className="mt-2 w-100" onClick={handleKeepYours}>
+              Keep Your Version
+            </Button>
+          </Col>
+          <Col md={6}>
+            <h5>Their Version</h5>
+            <div className="border p-3 bg-light" style={{ height: '300px', overflowY: 'auto' }}>
+              <pre>{theirContent}</pre>
             </div>
-          </div>
-          <div className="modal-footer">
-            <button type="button" className="btn btn-secondary" onClick={onClose}>Cancel</button>
-            <button type="button" className="btn btn-primary" onClick={() => {
-              const resolvedContent = document.querySelector('textarea')!.value;
-              onResolve(resolvedContent);
-            }}>Save Merged</button>
-          </div>
-        </div>
-      </div>
-    </div>
+            <Button variant="warning" className="mt-2 w-100" onClick={handleKeepTheirs}>
+              Keep Their Version
+            </Button>
+          </Col>
+        </Row>
+        <h5 className="mt-4">Manually Merge</h5>
+        <Form.Control
+          as="textarea"
+          rows={10}
+          value={mergedContent}
+          onChange={(e) => setMergedContent(e.target.value)}
+          className="font-monospace"
+        />
+        <Button variant="primary" className="mt-2 w-100" onClick={handleMergeManually}>
+          Apply Manual Merge
+        </Button>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="secondary" onClick={onClose}>
+          Cancel (Discard local changes)
+        </Button>
+      </Modal.Footer>
+    </Modal>
   );
 };
 

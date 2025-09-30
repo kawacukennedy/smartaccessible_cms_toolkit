@@ -13,6 +13,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
   const [showNewPageModal, setShowNewPageModal] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
+  // Placeholder for sync queue count
+  const syncQueueCount = 0; // This would come from a global state/context in a real app
+
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
@@ -27,19 +30,31 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen, toggleSidebar }) => {
   }, []);
 
   const handleCreatePage = (title: string, slug: string, template: string) => {
-    console.log(`Creating page: Title - ${title}, Slug - ${slug}, Template - ${template}`);
+    console.log(`Creating page: Title - ${title}, Slug - - ${slug}, Template - ${template}`);
     // In a real app, this would trigger page creation logic
     setShowNewPageModal(false);
   };
 
-  const statusBadgeClass = isOnline ? 'bg-success' : 'bg-danger';
-  const statusIconClass = isOnline ? 'bi-cloud-check' : 'bi-cloud-slash';
-  const statusText = isOnline ? 'Online' : 'Offline';
-  const statusTooltip = isOnline ? 'Online: All changes will sync immediately.' : 'Offline: Changes will sync later.';
+  let statusBadgeClass = 'bg-success';
+  let statusIconClass = 'bi-cloud-check';
+  let statusText = 'Online';
+  let statusTooltip = 'Online: All changes will sync immediately.';
+
+  if (!isOnline) {
+    statusBadgeClass = 'bg-danger';
+    statusIconClass = 'bi-cloud-slash';
+    statusText = 'Offline';
+    statusTooltip = 'Offline: Changes will sync later.';
+  } else if (syncQueueCount > 0) {
+    statusBadgeClass = 'bg-warning';
+    statusIconClass = 'bi-arrow-repeat';
+    statusText = 'Syncing';
+    statusTooltip = `Syncing: ${syncQueueCount} changes pending.`;
+  }
 
   return (
     <nav
-      className={`sidebar offcanvas offcanvas-start bg-light ${isSidebarOpen ? 'show' : ''} app-sidebar`}
+      className={`sidebar offcanvas offcanvas-start bg-light ${isSidebarOpen ? 'show' : ''} app-sidebar ${!isSidebarOpen ? 'collapsed' : ''}`}
       tabIndex={-1}
       id="sidebarOffcanvas"
       aria-labelledby="sidebarOffcanvasLabel"

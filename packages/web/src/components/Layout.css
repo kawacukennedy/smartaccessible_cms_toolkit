@@ -34,11 +34,54 @@
 
   /* Typography */
   --font-family-inter: 'Inter', sans-serif;
+  --font-size-h1: 32px;
+  --line-height-h1: 40px;
+  --font-weight-h1: bold;
+
+  --font-size-h2: 24px;
+  --line-height-h2: 32px;
+  --font-weight-h2: 600; /* semi-bold */
+
+  --font-size-body: 16px;
+  --line-height-body: 24px;
+  --font-weight-body: normal; /* regular */
+
+  --font-size-caption: 12px;
+  --line-height-caption: 16px;
+  --font-weight-caption: 500; /* medium */
 }
 
 body {
   font-family: var(--font-family-inter);
-  font-size: 16px; /* Default medium font size */
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+  font-weight: var(--font-weight-body);
+}
+
+h1 {
+  font-size: var(--font-size-h1);
+  line-height: var(--line-height-h1);
+  font-weight: var(--font-weight-h1);
+}
+
+h2 {
+  font-size: var(--font-size-h2);
+  line-height: var(--line-height-h2);
+  font-weight: var(--font-weight-h2);
+}
+
+/* Apply body styles to p tags for consistency */
+p {
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+  font-weight: var(--font-weight-body);
+}
+
+/* Apply caption styles to small tags or specific caption classes */
+.caption {
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-caption);
+  font-weight: var(--font-weight-caption);
 }
 
 html.font-size-small body {
@@ -75,6 +118,43 @@ html.font-size-large body {
   cursor: not-allowed;
 }
 
+/* Global Grid System (using Bootstrap's grid, but defining breakpoints for clarity) */
+/* Bootstrap handles the 12-column grid. These are for reference/custom utility classes. */
+/* min-width: 320px (handled by default Bootstrap mobile-first) */
+@media (min-width: 640px) { /* sm */ }
+@media (min-width: 1024px) { /* md */ }
+@media (min-width: 1280px) { /* lg */ }
+@media (min-width: 1440px) { /* xl */ }
+
+/* Utility classes for spacing, if not using Bootstrap's built-in spacing utilities */
+.p-sm { padding: var(--spacing-sm); }
+.p-md { padding: var(--spacing-md); }
+.p-lg { padding: var(--spacing-lg); }
+.p-xl { padding: var(--spacing-xl); }
+
+.m-sm { margin: var(--spacing-sm); }
+.m-md { margin: var(--spacing-md); }
+.m-lg { margin: var(--spacing-lg); }
+.m-xl { margin: var(--spacing-xl); }
+
+/* Utility classes for border-radius */
+.rounded-default { border-radius: var(--radius-default); }
+.rounded-large { border-radius: var(--radius-large); }
+
+/* Utility classes for shadows */
+.shadow-sm { box-shadow: var(--shadow-sm); }
+.shadow-md { box-shadow: var(--shadow-md); }
+.shadow-lg { box-shadow: var(--shadow-lg); }
+
+/* Utility classes for animations */
+.transition-fast { transition-duration: var(--animation-duration-fast); }
+.transition-medium { transition-duration: var(--animation-duration-medium); }
+.transition-slow { transition-duration: var(--animation-duration-slow); }
+
+.ease-in-out { transition-timing-function: var(--animation-easing-in-out); }
+.ease-in { transition-timing-function: var(--animation-easing-in); }
+.ease-out { transition-timing-function: var(--animation-easing-out); }
+
 /* General styles for the main layout */
 .main-layout {
   display: flex;
@@ -86,15 +166,26 @@ html.font-size-large body {
   height: 64px;
 }
 
-.app-sidebar {
-  width: 280px;
-  transition: width var(--animation-duration-medium) var(--animation-easing-in-out);
-}
+  .app-sidebar {
+    width: 280px;
+    transition: width var(--animation-duration-medium) var(--animation-easing-in-out);
+  }
 
-.app-sidebar.collapsed {
-  width: 64px;
-}
+  .app-sidebar.collapsed {
+    width: 64px;
+  }
 
+  /* Mobile behavior for sidebar */
+  @media (max-width: 1023px) {
+    .app-sidebar.offcanvas {
+      transform: translateX(-100%);
+      transition: transform var(--animation-duration-medium) var(--animation-easing-in-out);
+    }
+
+    .app-sidebar.offcanvas.show {
+      transform: translateX(0%);
+    }
+  }
 .main-content {
   flex-grow: 1;
   padding: var(--spacing-lg); /* Use spacing variable */
