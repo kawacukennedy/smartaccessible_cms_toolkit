@@ -31,30 +31,28 @@ export const aiScanCommand = new Command()
       if (issues.length === 0) {
         log('No issues found.');
       } else {
-        issues.forEach((issue: any, index: number) => {
-          log(`\nIssue ${index + 1}:`);
-          log(`  - Description: ${issue.description}`);
-          log(`  - Severity: ${issue.severity}`);
-          log(`  - Recommendation: ${issue.recommendation}`);
-        });
+        const choices = issues.map((issue: any, index: number) => ({
+          name: `Issue ${index + 1}: ${issue.description}`,
+          value: index,
+        }));
 
-        const { applySuggestions } = await inquirer.prompt([
+        const { selectedIssues } = await inquirer.prompt([
           {
-            type: 'confirm',
-            name: 'applySuggestions',
-            message: 'Do you want to apply these AI suggestions?',
-            default: false,
+            type: 'checkbox',
+            name: 'selectedIssues',
+            message: 'Select the issues you want to apply:',
+            choices,
           },
         ]);
 
-        if (applySuggestions) {
-          log('Applying AI suggestions...');
-          // Simulate applying suggestions
-          undoRedoStack.execute({ type: 'apply-ai-suggestions', payload: { contentId: options.id, suggestions: issues } });
+        if (selectedIssues.length > 0) {
+          log('Applying selected AI suggestions...');
+          const selectedSuggestions = selectedIssues.map((index: number) => issues[index]);
+          undoRedoStack.execute({ type: 'apply-ai-suggestions', payload: { contentId: options.id, suggestions: selectedSuggestions } });
           log('AI suggestions applied.');
-          trackEvent('ai_applied', { contentId: options.id, suggestionsCount: issues.length });
+          trackEvent('ai_applied', { contentId: options.id, suggestionsCount: selectedSuggestions.length });
         } else {
-          log('AI suggestions rejected.');
+          log('No AI suggestions were applied.');
         }
       }
     } catch (error) {

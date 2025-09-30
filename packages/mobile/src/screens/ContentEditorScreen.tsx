@@ -10,6 +10,7 @@ import MobileLivePreviewPanel from '../components/MobileLivePreviewPanel'; // Im
 import ConflictResolutionModal from '../components/ConflictResolutionModal'; // Import ConflictResolutionModal
 import AIErrorModal from '../components/AIErrorModal'; // Import AIErrorModal
 import { trackEvent } from '../lib/telemetry'; // Import trackEvent
+import NetInfo from "@react-native-community/netinfo";
 
 import MobileMediaLibrary from '../components/MobileMediaLibrary';
 
@@ -24,6 +25,25 @@ const ContentEditorScreen = () => {
   const [isConflictModalOpen, setIsConflictModalOpen] = useState(false); // New state for conflict modal
   const [isAIErrorModalOpen, setIsAIErrorModalOpen] = useState(false); // New state for AI error modal
   const [isSaving, setIsSaving] = useState(false);
+  const [isOffline, setIsOffline] = useState(false);
+
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener(state => {
+      const newOfflineStatus = !state.isConnected;
+      if (newOfflineStatus !== isOffline) {
+        setIsOffline(newOfflineStatus);
+        addNotification({
+          displayType: 'toast',
+          style: newOfflineStatus ? 'warning' : 'success',
+          message: newOfflineStatus ? 'You are now offline.' : 'You are back online!',
+        });
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [isOffline, addNotification]);
   const [scrollPercentage, setScrollPercentage] = useState(0);
   const activeScroller = useRef<'editor' | 'preview' | null>(null);
   const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
@@ -270,6 +290,7 @@ const ContentEditorScreen = () => {
         canRedo={canRedo}
         isPreviewMode={isPreviewMode}
         isSaving={isSaving}
+        isOffline={isOffline}
         testID="mobile-editor-toolbar"
         saveAccessibilityLabel="Save content"
         saveAccessibilityHint="Saves the current content draft"

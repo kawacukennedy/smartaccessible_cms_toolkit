@@ -12,6 +12,7 @@ import { listMediaCommand } from './commands/list-media';
 import { previewCommand } from './commands/preview';
 import { publishCommand } from './commands/publish';
 import { startSessionCommand } from './commands/start-session';
+import { resolveConflictsCommand } from './commands/resolve-conflicts';
 import { initializeTelemetry } from './lib/telemetry';
 
 const program = new Command();
@@ -70,6 +71,7 @@ const program = new Command();
   program.addCommand(previewCommand);
   program.addCommand(publishCommand);
   program.addCommand(startSessionCommand);
+  program.addCommand(resolveConflictsCommand);
 
   program.parse(process.argv);
 })();

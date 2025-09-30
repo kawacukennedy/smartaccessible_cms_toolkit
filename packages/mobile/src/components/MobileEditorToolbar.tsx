@@ -12,7 +12,9 @@ interface MobileEditorToolbarProps {
   canUndo: boolean;
   canRedo: boolean;
   isPreviewMode: boolean;
-  isSaving: boolean; // New prop for autosave spinner
+  isSaving: boolean;
+  isOffline: boolean; // New prop for autosave spinner
+  isOffline: boolean;
   // Accessibility props
   saveAccessibilityLabel?: string;
   saveAccessibilityHint?: string;
@@ -99,7 +101,7 @@ const MobileEditorToolbar: React.FC<MobileEditorToolbarProps> = ({
       </View>
       <View style={styles.rightControls}>
         {isSaving && <ActivityIndicator size="small" color="#0000ff" style={styles.spinner} accessibilityLabel="Saving content indicator" />}
-        <ToolbarButton onPress={onSave} accessibilityLabel={saveAccessibilityLabel} accessibilityHint={saveAccessibilityHint}>
+        <ToolbarButton onPress={onSave} disabled={isSaving || isOffline} accessibilityLabel={saveAccessibilityLabel} accessibilityHint={saveAccessibilityHint}>
           <Text style={styles.buttonText}>Save</Text>
         </ToolbarButton>
         <ToolbarButton onPress={onToggleAIPanel} accessibilityLabel={aiPanelAccessibilityLabel} accessibilityHint={aiPanelAccessibilityHint}>
@@ -111,7 +113,7 @@ const MobileEditorToolbar: React.FC<MobileEditorToolbarProps> = ({
         <ToolbarButton onPress={onToggleMediaLibrary} accessibilityLabel={mediaLibraryAccessibilityLabel} mediaLibraryAccessibilityHint={mediaLibraryAccessibilityHint}>
           <Text style={styles.buttonText}>Media</Text>
         </ToolbarButton>
-        <ToolbarButton onPress={onPublish} accessibilityLabel={publishAccessibilityLabel} accessibilityHint={publishAccessibilityHint}>
+        <ToolbarButton onPress={onPublish} disabled={isOffline} accessibilityLabel={publishAccessibilityLabel} accessibilityHint={publishAccessibilityHint}>
           <Text style={styles.buttonText}>Publish</Text>
         </ToolbarButton>
       </View>

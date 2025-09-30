@@ -65,23 +65,71 @@ const AIPanel: React.FC<AIPanelProps> = ({ onApplySuggestion, isOpen, togglePane
     }
   }, [isOpen, isResponsive, isMobile]);
 
-          <div className="card-body tab-content" id="aiPanelTabsContent">
-            {aiScanStatus !== 'idle' && (
-              <div role="status" aria-live="polite" className="mb-3 text-muted">
-                {aiScanStatus === 'queued' && 'AI scan queued'}
-                {aiScanStatus === 'running' && 'AI scan in progress…'}
-                {aiScanStatus === 'done' && 'AI scan complete'}
-                {aiScanStatus === 'failed' && 'AI scan failed. Retry?'}
-              </div>
-            )}
-            <div
-              className="tab-pane fade show active"
-              id="accessibility"
-              role="tabpanel"
-              aria-labelledby="accessibility-tab"
+  const renderAIPanelContent = () => (
+    <div className="card h-100">
+      <div className="card-header">
+        <ul className="nav nav-tabs card-header-tabs" id="aiPanelTabs" role="tablist">
+          <li className="nav-item">
+            <button
+              className="nav-link active"
+              id="accessibility-tab"
+              data-bs-toggle="tab"
+              data-bs-target="#accessibility"
+              type="button"
+              role="tab"
+              aria-controls="accessibility"
+              aria-selected="true"
             >
-              <AccessibilityDashboard />
-            </div>
+              Accessibility
+            </button>
+          </li>
+          <li className="nav-item">
+            <button
+              className="nav-link"
+              id="suggestions-tab"
+              data-bs-toggle="tab"
+              data-bs-target="#suggestions"
+              type="button"
+              role="tab"
+              aria-controls="suggestions"
+              aria-selected="false"
+            >
+              Suggestions
+            </button>
+          </li>
+          <li className="nav-item">
+            <button
+              className="nav-link"
+              id="variations-tab"
+              data-bs-toggle="tab"
+              data-bs-target="#variations"
+              type="button"
+              role="tab"
+              aria-controls="variations"
+              aria-selected="false"
+            >
+              Variations
+            </button>
+          </li>
+        </ul>
+      </div>
+      <div className="card-body tab-content" id="aiPanelTabsContent">
+        {aiScanStatus !== 'idle' && (
+          <div role="status" aria-live="polite" className="mb-3 text-muted">
+            {aiScanStatus === 'queued' && 'AI scan queued'}
+            {aiScanStatus === 'running' && 'AI scan in progress…'}
+            {aiScanStatus === 'done' && 'AI scan complete'}
+            {aiScanStatus === 'failed' && 'AI scan failed. Retry?'}
+          </div>
+        )}
+        <div
+          className="tab-pane fade show active"
+          id="accessibility"
+          role="tabpanel"
+          aria-labelledby="accessibility-tab"
+        >
+          <AccessibilityDashboard />
+        </div>
         <div className="tab-pane fade" id="suggestions" role="tabpanel" aria-labelledby="suggestions-tab">
           <AISuggestionsPanel onApplySuggestion={onApplySuggestion} />
         </div>
@@ -241,100 +289,7 @@ const AIPanel: React.FC<AIPanelProps> = ({ onApplySuggestion, isOpen, togglePane
   }
 
   // Default desktop rendering
-  return (
-    <div className="card h-100">
-      <div className="card-header">
-        <ul className="nav nav-tabs card-header-tabs" id="aiPanelTabs" role="tablist">
-          <li className="nav-item">
-            <button
-              className="nav-link active"
-              id="accessibility-tab"
-              data-bs-toggle="tab"
-              data-bs-target="#accessibility"
-              type="button"
-              role="tab"
-              aria-controls="accessibility"
-              aria-selected="true"
-            >
-              Accessibility
-            </button>
-          </li>
-          <li className="nav-item">
-            <button
-              className="nav-link"
-              id="suggestions-tab"
-              data-bs-toggle="tab"
-              data-bs-target="#suggestions"
-              type="button"
-              role="tab"
-              aria-controls="suggestions"
-              aria-selected="false"
-            >
-              Suggestions
-            </button>
-          </li>
-          <li className="nav-item">
-            <button
-              className="nav-link"
-              id="variations-tab"
-              data-bs-toggle="tab"
-              data-bs-target="#variations"
-              type="button"
-              role="tab"
-              aria-controls="variations"
-              aria-selected="false"
-            >
-              Variations
-            </button>
-          </li>
-        </ul>
-      </div>
-      <div className="card-body tab-content" id="aiPanelTabsContent">
-        {aiScanStatus !== 'idle' && (
-          <div role="status" aria-live="polite" className="mb-3 text-muted">
-            {aiScanStatus === 'queued' && 'AI scan queued'}
-            {aiScanStatus === 'running' && 'AI scan in progress…'}
-            {aiScanStatus === 'done' && 'AI scan complete'}
-            {aiScanStatus === 'failed' && 'AI scan failed. Retry?'}
-          </div>
-        )}
-        <div
-          className="tab-pane fade show active"
-          id="accessibility"
-          role="tabpanel"
-          aria-labelledby="accessibility-tab"
-        >
-          <AccessibilityDashboard />
-        </div>
-        <div className="tab-pane fade" id="suggestions" role="tabpanel" aria-labelledby="suggestions-tab">
-          <AISuggestionsPanel onApplySuggestion={onApplySuggestion} />
-        </div>
-        <div className="tab-pane fade" id="variations" role="tabpanel" aria-labelledby="variations-tab">
-          <div className="mb-3">
-            <label htmlFor="variationPrompt" className="form-label">Prompt for Variation</label>
-            <textarea
-              className="form-control"
-              id="variationPrompt"
-              rows={3}
-              value={variationPrompt}
-              onChange={(e) => setVariationPrompt(e.target.value)}
-              placeholder="e.g., Make it more concise, Change the tone to formal."
-              aria-label="Enter prompt for AI content variation"
-            ></textarea>
-          </div>
-          <button className="btn btn-primary mb-3" onClick={handleGenerateVariation} aria-label="Generate AI content variation">
-            Generate Variation
-          </button>
-          {generatedVariation && (
-            <div className="card bg-light p-3" role="region" aria-live="polite">
-              <h6>Generated Variation:</h6>
-              <p>{generatedVariation}</p>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
+  return renderAIPanelContent();
 };
 
 export default AIPanel;

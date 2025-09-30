@@ -1,5 +1,6 @@
 'use client';
 
+import React, { useEffect, useState, useRef } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import MediaUploader from './MediaUploader';
@@ -11,7 +12,7 @@ import { useAISuggestions } from '@/contexts/AISuggestionContext';
 import { useUndoRedo } from '@/contexts/UndoRedoContext';
 import { AISuggestion } from '@/types/ai-suggestion';
 
-const TiptapBlock: React.FC<{ content: string; onChange: (content: string) => void }> = ({ content, onChange }) => {
+const TiptapBlock = ({ content, onChange }: { content: string; onChange: (content: string) => void }) => {
   const editor = useEditor({
     extensions: [StarterKit],
     content: content,
@@ -20,7 +21,7 @@ const TiptapBlock: React.FC<{ content: string; onChange: (content: string) => vo
     },
   });
 
-  return <EditorContent editor={editor} />;
+  return <EditorContent editor={editor} as={any} />;
 };
 
 interface Block {
