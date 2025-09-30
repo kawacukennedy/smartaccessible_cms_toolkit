@@ -40,11 +40,16 @@ const ContentEditor: React.FC = () => {
 
   const [accessibilityScore, setAccessibilityScore] = useState(85); // Mock score
   const [isAiAssistEnabled, setIsAiAssistEnabled] = useState(true);
+  const [isSaving, setIsSaving] = useState(false); // New state for save feedback
 
-  const handleSaveDraft = useCallback(() => {
+  const handleSaveDraft = useCallback(async () => {
+    setIsSaving(true);
     // Simulate saving draft
     console.log('Saving draft:', currentContent);
-    addNotification({ displayType: 'toast', style: 'success', message: 'Draft saved successfully!' });
+    await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate API call
+    const saveTime = new Date().toLocaleTimeString();
+    addNotification({ displayType: 'toast', style: 'success', message: `Draft saved successfully at ${saveTime}!` });
+    setIsSaving(false);
   }, [currentContent, addNotification]);
 
   const handlePublish = useCallback(() => {
@@ -74,6 +79,7 @@ const ContentEditor: React.FC = () => {
         accessibilityScore={accessibilityScore}
         isAiAssistEnabled={isAiAssistEnabled}
         toggleAiAssist={toggleAiAssist}
+        isSaving={isSaving} // Pass isSaving state
       />
       <div className="flex-grow-1 d-flex">
         <div className="flex-grow-1 p-3 border-end">

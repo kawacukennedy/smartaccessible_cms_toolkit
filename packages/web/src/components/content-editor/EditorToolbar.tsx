@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useUndoRedo } from '@/contexts/UndoRedoContext';
 
 interface EditorToolbarProps {
@@ -9,6 +9,7 @@ interface EditorToolbarProps {
   accessibilityScore: number;
   isAiAssistEnabled: boolean;
   toggleAiAssist: () => void;
+  isSaving: boolean; // New prop
 }
 
 const EditorToolbar: React.FC<EditorToolbarProps> = ({
@@ -17,8 +18,22 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({
   accessibilityScore,
   isAiAssistEnabled,
   toggleAiAssist,
+  isSaving, // Destructure new prop
 }) => {
   const { canUndo, canRedo, undo, redo } = useUndoRedo();
+  const [showSavedCheck, setShowSavedCheck] = useState(false);
+
+  useEffect(() => {
+    if (!isSaving && showSavedCheck) {
+      const timer = setTimeout(() => setShowSavedCheck(false), 2000); // Show checkmark for 2 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [isSaving, showSavedCheck]);
+
+  const handleSaveClick = () => {
+    onSaveDraft();
+    setShowSavedCheck(true);
+  };
 
   const getAccessibilityBadgeColor = (score: number) => {
     if (score < 50) return 'danger';
@@ -37,8 +52,15 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({
       </button>
 
       {/* Save/Publish */}
-      <button className="btn btn-success me-2" onClick={onSaveDraft} title="Save Draft">
-        <i className="bi bi-save"></i> Save Draft
+      <button className="btn btn-success me-2" onClick={handleSaveClick} disabled={isSaving} title="Save Draft">
+        {isSaving ? (
+          <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        ) : showSavedCheck ? (
+          <i className="bi bi-check-lg"></i>
+        ) : (
+          <i className="bi bi-save"></i>
+        )}
+        {isSaving ? ' Saving...' : showSavedCheck ? ' Saved!' : ' Save Draft'}
       </button>
       <button className="btn btn-primary me-2" onClick={onPublish} title="Publish">
         <i className="bi bi-cloud-upload"></i> Publish
