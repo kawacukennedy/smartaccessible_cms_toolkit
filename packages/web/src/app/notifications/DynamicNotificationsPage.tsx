@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useNotifications } from '@/contexts/NotificationContext';
-import { CheckLg, X, Info, AlertTriangle, Bug, CheckCircle } from 'lucide-react';
+import { Check, X, Info, AlertTriangle, Bug, CheckCircle } from 'lucide-react';
 
 const DynamicNotificationsPage: React.FC = () => {
   const { notifications, markAsRead, removeNotification } = useNotifications();

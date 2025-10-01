@@ -7,8 +7,7 @@ import Sidebar from './Sidebar';
 import './Layout.css';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAccessibility } from '@/contexts/AccessibilityContext';
-import BootstrapClient from '@/components/BootstrapClient';
-import Footer from './Footer';
+import Footer from './Footer'; // Import Footer component
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { theme } = useTheme();
@@ -48,7 +47,17 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   };
 
   return (
-    <>{children}</>
+    <div className={`flex flex-col min-h-screen bg-background_light dark:bg-background_dark ${highContrast ? 'high-contrast' : ''} ${reducedMotion ? 'reduced-motion' : ''}`}>
+      <Header toggleSidebar={toggleSidebar} startTour={startTour} />
+      <div className="flex flex-grow">
+        <Sidebar isSidebarOpen={isSidebarOpen} />
+        <main className="flex-grow p-4">
+          {children}
+        </main>
+      </div>
+      <InteractiveTour run={runTour} setRunTour={setRunTour} />
+      <Footer />
+    </div>
   );
 };
 

@@ -1,14 +1,12 @@
 'use client';
 
-import React from 'react';
+import dynamic from 'next/dynamic';
+
+const DynamicAccessibilityPage = dynamic(() => import('./DynamicAccessibilityPage'), { ssr: false });
 
 const AccessibilityPage: React.FC = () => {
   return (
-    <main className="container py-4">
-      <h1>Accessibility Settings</h1>
-      <p>This is the accessibility settings page. Here you can configure various accessibility options for the application.</p>
-      {/* Add more accessibility settings components here */}
-    </main>
+    <DynamicAccessibilityPage />
   );
 };
 
