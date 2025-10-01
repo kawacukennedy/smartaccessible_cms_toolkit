@@ -1,10 +1,11 @@
 'use client';
 
-import React from 'react';
-import NotificationsCenter from '@/components/NotificationsCenter';
+import dynamic from 'next/dynamic';
+
+const DynamicNotificationsPage = dynamic(() => import('./DynamicNotificationsPage'), { ssr: false });
 
 const NotificationsPage: React.FC = () => {
-  return <NotificationsCenter />;
+  return <DynamicNotificationsPage />;
 };
 
 export default NotificationsPage;

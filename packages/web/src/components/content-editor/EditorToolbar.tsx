@@ -1,174 +1,65 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Button, OverlayTrigger, Tooltip, Modal } from 'react-bootstrap';
+import React from 'react';
 import { useUndoRedo } from '@/contexts/UndoRedoContext';
-import { useNotifications } from '@/contexts/NotificationContext';
+import { Undo, Redo, Save, Send, Shield, Sparkles } from 'lucide-react';
 
 interface EditorToolbarProps {
   onSaveDraft: () => void;
   onPublish: () => void;
-  onToggleAIAssist: (enabled: boolean) => void;
-  isAIAssistEnabled: boolean;
-  accessibilityScore: number; // Score from 0-100
+  onToggleAIAssist: () => void;
+  isAiAssistEnabled: boolean;
+  accessibilityScore: number;
+  isOffline: boolean;
 }
 
 const EditorToolbar: React.FC<EditorToolbarProps> = ({
   onSaveDraft,
   onPublish,
   onToggleAIAssist,
-  isAIAssistEnabled,
+  isAiAssistEnabled,
   accessibilityScore,
+  isOffline,
 }) => {
   const { undo, redo, canUndo, canRedo } = useUndoRedo();
-  const { addNotification } = useNotifications();
-  const [showPublishConfirm, setShowPublishConfirm] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [isPublishing, setIsPublishing] = useState(false);
 
-  // Determine accessibility badge color
-  const getAccessibilityBadgeClass = (score: number) => {
-    if (score < 50) return 'bg-danger';
+  const getAccessibilityBadgeColor = (score: number) => {
+    if (score < 50) return 'bg-error';
     if (score < 80) return 'bg-warning';
     return 'bg-success';
   };
 
-  const handleSaveDraft = async () => {
-    setIsSaving(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    onSaveDraft();
-    addNotification({
-      displayType: 'toast',
-      style: 'success',
-      message: `Draft saved successfully at ${new Date().toLocaleTimeString()}`,
-    });
-    setIsSaving(false);
-  };
-
-  const handlePublish = async () => {
-    setShowPublishConfirm(false);
-    setIsPublishing(true);
-    // Simulate API call
-    try {
-      await new Promise((resolve, reject) => setTimeout(() => {
-        // Simulate a random publish error for demonstration
-        if (Math.random() > 0.8) {
-          reject(new Error("Publish failed: Network error."));
-        } else {
-          resolve(true);
-        }
-      }, 1500));
-      onPublish();
-      addNotification({
-        displayType: 'toast',
-        style: 'success',
-        message: 'Content published successfully!',
-      });
-    } catch (error: any) {
-      addNotification({
-        displayType: 'modal',
-        style: 'error',
-        message: `Publish failed: ${error.message}. Please try again.`, // Use modal for errors
-        title: 'Publish Error',
-      });
-    }
-    setIsPublishing(false);
-  };
-
-  // Keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.ctrlKey && event.key === 'z') {
-        event.preventDefault();
-        canUndo && undo();
-      }
-      if (event.ctrlKey && event.key === 'y') {
-        event.preventDefault();
-        canRedo && redo();
-      }
-      if (event.ctrlKey && event.key === 's') {
-        event.preventDefault();
-        handleSaveDraft();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [canUndo, undo, canRedo, redo, onSaveDraft]);
-
   return (
-    <div className="editor-toolbar d-flex justify-content-center p-2 bg-light border-bottom">
-      <OverlayTrigger placement="bottom" overlay={<Tooltip id="tooltip-undo">Undo (Ctrl+Z)</Tooltip>}>
-        <Button variant="outline-secondary" onClick={undo} disabled={!canUndo} className="me-2">
-          <i className="bi bi-arrow-counterclockwise"></i>
-        </Button>
-      </OverlayTrigger>
-
-      <OverlayTrigger placement="bottom" overlay={<Tooltip id="tooltip-redo">Redo (Ctrl+Y)</Tooltip>}>
-        <Button variant="outline-secondary" onClick={redo} disabled={!canRedo} className="me-4">
-          <i className="bi bi-arrow-clockwise"></i>
-        </Button>
-      </OverlayTrigger>
-
-      <OverlayTrigger placement="bottom" overlay={<Tooltip id="tooltip-save">Save Draft (Ctrl+S)</Tooltip>}>
-        <Button variant="success" onClick={handleSaveDraft} disabled={isSaving} className="me-2">
-          {isSaving ? (
-            <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-          ) : (
-            <i className="bi bi-save"></i>
-          )}
-          <span className="ms-2">Save Draft</span>
-        </Button>
-      </OverlayTrigger>
-
-      <OverlayTrigger placement="bottom" overlay={<Tooltip id="tooltip-publish">Publish</Tooltip>}>
-        <Button variant="primary" onClick={() => setShowPublishConfirm(true)} disabled={isPublishing} className="me-4">
-          {isPublishing ? (
-            <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-          ) : (
-            <i className="bi bi-send"></i>
-          )}
-          <span className="ms-2">Publish</span>
-        </Button>
-      </OverlayTrigger>
-
-      <OverlayTrigger placement="bottom" overlay={<Tooltip id="tooltip-accessibility">Accessibility Score</Tooltip>}>
-        <Button variant="outline-info" className="me-2">
-          <i className="bi bi-universal-access"></i>
-          <span className={`badge ${getAccessibilityBadgeClass(accessibilityScore)} ms-2`}>{accessibilityScore}</span>
-        </Button>
-      </OverlayTrigger>
-
-      <OverlayTrigger placement="bottom" overlay={<Tooltip id="tooltip-ai-assist">Toggle AI Assist</Tooltip>}>
-        <Button
-          variant={isAIAssistEnabled ? 'primary' : 'outline-primary'}
-          onClick={() => onToggleAIAssist(!isAIAssistEnabled)}
-        >
-          <i className="bi bi-robot"></i>
-          <span className="ms-2">AI Assist</span>
-        </Button>
-      </OverlayTrigger>
-
-      {/* Publish Confirmation Modal */}
-      <Modal show={showPublishConfirm} onHide={() => setShowPublishConfirm(false)} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>Confirm Publish</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          Are you sure you want to publish this content live?
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowPublishConfirm(false)}>
-            Cancel
-          </Button>
-          <Button variant="primary" onClick={handlePublish}>
-            Publish Now
-          </Button>
-        </Modal.Footer>
-      </Modal>
+    <div className="flex items-center justify-between p-2 bg-background_light dark:bg-background_dark border-b border-gray-200 dark:border-gray-700">
+      <div className="flex items-center space-x-2">
+        <button onClick={undo} disabled={!canUndo} className="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50">
+          <Undo size={20} />
+        </button>
+        <button onClick={redo} disabled={!canRedo} className="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50">
+          <Redo size={20} />
+        </button>
+      </div>
+      <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-1">
+          <Shield size={20} />
+          <span className={`text-sm font-bold px-2 py-1 rounded-full text-white ${getAccessibilityBadgeColor(accessibilityScore)}`}>
+            {accessibilityScore}
+          </span>
+        </div>
+        <button onClick={onToggleAIAssist} className={`p-2 rounded-md ${isAiAssistEnabled ? 'bg-primary text-white' : 'hover:bg-gray-200 dark:hover:bg-gray-700'}`}>
+          <Sparkles size={20} />
+        </button>
+      </div>
+      <div className="flex items-center space-x-2">
+        <button onClick={onSaveDraft} className="px-4 py-2 text-sm font-semibold rounded-md bg-secondary text-white hover:bg-opacity-80">
+          <Save size={16} className="inline-block mr-1" />
+          Save Draft
+        </button>
+        <button onClick={onPublish} className="px-4 py-2 text-sm font-semibold rounded-md bg-primary text-white hover:bg-opacity-80">
+          <Send size={16} className="inline-block mr-1" />
+          {isOffline ? 'Queue Publish' : 'Publish'}
+        </button>
+      </div>
     </div>
   );
 };

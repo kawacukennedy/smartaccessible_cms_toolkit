@@ -1,55 +1,83 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.onboardCommand = void 0;
+exports.initCommand = void 0;
 const commander_1 = require("commander");
 const inquirer_1 = __importDefault(require("inquirer"));
 const logger_1 = require("../lib/logger");
-exports.onboardCommand = new commander_1.Command()
-    .command('onboard')
-    .description('Start the onboarding process for a new user or project')
-    .action(async () => {
-    (0, logger_1.log)('Welcome to the SmartAccessible CMS Toolkit CLI!\n');
-    (0, logger_1.log)('This interactive wizard will guide you through the initial project setup.');
-    const answers = await inquirer_1.default.prompt([
+const fs = __importStar(require("fs"));
+exports.initCommand = new commander_1.Command()
+    .command('init')
+    .description('Initialize project with Storyblok connection')
+    .option('--space-id <id>', 'Your Storyblok space ID')
+    .option('--token <access_token>', 'Your Storyblok access token')
+    .option('--config <file>', 'Path to save configuration', '.smartcmsrc')
+    .action(async (options) => {
+    (0, logger_1.logHeading)('Initializing SmartAccessible CMS Project');
+    const questions = [
         {
             type: 'input',
-            name: 'projectName',
-            message: 'Enter your project name:',
-            default: 'My New Project',
+            name: 'spaceId',
+            message: 'Enter your Storyblok space ID:',
+            when: !options.spaceId,
         },
         {
-            type: 'confirm',
-            name: 'initializeGit',
-            message: 'Do you want to initialize a Git repository for this project?',
-            default: true,
+            type: 'password',
+            name: 'token',
+            message: 'Enter your Storyblok access token:',
+            when: !options.token,
         },
-        {
-            type: 'confirm',
-            name: 'installDependencies',
-            message: 'Do you want to install project dependencies (e.g., npm install)?',
-            default: true,
-        },
-    ]);
-    (0, logger_1.log)(`\nProject Name: ${answers.projectName}`);
-    if (answers.initializeGit) {
-        (0, logger_1.log)('Initializing Git repository...');
-        // Placeholder for git init logic
-        (0, logger_1.log)('Git repository initialized.');
+    ];
+    const answers = await inquirer_1.default.prompt(questions);
+    const config = {
+        spaceId: options.spaceId || answers.spaceId,
+        token: options.token || answers.token,
+    };
+    if (!config.spaceId || !config.token) {
+        (0, logger_1.logError)('Storyblok space ID and access token are required.');
+        return;
     }
-    else {
-        (0, logger_1.log)('Git repository initialization skipped.');
+    try {
+        fs.writeFileSync(options.config, JSON.stringify(config, null, 2));
+        (0, logger_1.logSuccess)(`Configuration saved to ${options.config}`);
+        (0, logger_1.logInfo)('Your project is now connected to Storyblok.');
     }
-    if (answers.installDependencies) {
-        (0, logger_1.log)('Installing project dependencies...');
-        // Placeholder for npm install logic
-        (0, logger_1.log)('Project dependencies installed.');
+    catch (error) {
+        (0, logger_1.logError)('Failed to save configuration file.', error);
     }
-    else {
-        (0, logger_1.log)('Project dependencies installation skipped.');
-    }
-    (0, logger_1.log)('\nOnboarding complete! Your project is now set up.');
-    (0, logger_1.log)('You can now use other commands like `create`, `edit`, `ai-scan`, etc.');
 });

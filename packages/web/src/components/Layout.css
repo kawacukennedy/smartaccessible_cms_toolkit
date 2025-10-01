@@ -9,11 +9,11 @@
   --color-warning: #F59E0B;
 
   /* Spacing */
-  --spacing-xs: 4px;
-  --spacing-sm: 8px;
-  --spacing-md: 16px;
-  --spacing-lg: 24px;
-  --spacing-xl: 32px;
+  --spacing-xxs: 4px; /* New: 4px baseline */
+  --spacing-xs: 8px;
+  --spacing-sm: 16px;
+  --spacing-md: 24px;
+  --spacing-lg: 32px;
 
   /* Radius */
   --radius-default: 8px;
@@ -127,15 +127,17 @@ html.font-size-large body {
 @media (min-width: 1440px) { /* xl */ }
 
 /* Utility classes for spacing, if not using Bootstrap's built-in spacing utilities */
+.p-xxs { padding: var(--spacing-xxs); }
+.p-xs { padding: var(--spacing-xs); }
 .p-sm { padding: var(--spacing-sm); }
 .p-md { padding: var(--spacing-md); }
 .p-lg { padding: var(--spacing-lg); }
-.p-xl { padding: var(--spacing-xl); }
 
+.m-xxs { margin: var(--spacing-xxs); }
+.m-xs { margin: var(--spacing-xs); }
 .m-sm { margin: var(--spacing-sm); }
 .m-md { margin: var(--spacing-md); }
 .m-lg { margin: var(--spacing-lg); }
-.m-xl { margin: var(--spacing-xl); }
 
 /* Utility classes for border-radius */
 .rounded-default { border-radius: var(--radius-default); }
@@ -164,36 +166,74 @@ html.font-size-large body {
 
 .app-header {
   height: 64px;
+  position: sticky;
+  top: 0;
+  z-index: 1020; /* Bootstrap's z-index for fixed navbars */
+  background-color: var(--color-background-light); /* Default light theme */
+  box-shadow: var(--shadow-sm);
 }
 
+.app-sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  transition: width var(--animation-duration-medium) var(--animation-easing-in-out);
+  background-color: var(--color-background-light); /* Default light theme */
+  box-shadow: var(--shadow-sm);
+}
+
+.app-sidebar.collapsed {
+  width: 64px;
+}
+
+/* Mobile behavior for sidebar */
+@media (max-width: 1023px) {
   .app-sidebar {
-    width: 280px;
-    transition: width var(--animation-duration-medium) var(--animation-easing-in-out);
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 1020;
+    transform: translateX(-100%);
+    transition: transform var(--animation-duration-medium) var(--animation-easing-in-out);
   }
 
-  .app-sidebar.collapsed {
-    width: 64px;
+  .app-sidebar.show {
+    transform: translateX(0%);
   }
 
-  /* Mobile behavior for sidebar */
-  @media (max-width: 1023px) {
-    .app-sidebar.offcanvas {
-      transform: translateX(-100%);
-      transition: transform var(--animation-duration-medium) var(--animation-easing-in-out);
-    }
-
-    .app-sidebar.offcanvas.show {
-      transform: translateX(0%);
-    }
+  .sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1019;
+    display: none;
   }
+
+  .sidebar-overlay.show {
+    display: block;
+  }
+}
+
 .main-content {
   flex-grow: 1;
-  padding: var(--spacing-lg); /* Use spacing variable */
+  padding: var(--spacing-md); /* Use spacing variable */
+  background-color: #f8f9fa; /* Light gray background for content area */
 }
 
 .app-footer {
   height: 40px;
   flex-shrink: 0; /* Prevent footer from shrinking */
+  background-color: var(--color-background-light); /* Default light theme */
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--spacing-md);
+  font-size: var(--font-size-caption);
+  color: #6c757d;
 }
 
 /* AI Glow Effect */
@@ -227,40 +267,38 @@ html.font-size-large body {
   animation: shake 0.5s ease-in-out;
 }
 
+/* AI Apply effect */
+@keyframes flash-green {
+  0% { background-color: transparent; }
+  50% { background-color: rgba(22, 163, 74, 0.2); } /* success color with transparency */
+  100% { background-color: transparent; }
+}
+
+.editor-block.ai-applied {
+  animation: flash-green 0.5s ease-out;
+}
+
 /* Dark theme adjustments */
-.main-layout.bg-dark {
+.main-layout.theme-dark {
   background-color: var(--color-background-dark) !important;
   color: var(--color-background-light);
 }
 
-.main-layout.bg-dark .navbar {
+.main-layout.theme-dark .app-header,
+.main-layout.theme-dark .app-sidebar,
+.main-layout.theme-dark .app-footer {
   background-color: var(--color-background-dark) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: var(--shadow-sm); /* Adjust shadow for dark theme if needed */
+  border-color: #343a40; /* Darker border for separation */
 }
 
-.main-layout.bg-dark .navbar-brand,
-.main-layout.bg-dark .nav-link {
-  color: var(--color-background-light) !important;
-}
-
-.main-layout.bg-dark .form-control {
-  background-color: #343a40;
+.main-layout.theme-dark .main-content {
+  background-color: #212529; /* Darker background for content area */
   color: var(--color-background-light);
-  border-color: #495057;
 }
 
-.main-layout.bg-dark .form-control::placeholder {
-  color: #ced4da;
-}
-
-.main-layout.bg-dark .btn-outline-secondary {
-  color: var(--color-background-light);
-  border-color: #6c757d;
-}
-
-.main-layout.bg-dark .btn-outline-secondary:hover {
-  background-color: #6c757d;
-  color: var(--color-background-light);
+.main-layout.theme-dark .app-footer {
+  color: #adb5bd;
 }
 
 /* High contrast mode adjustments */

@@ -1,32 +1,55 @@
+import { Command } from 'commander';
 import inquirer from 'inquirer';
-import { undoRedoStack } from '../lib/undoRedoStack';
-import { log } from '../lib/logger';
-import { trackEvent } from '../lib/telemetry';
+import { logInfo, logSuccess, logError, logHeading } from '../lib/logger';
 
-export const create = async (options: any) => {
-  log('Executing create command with options:' + JSON.stringify(options));
+export const createCommand = new Command()
+  .command('create')
+  .description('Generate new content entry')
+  .option('--type <template>', 'The type of content to create (e.g., page, post)', 'page')
+  .option('--title <string>', 'The title of the new content')
+  .option('--slug <string>', 'The slug for the new content')
+  .action(async (options) => {
+    logHeading('Create New Content');
 
-  const answers = await inquirer.prompt([
-    {
-      type: 'input',
-      name: 'title',
-      message: 'Enter the title for the new content:',
-      when: !options.title,
-    },
-    {
-      type: 'editor',
-      name: 'content',
-      message: 'Enter the content:',
-    },
-  ]);
+    const questions: any[] = [
+      {
+        type: 'input',
+        name: 'title',
+        message: 'Enter the title for the new content:',
+        when: !options.title,
+      },
+      {
+        type: 'input',
+        name: 'slug',
+        message: 'Enter the slug for the new content:',
+        when: !options.slug,
+        default: (answers: any) => (options.title || answers.title).toLowerCase().replace(/\s+/g, '-'),
+      },
+    ];
 
-  const title = options.title || answers.title;
-  const content = answers.content;
+    const answers = await inquirer.prompt(questions);
 
-  // Placeholder for create logic
-  log(`\nCreating content with title: ${title}`);
-  log(`Content: ${content}`);
-  log('Content created successfully!');
-  undoRedoStack.execute({ type: 'create', payload: { title, content } });
-  trackEvent('content_save', { type: 'create', title });
-};
+    const title = options.title || answers.title;
+    const slug = options.slug || answers.slug;
+    const type = options.type;
+
+    logInfo(`You are about to create a new '${type}' with the following details:`);
+    console.log(`  Title: ${title}`);
+    console.log(`  Slug: ${slug}`);
+
+    const confirmation = await inquirer.prompt([
+      {
+        type: 'confirm',
+        name: 'proceed',
+        message: 'Do you want to proceed?',
+        default: true,
+      },
+    ]);
+
+    if (confirmation.proceed) {
+      // Placeholder for actual content creation logic
+      logSuccess(`Successfully created new ${type} '${title}'!`);
+    } else {
+      logInfo('Content creation cancelled.');
+    }
+  });

@@ -1,10 +1,13 @@
 'use client';
 
-import React from 'react';
-import Settings from '@/components/Settings';
+import dynamic from 'next/dynamic';
+
+const DynamicSettingsPage = dynamic(() => import('./DynamicSettingsPage'), { ssr: false });
 
 const SettingsPage: React.FC = () => {
-  return <Settings />;
+  return (
+    <DynamicSettingsPage />
+  );
 };
 
 export default SettingsPage;

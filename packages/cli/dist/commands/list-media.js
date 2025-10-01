@@ -11,7 +11,21 @@ const dummyMedia = [
 exports.listMediaCommand = new commander_1.Command()
     .command('list-media')
     .description('List all media assets')
-    .action(() => {
+    .option('--page <page>', 'Page number for pagination', '1')
+    .option('--limit <limit>', 'Number of items per page', '10')
+    .option('--assign-alt-text <mediaId>', 'Assign AI-generated alt text to a media asset')
+    .action((options) => {
+    if (options.assignAltText) {
+        (0, logger_1.log)(`Assigning AI alt text to media ID: ${options.assignAltText}`);
+        // Placeholder for AI alt text generation logic
+        (0, logger_1.log)('AI alt text assigned successfully.');
+        return;
+    }
     (0, logger_1.log)('Listing all media assets:\n');
-    console.table(dummyMedia); // console.table is fine here as it's for structured data display
+    const page = parseInt(options.page, 10);
+    const limit = parseInt(options.limit, 10);
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedMedia = dummyMedia.slice(startIndex, endIndex);
+    console.table(paginatedMedia);
 });

@@ -33,10 +33,13 @@ const EditorPanel: React.FC<EditorPanelProps> = ({ initialContent, onContentChan
   const { addSuggestion, suggestions: aiSuggestions } = useAISuggestions();
   const { addChange } = useUndoRedo();
 
-  const [blocks, setBlocks] = useState<Block[]>([
-    { id: 'block-1', type: 'text', content: initialContent || 'This is the first block.', collaborators: [{ id: 'user-1', avatar: 'https://i.pravatar.cc/30?img=1', name: 'Alice' }] },
-    { id: 'block-2', type: 'text', content: 'This is the second block.', collaborators: [{ id: 'user-2', avatar: 'https://i.pravatar.cc/30?img=2', name: 'Bob' }] },
-  ]);
+  const [blocks, setBlocks] = useState<Block[]>(() => {
+    try {
+      return initialContent ? JSON.parse(initialContent) : [];
+    } catch (e) {
+      return [];
+    }
+  });
   const [isDragging, setIsDragging] = useState(false);
   const [activeSuggestionsBlockId, setActiveSuggestionsBlockId] = useState<string | null>(null);
   const [activeAlertsBlockId, setActiveAlertsBlockId] = useState<string | null>(null);
@@ -45,6 +48,14 @@ const EditorPanel: React.FC<EditorPanelProps> = ({ initialContent, onContentChan
 
   const dragItem = useRef<number | null>(null);
   const dragOverItem = useRef<number | null>(null);
+
+  const handleBlockContentChange = (blockId: string, newContent: string) => {
+    setBlocks(prevBlocks =>
+      prevBlocks.map(block =>
+        block.id === blockId ? { ...block, content: newContent } : block
+      )
+    );
+  };
 
   // Update undo/redo history when blocks change
   useEffect(() => {
@@ -281,7 +292,6 @@ const EditorPanel: React.FC<EditorPanelProps> = ({ initialContent, onContentChan
             </div>
           )}
         </div>
-        <AI_Toolbar onGenerateSuggestions={handleGenerateSuggestions} />
         <SEOPanel />
       </div>
 

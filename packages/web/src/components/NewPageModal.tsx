@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Modal, Button, Form, Alert } from 'react-bootstrap';
-import TemplateSelector from './TemplateSelector'; // Import the new TemplateSelector
+import TemplateSelector from './TemplateSelector';
 
 interface NewPageModalProps {
   show: boolean;
@@ -15,116 +14,50 @@ const NewPageModal: React.FC<NewPageModalProps> = ({ show, onClose, onCreate }) 
   const [slug, setSlug] = useState('');
   const [seoTitle, setSeoTitle] = useState('');
   const [seoDescription, setSeoDescription] = useState('');
-  const [selectedTemplate, setSelectedTemplate] = useState('blank'); // Default template
-
-  const [titleError, setTitleError] = useState('');
-  const [slugError, setSlugError] = useState('');
-
-  const validateForm = () => {
-    let isValid = true;
-    if (!title.trim()) {
-      setTitleError('Page Title is required.');
-      isValid = false;
-    } else {
-      setTitleError('');
-    }
-
-    if (!slug.trim()) {
-      setSlugError('Page Slug is required.');
-      isValid = false;
-    } else if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
-      setSlugError('Slug must be lowercase, alphanumeric, and use hyphens for spaces.');
-      isValid = false;
-    } else {
-      setSlugError('');
-    }
-    return isValid;
-  };
+  const [selectedTemplate, setSelectedTemplate] = useState('blank');
 
   const handleCreate = () => {
-    if (validateForm()) {
-      onCreate(title, slug, selectedTemplate, seoTitle, seoDescription);
-      setTitle('');
-      setSlug('');
-      setSeoTitle('');
-      setSeoDescription('');
-      setSelectedTemplate('blank');
-      onClose(); // Close modal on successful creation
-    }
+    onCreate(title, slug, selectedTemplate, seoTitle, seoDescription);
+    onClose();
   };
 
+  if (!show) return null;
+
   return (
-    <Modal show={show} onHide={onClose} centered size="lg"> {/* Increased modal size */}
-      <Modal.Header closeButton>
-        <Modal.Title>Create New Page</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        <Form>
-          <Form.Group className="mb-3" controlId="pageTitle">
-            <Form.Label>Page Title</Form.Label>
-            <Form.Control
-              type="text"
-              placeholder="Enter page title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              isInvalid={!!titleError}
-              required
-            />
-            <Form.Control.Feedback type="invalid">{titleError}</Form.Control.Feedback>
-          </Form.Group>
-
-          <Form.Group className="mb-3" controlId="pageSlug">
-            <Form.Label>Page Slug</Form.Label>
-            <Form.Control
-              type="text"
-              placeholder="enter-page-slug"
-              value={slug}
-              onChange={(e) => setSlug(e.target.value)}
-              isInvalid={!!slugError}
-              required
-            />
-            <Form.Control.Feedback type="invalid">{slugError}</Form.Control.Feedback>
-          </Form.Group>
-
-          <Form.Group className="mb-3" controlId="seoTitle">
-            <Form.Label>SEO Title (Optional)</Form.Label>
-            <Form.Control
-              type="text"
-              placeholder="Enter SEO title"
-              value={seoTitle}
-              onChange={(e) => setSeoTitle(e.target.value)}
-            />
-          </Form.Group>
-
-          <Form.Group className="mb-3" controlId="seoDescription">
-            <Form.Label>SEO Description (Optional)</Form.Label>
-            <Form.Control
-              as="textarea"
-              rows={3}
-              placeholder="Enter SEO description"
-              value={seoDescription}
-              onChange={(e) => setSeoDescription(e.target.value)}
-            />
-          </Form.Group>
-
-          <Form.Group className="mb-3" controlId="pageTemplate">
-            <Form.Label>Select Template</Form.Label>
-            <TemplateSelector
-              onSelectTemplate={setSelectedTemplate}
-              selectedTemplateId={selectedTemplate}
-            />
-          </Form.Group>
-        </Form>
-      </Modal.Body>
-      <Modal.Footer>
-        <Button variant="secondary" onClick={onClose}>
-          Cancel
-        </Button>
-        <Button variant="primary" onClick={handleCreate}>
-          Create Page
-        </Button>
-      </Modal.Footer>
-    </Modal>
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 w-full max-w-2xl">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-bold">Create New Page</h2>
+          <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">&times;</button>
+        </div>
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="pageTitle" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Page Title</label>
+            <input type="text" id="pageTitle" value={title} onChange={e => setTitle(e.target.value)} className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary" />
+          </div>
+          <div>
+            <label htmlFor="pageSlug" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Page Slug</label>
+            <input type="text" id="pageSlug" value={slug} onChange={e => setSlug(e.target.value)} className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary" />
+          </div>
+          <div>
+            <label htmlFor="seoTitle" className="block text-sm font-medium text-gray-700 dark:text-gray-300">SEO Title (Optional)</label>
+            <input type="text" id="seoTitle" value={seoTitle} onChange={e => setSeoTitle(e.target.value)} className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary" />
+          </div>
+          <div>
+            <label htmlFor="seoDescription" className="block text-sm font-medium text-gray-700 dark:text-gray-300">SEO Description (Optional)</label>
+            <textarea id="seoDescription" value={seoDescription} onChange={e => setSeoDescription(e.target.value)} rows={3} className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"></textarea>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Select Template</label>
+            <TemplateSelector onSelectTemplate={setSelectedTemplate} selectedTemplateId={selectedTemplate} />
+          </div>
+        </div>
+        <div className="flex justify-end space-x-4 mt-8">
+          <button onClick={onClose} className="px-4 py-2 rounded-md bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600">Cancel</button>
+          <button onClick={handleCreate} className="px-4 py-2 rounded-md bg-primary text-white hover:bg-opacity-80">Create Page</button>
+        </div>
+      </div>
+    </div>
   );
 };
 

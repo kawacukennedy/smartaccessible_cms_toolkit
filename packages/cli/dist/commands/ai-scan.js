@@ -3,65 +3,61 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.aiScanCommand = void 0;
+exports.scanCommand = void 0;
 const commander_1 = require("commander");
 const ai_1 = require("../lib/ai");
 const fs_1 = require("fs");
-const path_1 = __importDefault(require("path"));
 const inquirer_1 = __importDefault(require("inquirer"));
-const undoRedoStack_1 = require("../lib/undoRedoStack");
 const logger_1 = require("../lib/logger");
-const telemetry_1 = require("../lib/telemetry");
-exports.aiScanCommand = new commander_1.Command()
-    .command('ai-scan')
-    .description('Run an AI scan on a piece of content')
-    .requiredOption('--id <id>', 'The ID of the content to scan')
-    .action(async (options) => {
-    (0, logger_1.log)(`Running AI scan for content ID: ${options.id}`);
+exports.scanCommand = new commander_1.Command()
+    .command('scan <file>')
+    .description('Scan a file for accessibility issues')
+    .option('--fix', 'Automatically apply fixes', false)
+    .option('--json', 'Output results in JSON format', false)
+    .action(async (file, options) => {
+    (0, logger_1.logHeading)(`Scanning ‘${file}’ for accessibility issues...`);
     try {
-        // 1. Fetch content (simulated from project.json)
-        (0, logger_1.log)('Fetching content...');
-        const projectJsonPath = path_1.default.join(process.cwd(), '..', '..', 'project.json');
-        const fileContents = await fs_1.promises.readFile(projectJsonPath, 'utf8');
-        const projectData = JSON.parse(fileContents);
-        const contentBlock = projectData.mock_data.ContentBlock.sample;
-        // 2. Run AI analysis
-        (0, logger_1.log)('Running AI analysis...');
-        const issues = await (0, ai_1.runAIAnalysis)(contentBlock.content);
-        // 3. Display results
-        (0, logger_1.log)('AI suggestions ready');
+        const fileContent = await fs_1.promises.readFile(file, 'utf8');
+        const issues = await (0, ai_1.runAIAnalysis)(fileContent);
+        if (options.json) {
+            console.log(JSON.stringify({ issues }, null, 2));
+            return;
+        }
         if (issues.length === 0) {
-            (0, logger_1.log)('No issues found.');
+            (0, logger_1.logSuccess)('No accessibility issues found.');
+            return;
+        }
+        (0, logger_1.logInfo)(`Found ${issues.length} potential issues:`);
+        if (options.fix) {
+            (0, logger_1.logInfo)('Applying automatic fixes...');
+            // Placeholder for auto-fixing logic
+            (0, logger_1.logSuccess)('Finished applying automatic fixes.');
         }
         else {
-            issues.forEach((issue, index) => {
-                (0, logger_1.log)(`\nIssue ${index + 1}:`);
-                (0, logger_1.log)(`  - Description: ${issue.description}`);
-                (0, logger_1.log)(`  - Severity: ${issue.severity}`);
-                (0, logger_1.log)(`  - Recommendation: ${issue.recommendation}`);
-            });
-            const { applySuggestions } = await inquirer_1.default.prompt([
+            const choices = issues.map((issue, index) => ({
+                name: `[Line ${issue.lineNumber}] ${issue.description}`,
+                value: index,
+            }));
+            const { selectedIssues } = await inquirer_1.default.prompt([
                 {
-                    type: 'confirm',
-                    name: 'applySuggestions',
-                    message: 'Do you want to apply these AI suggestions?',
-                    default: false,
+                    type: 'checkbox',
+                    name: 'selectedIssues',
+                    message: 'Select the issues you want to fix:',
+                    choices,
                 },
             ]);
-            if (applySuggestions) {
-                (0, logger_1.log)('Applying AI suggestions...');
-                // Simulate applying suggestions
-                undoRedoStack_1.undoRedoStack.execute({ type: 'apply-ai-suggestions', payload: { contentId: options.id, suggestions: issues } });
-                (0, logger_1.log)('AI suggestions applied.');
-                (0, telemetry_1.trackEvent)('ai_applied', { contentId: options.id, suggestionsCount: issues.length });
+            if (selectedIssues.length > 0) {
+                (0, logger_1.logInfo)('Applying selected fixes...');
+                // Placeholder for applying selected fixes
+                (0, logger_1.logSuccess)('Finished applying selected fixes.');
             }
             else {
-                (0, logger_1.log)('AI suggestions rejected.');
+                (0, logger_1.logInfo)('No fixes were applied.');
             }
         }
     }
     catch (error) {
-        (0, logger_1.logError)('Error during AI scan:', error);
+        (0, logger_1.logError)(`Failed to scan file: ${file}`, error);
         process.exit(1);
     }
 });

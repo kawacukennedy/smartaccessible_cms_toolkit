@@ -1,69 +1,29 @@
-
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { saveContentToIndexedDB } from '@/lib/db/indexedDB'; // Import IndexedDB utility
+import { saveContentToIndexedDB } from '@/lib/db/indexedDB';
+import { Lightbulb, PlusCircle } from 'lucide-react';
+import GripVerticalIcon from '../icons/GripVerticalIcon';
 
-// Define a type for a block
 interface Block {
   id: string;
   type: string;
   content: string;
-  // Add other properties as needed for different block types
 }
 
-// Draggable Block Component
 const DraggableBlock: React.FC<{ block: Block; index: number; moveBlock: (dragIndex: number, hoverIndex: number) => void }> = ({ block, index, moveBlock }) => {
   const ref = useRef<HTMLDivElement>(null);
 
   const [, drop] = useDrop({
     accept: 'block',
-    hover(item: { index: number }, monitor) {
-      if (!ref.current) {
-        return;
-      }
+    hover(item: { index: number }) {
+      if (!ref.current) return;
       const dragIndex = item.index;
       const hoverIndex = index;
-
-      // Don't replace items with themselves
-      if (dragIndex === hoverIndex) {
-        return;
-      }
-
-      // Determine rectangle on screen
-      const hoverBoundingRect = ref.current?.getBoundingClientRect();
-
-      // Get vertical middle
-      const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
-
-      // Determine mouse position
-      const clientOffset = monitor.getClientOffset();
-
-      // Get pixels to the top
-      const hoverClientY = clientOffset!.y - hoverBoundingRect.top;
-
-      // Only perform the move when the mouse has crossed half of the items height
-      // When dragging downwards, only move when the cursor is below 50%
-      // When dragging upwards, only move when the cursor is above 50%
-
-      // Dragging downwards
-      if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
-        return;
-      }
-
-      // Dragging upwards
-      if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) {
-        return;
-      }
-
-      // Time to actually perform the action
+      if (dragIndex === hoverIndex) return;
       moveBlock(dragIndex, hoverIndex);
-
-      // Note: we're mutating the monitor item here!
-      // Generally it's better to avoid mutations, but it's good here for the sake of performance
-      // to avoid expensive index searches.
       item.index = hoverIndex;
     },
   });
@@ -79,40 +39,26 @@ const DraggableBlock: React.FC<{ block: Block; index: number; moveBlock: (dragIn
   drag(drop(ref));
 
   return (
-    <div
-      ref={ref}
-      className={`editor-block card mb-3 p-3 ${isDragging ? 'is-dragging' : ''}`}
-      style={{ opacity: isDragging ? 0.5 : 1, cursor: 'move' }}
-    >
-      {block.content}
-      {/* Inline AI suggestions (lightbulb icon, keyboard shortcut Alt + S) */}
-      <button className="btn btn-sm btn-outline-info ms-2" title="AI Suggestion available (Alt+S)">
-        <i className="bi bi-lightbulb"></i>
-      </button>
+    <div ref={ref} style={{ opacity: isDragging ? 0.5 : 1 }} className={`relative p-4 rounded-lg bg-white dark:bg-gray-800 shadow-md transition-shadow duration-200 ${isDragging ? 'shadow-lg scale-105' : ''}`}>
+        <div className="flex items-center">
+            <div className="cursor-move p-2">
+                <GripVerticalIcon size={20} />
+            </div>
+            <div className="flex-grow">{block.content}</div>
+            <button className="p-2 rounded-full hover:bg-yellow-200 dark:hover:bg-yellow-800" title="AI Suggestion available (Alt+S)">
+                <Lightbulb size={20} className="text-yellow-500" />
+            </button>
+        </div>
     </div>
   );
 };
 
-// BlockEditorCanvas Component
 const BlockEditorCanvas: React.FC<{ initialContent?: string | null }> = ({ initialContent }) => {
   const [blocks, setBlocks] = useState<Block[]>(() => {
-    if (initialContent) {
-      try {
-        return JSON.parse(initialContent);
-      } catch (e) {
-        console.error("Failed to parse initial content from IndexedDB", e);
-        return [
-          { id: '1', type: 'text', content: 'This is the first text block.' },
-          { id: '2', type: 'media', content: 'Image block placeholder.' },
-          { id: '3', type: 'text', content: 'Another text block here.' },
-        ];
-      }
-    } else {
-      return [
-        { id: '1', type: 'text', content: 'This is the first text block.' },
-        { id: '2', type: 'media', content: 'Image block placeholder.' },
-        { id: '3', type: 'text', content: 'Another text block here.' },
-      ];
+    try {
+      return initialContent ? JSON.parse(initialContent) : [];
+    } catch (e) {
+      return [];
     }
   });
 
@@ -124,44 +70,34 @@ const BlockEditorCanvas: React.FC<{ initialContent?: string | null }> = ({ initi
     setBlocks(newBlocks);
   };
 
-  // Save content to IndexedDB whenever blocks change
   useEffect(() => {
     saveContentToIndexedDB('editor-content', JSON.stringify(blocks));
   }, [blocks]);
 
-  // Keyboard shortcut for AI suggestions (Alt + S)
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.altKey && event.key === 'S') {
-        event.preventDefault();
-        // Trigger AI suggestion logic (e.g., open a modal, show a popover)
-        console.log('AI Suggestion shortcut triggered!');
-        // For now, let's just add a temporary block to simulate
-        setBlocks((prevBlocks) => [
-          ...prevBlocks,
-          { id: Date.now().toString(), type: 'ai-suggestion', content: 'AI-generated content suggestion.' },
-        ]);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, []);
+  const addBlock = (type: string) => {
+    const newBlock: Block = { id: Date.now().toString(), type, content: `New ${type} block` };
+    setBlocks(prev => [...prev, newBlock]);
+  }
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="block-editor-canvas p-4 border rounded bg-light" role="main" aria-live="polite">
-        <h3 className="mb-4">Block Editor Canvas</h3>
+      <div className="space-y-4">
         {blocks.map((block, index) => (
           <DraggableBlock key={block.id} index={index} block={block} moveBlock={moveBlock} />
         ))}
-        <div className="d-grid gap-2 mt-4">
-          <button className="btn btn-outline-secondary">Add Text Block</button>
-          <button className="btn btn-outline-secondary">Add Media Block</button>
-          <button className="btn btn-outline-secondary">Add Form Block</button>
-          <button className="btn btn-outline-secondary">Add Custom Storyblok Component</button>
+        <div className="flex items-center justify-center space-x-4 pt-4 border-t border-dashed border-gray-300 dark:border-gray-700">
+            <button onClick={() => addBlock('text')} className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600">
+                <PlusCircle size={20} />
+                <span>Text</span>
+            </button>
+            <button onClick={() => addBlock('media')} className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600">
+                <PlusCircle size={20} />
+                <span>Media</span>
+            </button>
+            <button onClick={() => addBlock('form')} className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600">
+                <PlusCircle size={20} />
+                <span>Form</span>
+            </button>
         </div>
       </div>
     </DndProvider>

@@ -1,53 +1,49 @@
-
 import { Command } from 'commander';
 import inquirer from 'inquirer';
-import { log } from '../lib/logger';
+import { logInfo, logSuccess, logError, logHeading } from '../lib/logger';
+import * as fs from 'fs';
 
-export const onboardCommand = new Command()
-  .command('onboard')
-  .description('Start the onboarding process for a new user or project')
-  .action(async () => {
-    log('Welcome to the SmartAccessible CMS Toolkit CLI!\n');
-    log('This interactive wizard will guide you through the initial project setup.');
+export const initCommand = new Command()
+  .command('init')
+  .description('Initialize project with Storyblok connection')
+  .option('--space-id <id>', 'Your Storyblok space ID')
+  .option('--token <access_token>', 'Your Storyblok access token')
+  .option('--config <file>', 'Path to save configuration', '.smartcmsrc')
+  .action(async (options) => {
+    logHeading('Initializing SmartAccessible CMS Project');
 
-    const answers = await inquirer.prompt([
+    const questions: any[] = [
       {
         type: 'input',
-        name: 'projectName',
-        message: 'Enter your project name:',
-        default: 'My New Project',
+        name: 'spaceId',
+        message: 'Enter your Storyblok space ID:',
+        when: !options.spaceId,
       },
       {
-        type: 'confirm',
-        name: 'initializeGit',
-        message: 'Do you want to initialize a Git repository for this project?',
-        default: true,
+        type: 'password',
+        name: 'token',
+        message: 'Enter your Storyblok access token:',
+        when: !options.token,
       },
-      {
-        type: 'confirm',
-        name: 'installDependencies',
-        message: 'Do you want to install project dependencies (e.g., npm install)?',
-        default: true,
-      },
-    ]);
+    ];
 
-    log(`\nProject Name: ${answers.projectName}`);
-    if (answers.initializeGit) {
-      log('Initializing Git repository...');
-      // Placeholder for git init logic
-      log('Git repository initialized.');
-    } else {
-      log('Git repository initialization skipped.');
+    const answers = await inquirer.prompt(questions);
+
+    const config = {
+      spaceId: options.spaceId || answers.spaceId,
+      token: options.token || answers.token,
+    };
+
+    if (!config.spaceId || !config.token) {
+      logError('Storyblok space ID and access token are required.');
+      return;
     }
 
-    if (answers.installDependencies) {
-      log('Installing project dependencies...');
-      // Placeholder for npm install logic
-      log('Project dependencies installed.');
-    } else {
-      log('Project dependencies installation skipped.');
+    try {
+      fs.writeFileSync(options.config, JSON.stringify(config, null, 2));
+      logSuccess(`Configuration saved to ${options.config}`);
+      logInfo('Your project is now connected to Storyblok.');
+    } catch (error) {
+      logError('Failed to save configuration file.', error);
     }
-
-    log('\nOnboarding complete! Your project is now set up.');
-    log('You can now use other commands like `create`, `edit`, `ai-scan`, etc.');
   });
