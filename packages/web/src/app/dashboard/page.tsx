@@ -1,12 +1,13 @@
 'use client';
 
-import React from 'react';
-import AnalyticsDashboard from '@/components/AnalyticsDashboard';
+import dynamic from 'next/dynamic';
+
+const DynamicDashboardPage = dynamic(() => import('./DynamicDashboardPage'), { ssr: false });
 
 export default function DashboardPage() {
   return (
     <main>
-      <AnalyticsDashboard />
+      <DynamicDashboardPage />
     </main>
   );
 }
