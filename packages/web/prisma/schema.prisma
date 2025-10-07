@@ -10,41 +10,54 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model ContentBlock {
+model ContentEntry {
   id                  String        @id @default(uuid())
-  type                String
-  content             Json
-  locale              String
-  metadata            Json?
-  seo_score           Int           @default(0)
-  accessibility_score Int           @default(0)
-  inclusivity_score   Int           @default(0)
+  workspace_id        String
+  title               String
+  slug                String
+  blocks              Json // array of block ids
+  status              String        @default("draft") // draft|published|archived
+  meta                Json? // {seo: {}, accessibility_score: 0}
   created_at          DateTime      @default(now())
   updated_at          DateTime      @updatedAt
-  version             Int           @default(1)
-  variations          Variation[]
-  ai_suggestions      AISuggestion[]
 
-  @@index([locale])
-  @@index([type])
-  @@index([version])
+  @@index([workspace_id])
+  @@index([status])
 }
 
 model User {
   id            String    @id @default(uuid())
-  name          String
   email         String    @unique
-  role          String
-  permissions   Json?
-  preferences   Json?
-  auth_token    String?
-  refresh_token String?
-  token_expiry  DateTime?
-  theme         String    @default("light")
-  sessions      Session[]
+  name          String
+  roles         Json // array of roles
+  preferences   Json? // {theme: "dark|light", autosave: true}
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
 
   @@index([email])
-  @@index([role])
+}
+
+model Workspace {
+  id            String    @id @default(uuid())
+  name          String
+  storyblok_space_id String
+  ai_quota      Int       @default(0)
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+
+  @@index([storyblok_space_id])
+}
+
+model AITask {
+  id            String    @id @default(uuid())
+  workspace_id  String
+  status        String    @default("queued") // queued|running|done|failed
+  results       Json? // [{suggestions_count: 0}]
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+
+  @@index([workspace_id])
+  @@index([status])
 }
 
 model AISuggestion {

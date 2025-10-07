@@ -35,12 +35,12 @@ const DynamicSettingsPage: React.FC = () => {
       <h1 className="text-3xl font-bold mb-6">Settings</h1>
       <p className="text-gray-600 dark:text-gray-400 mb-6">Manage your application preferences and account settings.</p>
 
-      <div className="flex border-b border-gray-200 dark:border-gray-700 mb-6">
-        <button onClick={() => setActiveTab('general')} className={`py-2 px-4 text-sm font-medium ${activeTab === 'general' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}>General</button>
-        <button onClick={() => setActiveTab('users')} className={`py-2 px-4 text-sm font-medium ${activeTab === 'users' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}>Users</button>
-        <button onClick={() => setActiveTab('api-keys')} className={`py-2 px-4 text-sm font-medium ${activeTab === 'api-keys' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}>API Keys</button>
-        <button onClick={() => setActiveTab('integrations')} className={`py-2 px-4 text-sm font-medium ${activeTab === 'integrations' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}>Integrations</button>
-      </div>
+       <div className="flex border-b border-gray-200 dark:border-gray-700 mb-6">
+         <button onClick={() => setActiveTab('general')} className={`py-2 px-4 text-sm font-medium ${activeTab === 'general' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}>General</button>
+         <button onClick={() => setActiveTab('accessibility')} className={`py-2 px-4 text-sm font-medium ${activeTab === 'accessibility' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}>Accessibility Preferences</button>
+         <button onClick={() => setActiveTab('integrations')} className={`py-2 px-4 text-sm font-medium ${activeTab === 'integrations' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}>Integrations</button>
+         <button onClick={() => setActiveTab('api-keys')} className={`py-2 px-4 text-sm font-medium ${activeTab === 'api-keys' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}>API Keys</button>
+       </div>
 
       <div className="space-y-6">
         {activeTab === 'general' && (
@@ -68,6 +68,15 @@ const DynamicSettingsPage: React.FC = () => {
                   <option value="high_contrast">High Contrast</option>
                 </select>
               </div>
+              <button type="submit" className="px-4 py-2 rounded-md bg-primary text-white hover:bg-opacity-80">Save Preferences</button>
+            </form>
+          </div>
+        )}
+
+        {activeTab === 'accessibility' && (
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+            <h3 className="font-bold text-xl mb-4">Accessibility Preferences</h3>
+            <form className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Accessibility</label>
                 <div className="flex items-center mt-2">
@@ -89,15 +98,8 @@ const DynamicSettingsPage: React.FC = () => {
                   </select>
                 </div>
               </div>
-              <button type="submit" className="px-4 py-2 rounded-md bg-primary text-white hover:bg-opacity-80">Save Preferences</button>
+              <button type="submit" className="px-4 py-2 rounded-md bg-primary text-white hover:bg-opacity-80">Save Accessibility Preferences</button>
             </form>
-          </div>
-        )}
-
-        {activeTab === 'users' && (
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-            <h3 className="font-bold text-xl mb-4">User Management</h3>
-            <p className="text-gray-600 dark:text-gray-400">Manage users and their roles here.</p>
           </div>
         )}
 

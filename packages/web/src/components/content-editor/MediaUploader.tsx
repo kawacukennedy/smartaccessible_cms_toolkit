@@ -26,14 +26,24 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({ onUploadComplete }) => {
       status: 'pending',
     }));
 
-    // Simple validation
+    // Validation
     const validFiles = newFiles.filter(f => {
-      if (f.file.size > 10 * 1024 * 1024) { // 10MB limit
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/svg+xml', 'image/gif', 'video/mp4', 'video/webm'];
+      if (!allowedTypes.includes(f.file.type)) {
+        addNotification({ displayType: 'toast', style: 'error', message: `${f.file.name} has invalid type.` });
+        return false;
+      }
+      if (f.file.size > 50 * 1024 * 1024) { // 50MB limit
         addNotification({ displayType: 'toast', style: 'error', message: `${f.file.name} is too large.` });
         return false;
       }
       return true;
     });
+
+    if (validFiles.length > 20) {
+      addNotification({ displayType: 'toast', style: 'error', message: 'Maximum 20 files at once.' });
+      validFiles.splice(20);
+    }
 
     setFiles(prev => [...prev, ...validFiles]);
     validFiles.forEach(simulateUpload);
@@ -108,6 +118,29 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({ onUploadComplete }) => {
       handleFiles(e.target.files);
     }
   };
+
+  const handlePaste = useCallback((e: ClipboardEvent) => {
+    const items = e.clipboardData?.items;
+    if (items) {
+      const files: File[] = [];
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (item.kind === 'file') {
+          const file = item.getAsFile();
+          if (file) files.push(file);
+        }
+      }
+      if (files.length > 0) {
+        const fileList = { length: files.length, item: (i: number) => files[i] } as FileList;
+        handleFiles(fileList);
+      }
+    }
+  }, []);
+
+  React.useEffect(() => {
+    document.addEventListener('paste', handlePaste);
+    return () => document.removeEventListener('paste', handlePaste);
+  }, [handlePaste]);
 
   return (
     <div className="mb-3">

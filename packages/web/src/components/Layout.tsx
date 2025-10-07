@@ -1,9 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import InteractiveTour from './InteractiveTour';
+import dynamic from 'next/dynamic';
+
+const InteractiveTour = dynamic(() => import('./InteractiveTour'), { ssr: false });
 import Header from './Header';
 import Sidebar from './Sidebar';
+import Breadcrumb from './Breadcrumb';
 import './Layout.css';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAccessibility } from '@/contexts/AccessibilityContext';
@@ -33,6 +36,31 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     };
   }, []);
 
+  // Global keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        switch (e.key) {
+          case 'k':
+            e.preventDefault();
+            // Open global search
+            break;
+          case 'n':
+            e.preventDefault();
+            // Open notifications
+            break;
+          case 'm':
+            e.preventDefault();
+            // Open media library
+            break;
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   useEffect(() => {
     document.documentElement.classList.remove('font-size-small', 'font-size-medium', 'font-size-large');
     document.documentElement.classList.add(`font-size-${fontSize}`);
@@ -51,8 +79,11 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       <Header toggleSidebar={toggleSidebar} startTour={startTour} />
       <div className="flex flex-grow">
         <Sidebar isSidebarOpen={isSidebarOpen} />
-        <main className="flex-grow p-4">
-          {children}
+        <main className="flex-grow">
+          <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Dashboard' }]} />
+          <div className="p-4">
+            {children}
+          </div>
         </main>
       </div>
       <InteractiveTour run={runTour} setRunTour={setRunTour} />

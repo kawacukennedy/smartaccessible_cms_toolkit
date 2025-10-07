@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useUndoRedo } from '@/contexts/UndoRedoContext';
-import { Undo, Redo, Save, Send, Shield, Sparkles } from 'lucide-react';
+import { Undo, Redo, Save, Send, Shield, Sparkles, Sidebar, Eye } from 'lucide-react';
 
 interface EditorToolbarProps {
   onSaveDraft: () => void;
@@ -11,6 +11,9 @@ interface EditorToolbarProps {
   isAiAssistEnabled: boolean;
   accessibilityScore: number;
   isOffline: boolean;
+  isSaving?: boolean;
+  onToggleSidebar?: () => void;
+  onToggleAIPanel?: () => void;
 }
 
 const EditorToolbar: React.FC<EditorToolbarProps> = ({
@@ -20,6 +23,9 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({
   isAiAssistEnabled,
   accessibilityScore,
   isOffline,
+  isSaving,
+  onToggleSidebar,
+  onToggleAIPanel,
 }) => {
   const { undo, redo, canUndo, canRedo } = useUndoRedo();
 
@@ -46,14 +52,24 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({
             {accessibilityScore}
           </span>
         </div>
+        {onToggleSidebar && (
+          <button onClick={onToggleSidebar} className="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
+            <Sidebar size={20} />
+          </button>
+        )}
         <button onClick={onToggleAIAssist} className={`p-2 rounded-md ${isAiAssistEnabled ? 'bg-primary text-white' : 'hover:bg-gray-200 dark:hover:bg-gray-700'}`}>
           <Sparkles size={20} />
         </button>
+        {onToggleAIPanel && (
+          <button onClick={onToggleAIPanel} className="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
+            <Eye size={20} />
+          </button>
+        )}
       </div>
       <div className="flex items-center space-x-2">
-        <button onClick={onSaveDraft} className="px-4 py-2 text-sm font-semibold rounded-md bg-secondary text-white hover:bg-opacity-80">
+        <button onClick={onSaveDraft} disabled={isSaving} className="px-4 py-2 text-sm font-semibold rounded-md bg-secondary text-white hover:bg-opacity-80 disabled:opacity-50">
           <Save size={16} className="inline-block mr-1" />
-          Save Draft
+          {isSaving ? 'Saving...' : 'Save Draft'}
         </button>
         <button onClick={onPublish} className="px-4 py-2 text-sm font-semibold rounded-md bg-primary text-white hover:bg-opacity-80">
           <Send size={16} className="inline-block mr-1" />

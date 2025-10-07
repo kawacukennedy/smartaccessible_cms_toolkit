@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Laptop, Tablet, Smartphone, GitCompare } from 'lucide-react';
+import { Laptop, Tablet, Smartphone, GitCompare, Share } from 'lucide-react';
 
 interface PreviewPaneProps {
   draftContent: string;
@@ -38,10 +38,16 @@ const PreviewPane: React.FC<PreviewPaneProps> = ({ draftContent, publishedConten
           <button onClick={() => setView('tablet')} className={`p-2 rounded-md ${view === 'tablet' ? 'bg-white dark:bg-gray-700' : ''}`}><Tablet size={20} /></button>
           <button onClick={() => setView('mobile')} className={`p-2 rounded-md ${view === 'mobile' ? 'bg-white dark:bg-gray-700' : ''}`}><Smartphone size={20} /></button>
         </div>
-        <button onClick={() => setDiffMode(!diffMode)} className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm ${diffMode ? 'bg-primary text-white' : 'bg-gray-200 dark:bg-gray-800'}`}>
-          <GitCompare size={16} />
-          <span>Diff Mode</span>
-        </button>
+        <div className="flex space-x-2">
+          <button onClick={() => setDiffMode(!diffMode)} className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm ${diffMode ? 'bg-primary text-white' : 'bg-gray-200 dark:bg-gray-800'}`}>
+            <GitCompare size={16} />
+            <span>Diff Mode</span>
+          </button>
+          <button onClick={() => navigator.share({ title: 'Preview', url: window.location.href })} className="flex items-center space-x-2 px-3 py-2 rounded-lg text-sm bg-gray-200 dark:bg-gray-800">
+            <Share size={16} />
+            <span>Share</span>
+          </button>
+        </div>
       </div>
 
       <div className={`flex-grow p-4 overflow-auto ${getFrameWidth()}`}>

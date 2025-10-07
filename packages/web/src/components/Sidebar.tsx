@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import NewPageModal from './NewPageModal';
-import { FilePlus, LayoutTemplate, Filter, FileText, CheckCircle, Calendar, Type, Newspaper, Presentation, Box, Wifi, WifiOff, Repeat } from 'lucide-react';
+import { FilePlus, LayoutTemplate, Filter, FileText, CheckCircle, Calendar, Type, Newspaper, Presentation, Box, Wifi, WifiOff, Repeat, Eye, BarChart, Settings } from 'lucide-react';
 
 interface SidebarProps {
   isSidebarOpen: boolean;
@@ -46,49 +46,23 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
   return (
     <aside className={`bg-background_light dark:bg-background_dark text-gray-800 dark:text-gray-200 flex flex-col transition-all duration-300 ${isSidebarOpen ? 'w-72' : 'w-20'}`}>
       <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-        <h5 className="text-lg font-bold">{isSidebarOpen ? 'Menu' : ''}</h5>
+        <h5 className="text-lg font-bold">{isSidebarOpen ? 'Navigation' : ''}</h5>
       </div>
       <div className="flex-grow p-4 space-y-6">
-        <div>
-          <h6 className="text-xs font-bold uppercase text-gray-500">Quick Actions</h6>
-          <div className="mt-2 space-y-2">
-            <button className="w-full flex items-center p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700" onClick={() => setShowNewPageModal(true)}>
-              <FilePlus size={20} />
-              {isSidebarOpen && <span className="ml-2">New Page</span>}
-            </button>
-            <button className="w-full flex items-center p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700">
-              <LayoutTemplate size={20} />
-              {isSidebarOpen && <span className="ml-2">New Template</span>}
-            </button>
-          </div>
-        </div>
-        <div>
-          <h6 className="text-xs font-bold uppercase text-gray-500">Filters</h6>
-          <ul className="mt-2 space-y-2">
-            <li><Link href="#" className="flex items-center p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700"><FileText size={20} />{isSidebarOpen && <span className="ml-2">Drafts</span>}</Link></li>
-            <li><Link href="#" className="flex items-center p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700"><CheckCircle size={20} />{isSidebarOpen && <span className="ml-2">Published</span>}</Link></li>
-            <li><Link href="#" className="flex items-center p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700"><Calendar size={20} />{isSidebarOpen && <span className="ml-2">Scheduled</span>}</Link></li>
+        <nav>
+          <ul className="space-y-2">
+            <li><Link href="/dashboard" className="flex items-center p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700"><LayoutTemplate size={20} />{isSidebarOpen && <span className="ml-2">Dashboard</span>}</Link></li>
+            <li><Link href="/content" className="flex items-center p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700"><FileText size={20} />{isSidebarOpen && <span className="ml-2">Content</span>}</Link></li>
+            <li><Link href="/preview" className="flex items-center p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700"><Eye size={20} />{isSidebarOpen && <span className="ml-2">Preview</span>}</Link></li>
+            <li><Link href="/analytics" className="flex items-center p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700"><BarChart size={20} />{isSidebarOpen && <span className="ml-2">Analytics</span>}</Link></li>
+            <li><Link href="/settings" className="flex items-center p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700"><Settings size={20} />{isSidebarOpen && <span className="ml-2">Settings</span>}</Link></li>
           </ul>
-        </div>
-        <div>
-          <h6 className="text-xs font-bold uppercase text-gray-500">Content Types</h6>
-          <ul className="mt-2 space-y-2">
-            <li><Link href="#" className="flex items-center p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700"><Type size={20} />{isSidebarOpen && <span className="ml-2">Article</span>}</Link></li>
-            <li><Link href="#" className="flex items-center p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700"><Newspaper size={20} />{isSidebarOpen && <span className="ml-2">Blog Post</span>}</Link></li>
-            <li><Link href="#" className="flex items-center p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700"><Presentation size={20} />{isSidebarOpen && <span className="ml-2">Landing Page</span>}</Link></li>
-            <li><Link href="#" className="flex items-center p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700"><Box size={20} />{isSidebarOpen && <span className="ml-2">Product</span>}</Link></li>
-          </ul>
-        </div>
+        </nav>
       </div>
       <div className={`p-4 border-t border-gray-200 dark:border-gray-700 flex items-center ${status.color}`}>
         {status.icon}
         {isSidebarOpen && <span className="ml-2 text-sm">{status.text}</span>}
       </div>
-      <NewPageModal
-        show={showNewPageModal}
-        onClose={() => setShowNewPageModal(false)}
-        onCreate={handleCreatePage}
-      />
     </aside>
   );
 };

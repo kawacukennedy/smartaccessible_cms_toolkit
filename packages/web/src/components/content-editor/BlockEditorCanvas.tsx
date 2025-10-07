@@ -9,8 +9,18 @@ import GripVerticalIcon from '../icons/GripVerticalIcon';
 
 interface Block {
   id: string;
-  type: string;
-  content: string;
+  type: 'TextBlock' | 'ImageBlock' | 'Hero' | 'CTA' | 'Custom';
+  meta: {
+    created_by: string;
+    created_at: string;
+    version: number;
+  };
+  payload: any; // varies by type
+  accessibility_meta: {
+    alt_text?: string;
+    aria_label?: string;
+    contrast_warning?: boolean;
+  };
 }
 
 const DraggableBlock: React.FC<{ block: Block; index: number; moveBlock: (dragIndex: number, hoverIndex: number) => void }> = ({ block, index, moveBlock }) => {
@@ -44,7 +54,7 @@ const DraggableBlock: React.FC<{ block: Block; index: number; moveBlock: (dragIn
             <div className="cursor-move p-2">
                 <GripVerticalIcon size={20} />
             </div>
-            <div className="flex-grow">{block.content}</div>
+            <div className="flex-grow">{block.payload?.content || 'Block content'}</div>
             <button className="p-2 rounded-full hover:bg-yellow-200 dark:hover:bg-yellow-800" title="AI Suggestion available (Alt+S)">
                 <Lightbulb size={20} className="text-yellow-500" />
             </button>
@@ -74,8 +84,18 @@ const BlockEditorCanvas: React.FC<{ initialContent?: string | null }> = ({ initi
     saveContentToIndexedDB('editor-content', JSON.stringify(blocks));
   }, [blocks]);
 
-  const addBlock = (type: string) => {
-    const newBlock: Block = { id: Date.now().toString(), type, content: `New ${type} block` };
+  const addBlock = (type: Block['type']) => {
+    const newBlock: Block = {
+      id: Date.now().toString(),
+      type,
+      meta: {
+        created_by: 'user',
+        created_at: new Date().toISOString(),
+        version: 1,
+      },
+      payload: { content: `New ${type} block` },
+      accessibility_meta: {},
+    };
     setBlocks(prev => [...prev, newBlock]);
   }
 
@@ -86,17 +106,17 @@ const BlockEditorCanvas: React.FC<{ initialContent?: string | null }> = ({ initi
           <DraggableBlock key={block.id} index={index} block={block} moveBlock={moveBlock} />
         ))}
         <div className="flex items-center justify-center space-x-4 pt-4 border-t border-dashed border-gray-300 dark:border-gray-700">
-            <button onClick={() => addBlock('text')} className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600">
+            <button onClick={() => addBlock('TextBlock')} className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600">
                 <PlusCircle size={20} />
                 <span>Text</span>
             </button>
-            <button onClick={() => addBlock('media')} className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600">
+            <button onClick={() => addBlock('ImageBlock')} className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600">
                 <PlusCircle size={20} />
-                <span>Media</span>
+                <span>Image</span>
             </button>
-            <button onClick={() => addBlock('form')} className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600">
+            <button onClick={() => addBlock('Custom')} className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600">
                 <PlusCircle size={20} />
-                <span>Form</span>
+                <span>Custom</span>
             </button>
         </div>
       </div>
