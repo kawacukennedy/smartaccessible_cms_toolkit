@@ -1,6 +1,10 @@
 import { MobileMediaProcessor, MediaFile } from './mobileMediaProcessor';
 import { MobileGestureSupport, GestureEvent, VoiceCommand } from './mobileGestureSupport';
 import { MobileDeploymentUtils, DeploymentConfig } from './mobileDeploymentUtils';
+import { mobileCollaboration, CollaborationSession, Collaborator } from './mobileCollaboration';
+import { mobileSecurity, SecurityConfig, SecurityEvent } from './mobileSecurity';
+import { mobileCloudSync, SyncConfig, SyncSession } from './mobileCloudSync';
+import { mobileSearch, SearchQuery, SearchResult } from './mobileSearch';
 
 export interface TestResult {
   testName: string;
@@ -36,6 +40,12 @@ export class MobileIntegrationTests {
 
     // Cross-Component Integration Tests
     await this.testCrossComponentIntegration();
+
+    // Advanced Features Tests
+    await this.testCollaborationFeatures();
+    await this.testSecurityFeatures();
+    await this.testCloudSyncFeatures();
+    await this.testSearchFeatures();
 
     console.log('✅ Mobile Integration Tests Complete');
     return this.results;
@@ -316,6 +326,218 @@ export class MobileIntegrationTests {
 
       if (!processedFile.metadata?.tags || !processedFile.metadata?.altText) {
         throw new Error('Media processing integration failed');
+      }
+    });
+  }
+
+  private async testCollaborationFeatures(): Promise<void> {
+    console.log('👥 Testing Collaboration Features...');
+
+    // Test session creation
+    await this.runTest('Collaboration Session Creation', async () => {
+      const session = await mobileCollaboration.createSession('test-doc-123', 'user1', 'Test User');
+      if (!session.id || session.participants.length !== 1) {
+        throw new Error('Session creation failed');
+      }
+    });
+
+    // Test joining session
+    await this.runTest('Collaboration Session Joining', async () => {
+      const session = await mobileCollaboration.createSession('test-doc-456', 'user1', 'Test User');
+      const joinedSession = await mobileCollaboration.joinSession(session.id, 'user2', 'User Two');
+
+      if (joinedSession.participants.length !== 2) {
+        throw new Error('Session joining failed');
+      }
+    });
+
+    // Test cursor tracking
+    await this.runTest('Cursor Position Tracking', async () => {
+      const session = await mobileCollaboration.createSession('test-doc-789', 'user1', 'Test User');
+      await mobileCollaboration.updateCursorPosition(session.id, 'user1', { x: 100, y: 200, line: 5 });
+
+      const cursors = mobileCollaboration.getCursorPositions(session.id);
+      if (cursors.length !== 1 || cursors[0].x !== 100) {
+        throw new Error('Cursor tracking failed');
+      }
+    });
+
+    // Test real-time messaging
+    await this.runTest('Real-time Messaging', async () => {
+      const session = await mobileCollaboration.createSession('test-doc-msg', 'user1', 'Test User');
+      await mobileCollaboration.sendMessage(session.id, 'user1', 'Hello World!');
+
+      const messages = mobileCollaboration.getMessages(session.id);
+      if (messages.length !== 1 || messages[0].content !== 'Hello World!') {
+        throw new Error('Real-time messaging failed');
+      }
+    });
+  }
+
+  private async testSecurityFeatures(): Promise<void> {
+    console.log('🔒 Testing Security Features...');
+
+    // Test security configuration
+    await this.runTest('Security Configuration', async () => {
+      const config = await mobileSecurity.getSecurityConfig();
+      if (!config.encryptionEnabled || !config.auditLogging) {
+        throw new Error('Security configuration not properly initialized');
+      }
+    });
+
+    // Test encryption/decryption
+    await this.runTest('Data Encryption', async () => {
+      const testData = 'sensitive information';
+      const encrypted = await mobileSecurity.encryptData(testData);
+      const decrypted = await mobileSecurity.decryptData(encrypted);
+
+      if (decrypted !== testData) {
+        throw new Error('Encryption/decryption failed');
+      }
+    });
+
+    // Test security health check
+    await this.runTest('Security Health Check', async () => {
+      const health = await mobileSecurity.performSecurityHealthCheck();
+      if (!health.status || health.status === 'critical') {
+        throw new Error('Security health check failed');
+      }
+    });
+
+    // Test audit logging
+    await this.runTest('Audit Logging', async () => {
+      await mobileSecurity.logSecurityEvent('test_event', 'Test security event', 'info');
+      const events = await mobileSecurity.getSecurityEvents(10);
+
+      const testEvent = events.find(e => e.event === 'test_event');
+      if (!testEvent) {
+        throw new Error('Audit logging failed');
+      }
+    });
+  }
+
+  private async testCloudSyncFeatures(): Promise<void> {
+    console.log('☁️ Testing Cloud Sync Features...');
+
+    // Test sync configuration
+    await this.runTest('Sync Configuration', async () => {
+      const config = await mobileCloudSync.getSyncConfig();
+      if (!config.autoSync || !config.conflictResolution) {
+        throw new Error('Sync configuration not properly initialized');
+      }
+    });
+
+    // Test sync session creation
+    await this.runTest('Sync Session Management', async () => {
+      const session = await mobileCloudSync.startSyncSession();
+      if (!session.id || session.status !== 'active') {
+        throw new Error('Sync session creation failed');
+      }
+
+      await mobileCloudSync.endSyncSession(session.id);
+      const endedSession = await mobileCloudSync.getSyncSession(session.id);
+      if (endedSession.status !== 'completed') {
+        throw new Error('Sync session ending failed');
+      }
+    });
+
+    // Test conflict resolution
+    await this.runTest('Conflict Resolution', async () => {
+      const conflictData = {
+        itemId: 'test-item',
+        localVersion: 'Local content',
+        remoteVersion: 'Remote content',
+        timestamp: Date.now()
+      };
+
+      const resolution = await mobileCloudSync.resolveConflict(conflictData.itemId, 'local');
+      if (!resolution.resolved) {
+        throw new Error('Conflict resolution failed');
+      }
+    });
+
+    // Test sync queue management
+    await this.runTest('Sync Queue Management', async () => {
+      const queueLength = mobileCloudSync.getSyncQueueLength();
+      const initialLength = queueLength;
+
+      await mobileCloudSync.addToSyncQueue({
+        id: 'test-item',
+        type: 'content',
+        action: 'create',
+        data: { content: 'Test content' }
+      });
+
+      const newLength = mobileCloudSync.getSyncQueueLength();
+      if (newLength !== initialLength + 1) {
+        throw new Error('Sync queue management failed');
+      }
+    });
+  }
+
+  private async testSearchFeatures(): Promise<void> {
+    console.log('🔍 Testing Search Features...');
+
+    // Test basic search
+    await this.runTest('Basic Search Functionality', async () => {
+      const query: SearchQuery = {
+        text: 'test content',
+        options: {
+          fuzzy: false,
+          semantic: false,
+          caseSensitive: false,
+          wholeWords: false,
+        }
+      };
+
+      const results = await mobileSearch.performSearch(query);
+      // Results might be empty for test data, but should not throw error
+      if (!Array.isArray(results)) {
+        throw new Error('Search returned invalid results');
+      }
+    });
+
+    // Test fuzzy search
+    await this.runTest('Fuzzy Search', async () => {
+      const query: SearchQuery = {
+        text: 'contnt', // Intentional typo
+        options: {
+          fuzzy: true,
+          semantic: false,
+          caseSensitive: false,
+          wholeWords: false,
+        }
+      };
+
+      const results = await mobileSearch.performSearch(query);
+      if (!Array.isArray(results)) {
+        throw new Error('Fuzzy search failed');
+      }
+    });
+
+    // Test semantic search
+    await this.runTest('Semantic Search', async () => {
+      const query: SearchQuery = {
+        text: 'information about technology',
+        options: {
+          fuzzy: false,
+          semantic: true,
+          caseSensitive: false,
+          wholeWords: false,
+        }
+      };
+
+      const results = await mobileSearch.performSearch(query);
+      if (!Array.isArray(results)) {
+        throw new Error('Semantic search failed');
+      }
+    });
+
+    // Test search analytics
+    await this.runTest('Search Analytics', async () => {
+      const analytics = await mobileSearch.getSearchAnalytics();
+      if (typeof analytics.totalSearches !== 'number') {
+        throw new Error('Search analytics failed');
       }
     });
   }

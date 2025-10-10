@@ -78,6 +78,10 @@ const DashboardScreen = () => {
         { text: 'New Document', onPress: () => navigation.navigate('AdvancedContentEditor' as never) },
         { text: 'Run Tests', onPress: () => navigation.navigate('Settings' as never) },
         { text: 'View Analytics', onPress: () => navigation.navigate('Analytics' as never) },
+        { text: 'Collaboration', onPress: () => navigation.navigate('Collaboration' as never) },
+        { text: 'Security Dashboard', onPress: () => navigation.navigate('Security' as never) },
+        { text: 'Cloud Sync', onPress: () => navigation.navigate('CloudSync' as never) },
+        { text: 'Advanced Search', onPress: () => navigation.navigate('AdvancedSearch' as never) },
         { text: 'Cancel', style: 'cancel' },
       ]
     );
@@ -185,6 +189,64 @@ const DashboardScreen = () => {
           <Text style={[styles.actionTitle, themeStyles.text]}>Settings</Text>
           <Text style={[styles.actionDescription, themeStyles.textSecondary]}>
             Customize your experience
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Advanced Features */}
+      <View style={{ paddingHorizontal: 16, paddingTop: 16 }}>
+        <Text style={[styles.cardTitle, themeStyles.text]}>Advanced Features</Text>
+      </View>
+      <View style={styles.actionsGrid}>
+        <TouchableOpacity
+          style={[styles.actionCard, themeStyles.card]}
+          onPress={() => navigation.navigate('Collaboration' as never)}
+          accessibilityLabel="Real-time Collaboration"
+          accessibilityHint="Collaborate with team members in real-time"
+        >
+          <Text style={[styles.actionIcon, themeStyles.text]}>👥</Text>
+          <Text style={[styles.actionTitle, themeStyles.text]}>Collaboration</Text>
+          <Text style={[styles.actionDescription, themeStyles.textSecondary]}>
+            Work together in real-time
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.actionCard, themeStyles.card]}
+          onPress={() => navigation.navigate('Security' as never)}
+          accessibilityLabel="Security Dashboard"
+          accessibilityHint="Monitor and manage security settings"
+        >
+          <Text style={[styles.actionIcon, themeStyles.text]}>🔒</Text>
+          <Text style={[styles.actionTitle, themeStyles.text]}>Security</Text>
+          <Text style={[styles.actionDescription, themeStyles.textSecondary]}>
+            Enterprise-grade security
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.actionCard, themeStyles.card]}
+          onPress={() => navigation.navigate('CloudSync' as never)}
+          accessibilityLabel="Cloud Synchronization"
+          accessibilityHint="Sync content across devices and platforms"
+        >
+          <Text style={[styles.actionIcon, themeStyles.text]}>☁️</Text>
+          <Text style={[styles.actionTitle, themeStyles.text]}>Cloud Sync</Text>
+          <Text style={[styles.actionDescription, themeStyles.textSecondary]}>
+            Sync across all devices
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.actionCard, themeStyles.card]}
+          onPress={() => navigation.navigate('AdvancedSearch' as never)}
+          accessibilityLabel="Advanced Search"
+          accessibilityHint="Powerful AI-powered search capabilities"
+        >
+          <Text style={[styles.actionIcon, themeStyles.text]}>🔍</Text>
+          <Text style={[styles.actionTitle, themeStyles.text]}>Search</Text>
+          <Text style={[styles.actionDescription, themeStyles.textSecondary]}>
+            AI-powered search
           </Text>
         </TouchableOpacity>
       </View>

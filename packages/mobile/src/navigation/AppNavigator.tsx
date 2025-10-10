@@ -11,6 +11,10 @@ import AnalyticsScreen from '../screens/AnalyticsScreen';
 import PerformanceScreen from '../screens/PerformanceScreen';
 import AdvancedContentEditorScreen from '../screens/AdvancedContentEditorScreen';
 import OnboardingScreen from '../screens/OnboardingScreen';
+import CollaborationPanel from '../components/CollaborationPanel';
+import SecurityDashboard from '../components/SecurityDashboard';
+import CloudSyncDashboard from '../components/CloudSyncDashboard';
+import AdvancedSearch from '../components/AdvancedSearch';
 import MobileGestureHandler from '../components/MobileGestureHandler';
 import MobileVoiceNavigation from '../components/MobileVoiceNavigation';
 import { GestureEvent, VoiceCommand, globalGestureSupport } from '../lib/mobileGestureSupport';
@@ -77,9 +81,13 @@ const AppNavigator = () => {
       <Stack.Screen name="ThemeBuilder" component={ThemeBuilderScreen} />
       <Stack.Screen name="Analytics" component={AnalyticsScreen} />
       <Stack.Screen name="Performance" component={PerformanceScreen} />
-      <Stack.Screen name="AdvancedContentEditor" component={AdvancedContentEditorScreen} />
-      <Stack.Screen name="Onboarding" component={OnboardingScreen} />
-    </Stack.Navigator>
+       <Stack.Screen name="AdvancedContentEditor" component={AdvancedContentEditorScreen} />
+       <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+       <Stack.Screen name="Collaboration" component={CollaborationPanel} />
+       <Stack.Screen name="Security" component={SecurityDashboard} />
+       <Stack.Screen name="CloudSync" component={CloudSyncDashboard} />
+       <Stack.Screen name="AdvancedSearch" component={AdvancedSearch} />
+     </Stack.Navigator>
   );
 };
 
