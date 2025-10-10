@@ -1,0 +1,66 @@
+{
+  "cli": {
+    "version": ">= 5.9.0"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal"
+    },
+    "production": {
+      "channel": "production"
+    },
+    "canary": {
+      "channel": "canary",
+      "distribution": "store",
+      "android": {
+        "buildType": "apk",
+        "track": "internal"
+      },
+      "ios": {
+        "enterpriseProvisioning": "universal"
+      }
+    },
+    "blue": {
+      "channel": "blue",
+      "distribution": "store",
+      "env": {
+        "BLUE_GREEN_ACTIVE": "blue"
+      }
+    },
+    "green": {
+      "channel": "green",
+      "distribution": "store",
+      "env": {
+        "BLUE_GREEN_ACTIVE": "green"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "android": {
+        "serviceAccountKeyPath": "./google-service-account-key.json",
+        "track": "internal",
+        "rollout": 0.1
+      },
+      "ios": {
+        "appleId": "your-apple-id@example.com",
+        "ascAppId": "1234567890"
+      }
+    },
+    "canary": {
+      "android": {
+        "serviceAccountKeyPath": "./google-service-account-key.json",
+        "track": "internal",
+        "rollout": 0.05
+      },
+      "ios": {
+        "appleId": "your-apple-id@example.com",
+        "ascAppId": "1234567890"
+      }
+    }
+  }
+}

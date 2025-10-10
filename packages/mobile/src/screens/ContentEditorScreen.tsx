@@ -6,6 +6,8 @@ import { useUndoRedo } from '@/contexts/UndoRedoContext';
 import { useNotifications } from '@/contexts/NotificationContext';
 import { useOnboarding } from '@/contexts/OnboardingContext';
 import MobileAISuggestionsPanel from '../components/MobileAISuggestionsPanel';
+import MobileAI_Toolbar from '../components/MobileAI_Toolbar';
+import { mobileAIService, AISuggestion, AIContentAnalysis } from '../lib/mobileAIService';
 import MobileLivePreviewPanel from '../components/MobileLivePreviewPanel'; // Import MobileLivePreviewPanel
 import ConflictResolutionModal from '../components/ConflictResolutionModal'; // Import ConflictResolutionModal
 import AIErrorModal from '../components/AIErrorModal'; // Import AIErrorModal
@@ -22,11 +24,14 @@ const ContentEditorScreen = () => {
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [isMediaLibraryOpen, setIsMediaLibraryOpen] = useState(false);
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
-  const [isConflictModalOpen, setIsConflictModalOpen] = useState(false); // New state for conflict modal
-  const [isAIErrorModalOpen, setIsAIErrorModalOpen] = useState(false); // New state for AI error modal
+  const [isConflictModalOpen, setIsConflictModalOpen] = useState(false);
+  const [isAIErrorModalOpen, setIsAIErrorModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
-  const [suggestions, setSuggestions] = useState([]);
+  const [suggestions, setSuggestions] = useState<AISuggestion[]>([]);
+  const [aiAnalysis, setAiAnalysis] = useState<AIContentAnalysis | null>(null);
+  const [improvedContent, setImprovedContent] = useState('');
+  const [generatedTitle, setGeneratedTitle] = useState('');
 
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener(state => {
@@ -237,25 +242,75 @@ const ContentEditorScreen = () => {
     }
   };
 
-  const handleAISuggestionRequest = () => {
-    addNotification({ displayType: 'toast', style: 'info', message: 'AI scan requested. Processing...' });
-    // Simulate AI scan process
-    setTimeout(() => {
-      const success = Math.random() > 0.1; // 90% success rate
-      if (success) {
-        // Mock AI suggestions
-        // For now, we'll just add a success notification
-        addNotification({ displayType: 'toast', style: 'success', message: 'AI scan complete. Suggestions ready.' });
+  const handleAISuggestionRequest = async () => {
+    const content = currentContent;
+    if (!content.trim()) {
+      addNotification({
+        displayType: 'toast',
+        style: 'warning',
+        message: 'Please add some content before requesting AI suggestions.'
+      });
+      return;
+    }
+
+    addNotification({ displayType: 'toast', style: 'info', message: 'AI analysis in progress...' });
+
+    try {
+      const aiSuggestions = await mobileAIService.generateSuggestions(content);
+      setSuggestions(aiSuggestions);
+
+      if (aiSuggestions.length > 0) {
+        addNotification({
+          displayType: 'toast',
+          style: 'success',
+          message: `AI analysis complete. Found ${aiSuggestions.length} suggestions.`
+        });
+        setIsAIPanelOpen(true);
       } else {
-        setIsAIErrorModalOpen(true); // Show AI error modal
-        addNotification({ displayType: 'toast', style: 'error', message: 'AI scan failed.' });
+        addNotification({
+          displayType: 'toast',
+          style: 'info',
+          message: 'AI analysis complete. No suggestions needed - your content looks good!'
+        });
       }
-    }, 1500);
+    } catch (error) {
+      console.error('AI suggestion error:', error);
+      setIsAIErrorModalOpen(true);
+      addNotification({ displayType: 'toast', style: 'error', message: 'AI analysis failed. Please try again.' });
+    }
   };
 
   const handleRetryAIScan = () => {
     setIsAIErrorModalOpen(false);
-    handleAISuggestionRequest(); // Re-trigger the AI scan
+    handleAISuggestionRequest();
+  };
+
+  const handleContentAnalysis = (analysis: AIContentAnalysis) => {
+    setAiAnalysis(analysis);
+    addNotification({
+      displayType: 'toast',
+      style: 'success',
+      message: `Content analyzed! Readability: ${analysis.readability.score}%`
+    });
+  };
+
+  const handleImproveWriting = (improvedContent: string) => {
+    setImprovedContent(improvedContent);
+    addChange(improvedContent);
+    addNotification({
+      displayType: 'toast',
+      style: 'success',
+      message: 'Content improved with AI assistance!'
+    });
+  };
+
+  const handleGenerateTitle = (title: string) => {
+    setGeneratedTitle(title);
+    addNotification({
+      displayType: 'toast',
+      style: 'success',
+      message: `Title suggestion: "${title}"`
+    });
   };
 
   const runValidationChecks = (): string[] => {
@@ -341,18 +396,27 @@ const ContentEditorScreen = () => {
         ).current;
         return null; // PanResponder is attached to MobileBlockCanvas, no direct UI needed here
       })()}
-      />
-      {isAIPanelOpen && (
-        <MobileAISuggestionsPanel
-          onApplySuggestion={handleApplySuggestion}
-          onDismissSuggestion={handleDismissSuggestion}
-          onApplyAllSuggestions={handleApplyAllSuggestions}
-          onRevertAllSuggestions={handleRevertAllSuggestions}
-          testID="mobile-ai-panel"
-          accessibilityLabel="AI Suggestions Panel"
-          accessibilityHint="Displays AI-generated suggestions for content improvement."
-        />
-      )}
+
+       {isAIPanelOpen && (
+         <MobileAISuggestionsPanel
+           content={currentContent}
+           onApplySuggestion={handleApplySuggestion}
+           onDismissSuggestion={handleDismissSuggestion}
+           onApplyAllSuggestions={handleApplyAllSuggestions}
+           onRevertAllSuggestions={handleRevertAllSuggestions}
+           testID="mobile-ai-panel"
+           accessibilityLabel="AI Suggestions Panel"
+           accessibilityHint="Displays AI-generated suggestions for content improvement."
+         />
+       )}
+
+       <MobileAI_Toolbar
+         content={currentContent}
+         onGenerateSuggestions={handleAISuggestionRequest}
+         onContentAnalysis={handleContentAnalysis}
+         onImproveWriting={handleImproveWriting}
+         onGenerateTitle={handleGenerateTitle}
+       />
       {isPreviewMode && (
         <MobileLivePreviewPanel
           content={currentContent}

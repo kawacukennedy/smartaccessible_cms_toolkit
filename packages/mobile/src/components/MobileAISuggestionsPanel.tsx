@@ -1,20 +1,9 @@
-import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated } from 'react-native';
-// import { useAISuggestions } from '@/contexts/AISuggestionContext'; // Temporarily removed
-
-interface AISuggestion {
-  id: string;
-  message: string;
-  confidence: 'high' | 'medium' | 'low';
-}
-
-const dummySuggestions: AISuggestion[] = [
-  { id: '1', message: 'Improve sentence structure for clarity.', confidence: 'high' },
-  { id: '2', message: 'Add a call-to-action at the end of the block.', confidence: 'medium' },
-  { id: '3', message: 'Check for passive voice in paragraph 2.', confidence: 'low' },
-];
+import React, { useEffect, useRef, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated, ActivityIndicator } from 'react-native';
+import { mobileAIService, AISuggestion } from '../lib/mobileAIService';
 
 interface MobileAISuggestionsPanelProps {
+  content: string;
   onApplySuggestion: (suggestion: AISuggestion) => void;
   onDismissSuggestion: (suggestion: AISuggestion) => void;
   onApplyAllSuggestions: (suggestions: AISuggestion[]) => void;
@@ -22,13 +11,69 @@ interface MobileAISuggestionsPanelProps {
 }
 
 const MobileAISuggestionsPanel: React.FC<MobileAISuggestionsPanelProps> = ({
+  content,
   onApplySuggestion,
   onDismissSuggestion,
   onApplyAllSuggestions,
   onRevertAllSuggestions,
 }) => {
-  // const { suggestions } = useAISuggestions(); // Temporarily removed
-  const suggestions = dummySuggestions; // Using dummy data for now
+  const [suggestions, setSuggestions] = useState<AISuggestion[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [appliedSuggestions, setAppliedSuggestions] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (content.trim()) {
+      loadSuggestions();
+    } else {
+      setSuggestions([]);
+    }
+  }, [content]);
+
+  const loadSuggestions = async () => {
+    setIsLoading(true);
+    try {
+      const allSuggestions = await mobileAIService.generateSuggestions(content);
+      setSuggestions(allSuggestions);
+    } catch (error) {
+      console.error('Error loading AI suggestions:', error);
+      setSuggestions([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getFilteredSuggestions = () => {
+    if (activeCategory === 'all') return suggestions;
+    return suggestions.filter(s => s.category === activeCategory);
+  };
+
+  const getCategoryCounts = () => {
+    const counts: { [key: string]: number } = { all: suggestions.length };
+    suggestions.forEach(s => {
+      counts[s.category] = (counts[s.category] || 0) + 1;
+    });
+    return counts;
+  };
+
+  const handleApplySuggestion = (suggestion: AISuggestion) => {
+    setAppliedSuggestions(prev => new Set(prev).add(suggestion.id));
+    onApplySuggestion(suggestion);
+  };
+
+  const handleDismissSuggestion = (suggestion: AISuggestion) => {
+    onDismissSuggestion(suggestion);
+  };
+
+  const handleApplyAllFiltered = () => {
+    const filtered = getFilteredSuggestions();
+    setAppliedSuggestions(prev => {
+      const newSet = new Set(prev);
+      filtered.forEach(s => newSet.add(s.id));
+      return newSet;
+    });
+    onApplyAllSuggestions(filtered);
+  };
 
   const getConfidenceColor = (confidence: 'high' | 'medium' | 'low') => {
     switch (confidence) {
@@ -68,40 +113,101 @@ const MobileAISuggestionsPanel: React.FC<MobileAISuggestionsPanelProps> = ({
     );
   };
 
+  const filteredSuggestions = getFilteredSuggestions();
+  const categoryCounts = getCategoryCounts();
+
   return (
     <View style={styles.panelContainer}>
-      <Text style={styles.panelTitle}>AI Suggestions</Text>
+      <View style={styles.header}>
+        <Text style={styles.panelTitle}>AI Writing Assistant</Text>
+        {isLoading && <ActivityIndicator size="small" color="#007bff" />}
+      </View>
+
+      {/* Category Filter */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryFilter}>
+        {Object.entries(categoryCounts).map(([category, count]) => (
+          <TouchableOpacity
+            key={category}
+            style={[
+              styles.categoryButton,
+              activeCategory === category && styles.activeCategoryButton
+            ]}
+            onPress={() => setActiveCategory(category)}
+          >
+            <Text style={[
+              styles.categoryText,
+              activeCategory === category && styles.activeCategoryText
+            ]}>
+              {category.charAt(0).toUpperCase() + category.slice(1)} ({count})
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+
+      {/* Bulk Actions */}
       <View style={styles.bulkActions}>
         <TouchableOpacity
-          onPress={() => onApplyAllSuggestions(suggestions)}
+          onPress={handleApplyAllFiltered}
           style={[styles.actionButton, styles.applyAllButton]}
+          disabled={filteredSuggestions.length === 0}
         >
-          <Text style={styles.actionButtonText}>Apply All</Text>
+          <Text style={styles.actionButtonText}>Apply All ({filteredSuggestions.length})</Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={onRevertAllSuggestions}
           style={[styles.actionButton, styles.revertAllButton]}
+          disabled={appliedSuggestions.size === 0}
         >
-          <Text style={styles.actionButtonText}>Revert All</Text>
+          <Text style={styles.actionButtonText}>Revert All ({appliedSuggestions.size})</Text>
         </TouchableOpacity>
       </View>
-      {suggestions.length === 0 ? (
-        <Text style={styles.noSuggestionsText}>No AI suggestions available.</Text>
+
+      {/* Suggestions List */}
+      {isLoading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#007bff" />
+          <Text style={styles.loadingText}>Analyzing your content...</Text>
+        </View>
+      ) : filteredSuggestions.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.noSuggestionsText}>
+            {content.trim() ? 'No suggestions for this category.' : 'Add some content to get AI suggestions.'}
+          </Text>
+        </View>
       ) : (
         <ScrollView style={styles.suggestionsList}>
-          {suggestions.map((suggestion) => (
+          {filteredSuggestions.map((suggestion) => (
             <AnimatedSuggestionItem key={suggestion.id} suggestion={suggestion}>
+              <View style={styles.suggestionHeader}>
+                <View style={[styles.confidenceBadge, { backgroundColor: getConfidenceColor(suggestion.confidence) }]}>
+                  <Text style={styles.confidenceBadgeText}>
+                    {suggestion.confidence.toUpperCase()}
+                  </Text>
+                </View>
+                <Text style={styles.categoryLabel}>{suggestion.category}</Text>
+              </View>
               <View style={styles.suggestionContent}>
                 <Text style={styles.suggestionText}>{suggestion.message}</Text>
-                <Text style={[styles.confidenceText, { color: getConfidenceColor(suggestion.confidence) }]}>
-                  Confidence: {suggestion.confidence.toUpperCase()}
-                </Text>
+                {suggestion.replacement && (
+                  <Text style={styles.suggestionReplacement}>
+                    Suggestion: "{suggestion.replacement}"
+                  </Text>
+                )}
               </View>
               <View style={styles.suggestionActions}>
-                <TouchableOpacity onPress={() => onApplySuggestion(suggestion)} style={styles.actionButton}>
-                  <Text style={styles.actionButtonText}>Apply</Text>
+                <TouchableOpacity
+                  onPress={() => handleApplySuggestion(suggestion)}
+                  style={[styles.actionButton, appliedSuggestions.has(suggestion.id) && styles.appliedButton]}
+                  disabled={appliedSuggestions.has(suggestion.id)}
+                >
+                  <Text style={styles.actionButtonText}>
+                    {appliedSuggestions.has(suggestion.id) ? 'Applied' : 'Apply'}
+                  </Text>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => onDismissSuggestion(suggestion)} style={[styles.actionButton, styles.dismissButton]}>
+                <TouchableOpacity
+                  onPress={() => handleDismissSuggestion(suggestion)}
+                  style={[styles.actionButton, styles.dismissButton]}
+                >
                   <Text style={styles.actionButtonText}>Dismiss</Text>
                 </TouchableOpacity>
               </View>
@@ -116,69 +222,149 @@ const MobileAISuggestionsPanel: React.FC<MobileAISuggestionsPanelProps> = ({
 const styles = StyleSheet.create({
   panelContainer: {
     flex: 1,
-    backgroundColor: '#f8f8f8',
-    padding: 15,
+    backgroundColor: '#f8f9fa',
     borderTopWidth: 1,
-    borderTopColor: '#eee',
+    borderTopColor: '#dee2e6',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#dee2e6',
   },
   panelTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 10,
+    color: '#333',
   },
-  noSuggestionsText: {
-    color: '#666',
+  categoryFilter: {
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#dee2e6',
   },
-  suggestionsList: {
-    flex: 1,
+  categoryButton: {
+    backgroundColor: '#e9ecef',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    marginRight: 8,
   },
-  suggestionItem: {
-    backgroundColor: '#fff',
-    padding: 10,
-    borderRadius: 5,
-    marginBottom: 10,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 1.41,
-    elevation: 2,
+  activeCategoryButton: {
+    backgroundColor: '#007bff',
+  },
+  categoryText: {
+    fontSize: 12,
+    color: '#495057',
+    fontWeight: '500',
+  },
+  activeCategoryText: {
+    color: '#fff',
   },
   bulkActions: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginBottom: 10,
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#dee2e6',
   },
   applyAllButton: {
-    backgroundColor: '#007bff',
+    backgroundColor: '#28a745',
   },
   revertAllButton: {
     backgroundColor: '#6c757d',
   },
-  suggestionContent: {
+  loadingContainer: {
     flex: 1,
-    marginRight: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#666',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  noSuggestionsText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+  },
+  suggestionsList: {
+    flex: 1,
+    padding: 15,
+  },
+  suggestionItem: {
+    backgroundColor: '#fff',
+    padding: 15,
+    borderRadius: 8,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  suggestionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  confidenceBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  confidenceBadgeText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  categoryLabel: {
+    fontSize: 12,
+    color: '#666',
+    textTransform: 'capitalize',
+  },
+  suggestionContent: {
+    marginBottom: 12,
   },
   suggestionText: {
     fontSize: 14,
     color: '#333',
+    lineHeight: 20,
   },
-  confidenceText: {
-    fontSize: 12,
-    marginTop: 5,
-    fontWeight: 'bold',
+  suggestionReplacement: {
+    fontSize: 13,
+    color: '#007bff',
+    fontStyle: 'italic',
+    marginTop: 6,
+    padding: 8,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 4,
   },
   suggestionActions: {
     flexDirection: 'row',
+    justifyContent: 'flex-end',
   },
   actionButton: {
-    backgroundColor: '#28a745',
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    borderRadius: 5,
-    marginLeft: 5,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 6,
+    marginLeft: 8,
+    minWidth: 70,
+    alignItems: 'center',
+  },
+  appliedButton: {
+    backgroundColor: '#6c757d',
   },
   dismissButton: {
     backgroundColor: '#dc3545',
@@ -186,6 +372,7 @@ const styles = StyleSheet.create({
   actionButtonText: {
     color: '#fff',
     fontSize: 12,
+    fontWeight: '600',
   },
 });
 

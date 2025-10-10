@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useUndoRedo } from '@/contexts/UndoRedoContext';
-import { Undo, Redo, Save, Send, Shield, Sparkles, Sidebar, Eye } from 'lucide-react';
+import { Undo, Redo, Save, Send, Shield, Sparkles, Sidebar, Eye, Users } from 'lucide-react';
 
 interface EditorToolbarProps {
   onSaveDraft: () => void;
@@ -15,7 +15,9 @@ interface EditorToolbarProps {
   onToggleSidebar?: () => void;
   onToggleAIPanel?: () => void;
   onTogglePreview?: () => void;
+  onToggleCollaboration?: () => void;
   isPreviewPaneOpen?: boolean;
+  isCollaborationPanelOpen?: boolean;
 }
 
 const EditorToolbar: React.FC<EditorToolbarProps> = ({
@@ -28,6 +30,8 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({
   isSaving,
   onToggleSidebar,
   onToggleAIPanel,
+  onToggleCollaboration,
+  isCollaborationPanelOpen,
   onTogglePreview,
   isPreviewPaneOpen,
 }) => {
@@ -75,6 +79,11 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({
         {onToggleAIPanel && (
           <button onClick={onToggleAIPanel} className="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
             <Sparkles size={20} />
+          </button>
+        )}
+        {onToggleCollaboration && (
+          <button onClick={onToggleCollaboration} className={`p-2 rounded-md ${isCollaborationPanelOpen ? 'bg-primary text-white' : 'hover:bg-gray-200 dark:hover:bg-gray-700'}`}>
+            <Users size={20} />
           </button>
         )}
       </div>

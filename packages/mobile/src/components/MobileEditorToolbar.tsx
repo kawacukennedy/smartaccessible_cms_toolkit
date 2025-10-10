@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   rightControls: {
-    flexDirection: 'row
+    flexDirection: 'row',
   },
   toolbarButton: {
     padding: 8,

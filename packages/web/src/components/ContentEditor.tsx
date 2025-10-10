@@ -5,10 +5,12 @@ import EditorToolbar from './content-editor/EditorToolbar';
 import PreviewPane from './content-editor/PreviewPane';
 import { Eye } from 'lucide-react';
 import AIPanel from './content-editor/AIPanel';
+import CollaborationPanel from './CollaborationPanel';
 import PublishConfirmationModal from './PublishConfirmationModal';
 import { useUndoRedo } from '@/contexts/UndoRedoContext';
 import { useNotifications } from '@/contexts/NotificationContext';
 import { useOffline } from '@/contexts/OfflineContext';
+import { useCollaboration } from '@/contexts/CollaborationContext';
 import { getContentFromIndexedDB, saveContentToIndexedDB, getAllOfflineContent, deleteContentFromIndexedDB } from '@/lib/db/indexedDB';
 import PublishErrorModal from './PublishErrorModal';
 import Sidebar from './Sidebar';
@@ -17,6 +19,7 @@ const ContentEditor: React.FC = () => {
   const { currentContent, addChange } = useUndoRedo();
   const { addNotification } = useNotifications();
   const { isOffline, setPendingSyncCount } = useOffline();
+  const { isOnline: isCollaborationOnline, updateCursor, applyOperation } = useCollaboration();
   const searchParams = useSearchParams();
   const contentId = searchParams.get('id');
 
@@ -33,6 +36,7 @@ const ContentEditor: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isAIPanelOpen, setIsAIPanelOpen] = useState(true);
   const [isPreviewPaneOpen, setIsPreviewPaneOpen] = useState(false);
+  const [isCollaborationPanelOpen, setIsCollaborationPanelOpen] = useState(false);
   const [aiScanStatus, setAiScanStatus] = useState<'idle' | 'queued' | 'running' | 'done' | 'failed'>('idle');
   const [aiTaskId, setAiTaskId] = useState<string | null>(null);
   const [editorState, setEditorState] = useState<'idle' | 'editing' | 'autosaving' | 'saved' | 'error' | 'publishing' | 'published' | 'conflict'>('idle');
@@ -228,7 +232,9 @@ const ContentEditor: React.FC = () => {
         onToggleSidebar={() => setIsSidebarOpen(prev => !prev)}
         onToggleAIPanel={() => setIsAIPanelOpen(prev => !prev)}
         onTogglePreview={() => setIsPreviewPaneOpen(prev => !prev)}
+        onToggleCollaboration={() => setIsCollaborationPanelOpen(prev => !prev)}
         isPreviewPaneOpen={isPreviewPaneOpen}
+        isCollaborationPanelOpen={isCollaborationPanelOpen}
       />
       <div className="flex flex-grow">
         {isSidebarOpen && (
@@ -251,7 +257,13 @@ const ContentEditor: React.FC = () => {
                 onApplySuggestion={(suggestion) => {/* handle apply */}}
                 aiScanStatus={aiScanStatus}
                 onAIScanRequest={handleAIScanRequest}
+                currentContent={currentContent || draftContent}
               />
+            </div>
+          )}
+          {isCollaborationPanelOpen && (
+            <div className="w-80 bg-white dark:bg-neutral-800 border-l border-neutral-200 dark:border-neutral-700">
+              <CollaborationPanel />
             </div>
           )}
         </div>

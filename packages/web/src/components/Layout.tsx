@@ -7,6 +7,7 @@ import Header from './Header';
 import Sidebar from './Sidebar';
 import Breadcrumb from './Breadcrumb';
 import CommandPalette from './CommandPalette';
+import PerformanceMonitor from './PerformanceMonitor';
 import './Layout.css';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAccessibility } from '@/contexts/AccessibilityContext';
@@ -129,6 +130,11 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         commands={commands}
       />
       <Footer />
+
+      {/* Performance Monitor */}
+      <div className="position-fixed bottom-0 end-0 z-index-1050" style={{ width: '350px', maxHeight: '80vh' }}>
+        <PerformanceMonitor />
+      </div>
     </div>
   );
 };

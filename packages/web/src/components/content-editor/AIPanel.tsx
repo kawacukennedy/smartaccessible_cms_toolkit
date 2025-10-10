@@ -14,9 +14,18 @@ interface AIPanelProps {
   isResponsive?: boolean; // Added to indicate responsive rendering
   onAIScanRequest?: () => void; // New prop to trigger AI scan status updates
   aiScanStatus: 'idle' | 'queued' | 'running' | 'done' | 'failed'; // AI Scan status from ContentEditor
+  currentContent?: string; // Current editor content for AI analysis
 }
 
-const AIPanel: React.FC<AIPanelProps> = ({ onApplySuggestion, isOpen, togglePanel, isResponsive, onAIScanRequest, aiScanStatus }) => {
+const AIPanel: React.FC<AIPanelProps> = ({
+  onApplySuggestion,
+  isOpen,
+  togglePanel,
+  isResponsive,
+  onAIScanRequest,
+  aiScanStatus,
+  currentContent
+}) => {
   const offcanvasRef = useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [isTablet, setIsTablet] = useState(false);
@@ -142,7 +151,7 @@ const AIPanel: React.FC<AIPanelProps> = ({ onApplySuggestion, isOpen, togglePane
           role="tabpanel"
           aria-labelledby="ai-suggestions-tab"
         >
-          <AISuggestionsPanel onApplySuggestion={onApplySuggestion} />
+               <AISuggestionsPanel onApplySuggestion={onApplySuggestion} currentContent={currentContent} />
         </div>
         <div className="tab-pane fade" id="accessibility-issues" role="tabpanel" aria-labelledby="accessibility-issues-tab">
           <AccessibilityDashboard />
@@ -256,7 +265,7 @@ const AIPanel: React.FC<AIPanelProps> = ({ onApplySuggestion, isOpen, togglePane
           <AccessibilityDashboard />
         </div>
             <div className="tab-pane fade" id="suggestions" role="tabpanel" aria-labelledby="suggestions-tab">
-              <AISuggestionsPanel onApplySuggestion={onApplySuggestion} />
+              <AISuggestionsPanel onApplySuggestion={onApplySuggestion} currentContent={currentContent} />
             </div>
             <div className="tab-pane fade" id="variations" role="tabpanel" aria-labelledby="variations-tab">
               <div className="mb-3">

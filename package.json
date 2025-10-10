@@ -5,7 +5,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy": "./deployment/scripts/deploy.sh",
+    "deploy:web": "./deployment/scripts/deploy.sh web",
+    "deploy:mobile": "./deployment/scripts/deploy.sh mobile",
+    "deploy:all": "./deployment/scripts/deploy.sh all",
+    "canary": "./deployment/scripts/canary-deploy.sh",
+    "promote": "./deployment/scripts/promote-canary.sh",
+    "blue-green": "./deployment/scripts/blue-green-switch.sh",
+    "monitor": "./deployment/scripts/monitor-deploy.sh"
   },
   "keywords": [],
   "author": "",
