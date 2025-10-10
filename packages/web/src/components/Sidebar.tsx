@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import NewPageModal from './NewPageModal';
-import { FilePlus, LayoutTemplate, Filter, FileText, CheckCircle, Calendar, Type, Newspaper, Presentation, Box, Wifi, WifiOff, Repeat, Eye, BarChart, Settings } from 'lucide-react';
+import { FilePlus, LayoutTemplate, Filter, FileText, CheckCircle, Calendar, Type, Newspaper, Presentation, Box, Wifi, WifiOff, Repeat, Eye, BarChart, Settings, Shield, Image } from 'lucide-react';
 
 interface SidebarProps {
   isSidebarOpen: boolean;
@@ -52,9 +52,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isSidebarOpen }) => {
         <nav>
           <ul className="space-y-2">
             <li><Link href="/dashboard" className="flex items-center p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700"><LayoutTemplate size={20} />{isSidebarOpen && <span className="ml-2">Dashboard</span>}</Link></li>
-            <li><Link href="/content" className="flex items-center p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700"><FileText size={20} />{isSidebarOpen && <span className="ml-2">Content</span>}</Link></li>
-            <li><Link href="/preview" className="flex items-center p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700"><Eye size={20} />{isSidebarOpen && <span className="ml-2">Preview</span>}</Link></li>
-            <li><Link href="/analytics" className="flex items-center p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700"><BarChart size={20} />{isSidebarOpen && <span className="ml-2">Analytics</span>}</Link></li>
+            <li><Link href="/pages" className="flex items-center p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700"><FileText size={20} />{isSidebarOpen && <span className="ml-2">Pages</span>}</Link></li>
+            <li><Link href="/templates" className="flex items-center p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700"><Box size={20} />{isSidebarOpen && <span className="ml-2">Templates</span>}</Link></li>
+            <li><Link href="/assets" className="flex items-center p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700"><Image size={20} />{isSidebarOpen && <span className="ml-2">Assets</span>}</Link></li>
+            <li><Link href="/accessibility" className="flex items-center p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700"><Shield size={20} />{isSidebarOpen && <span className="ml-2">Accessibility Dashboard</span>}</Link></li>
             <li><Link href="/settings" className="flex items-center p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700"><Settings size={20} />{isSidebarOpen && <span className="ml-2">Settings</span>}</Link></li>
           </ul>
         </nav>

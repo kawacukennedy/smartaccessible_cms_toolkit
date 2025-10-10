@@ -29,7 +29,10 @@ const AISuggestionsPanel: React.FC<AISuggestionsPanelProps> = ({ onApplySuggesti
   };
 
   return (
-    <div className="card h-100">
+    <div className="card h-100" role="complementary" aria-label="AI Suggestions Panel">
+      <div aria-live="polite" aria-atomic="true" className="sr-only" id="ai-panel-status">
+        {suggestions.length > 0 ? `${suggestions.length} AI suggestions available` : 'No AI suggestions available'}
+      </div>
       <div className="card-header">AI Suggestions</div>
       <div className="card-body overflow-auto">
         {suggestions.length === 0 ? (

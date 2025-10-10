@@ -129,45 +129,35 @@ function AppContent() {
           },
           tabBarLabel: ({ focused, color }) => {
             let label;
-            if (route.name === 'Dashboard') {
-              label = t('dashboard');
+            if (route.name === 'Home') {
+              label = t('home');
             } else if (route.name === 'Content') {
               label = t('content');
-            } else if (route.name === 'ContentEditor') { // New tab label
-              label = t('content_editor');
-            } else if (route.name === 'AI') {
-              label = t('ai');
-            } else if (route.name === 'Notifications') {
-              label = t('notifications');
-            } else if (route.name === 'Settings') {
-              label = t('settings');
-            } else if (route.name === 'Onboarding') {
-              label = t('onboarding');
+            } else if (route.name === 'Scan') {
+              label = t('scan');
+            } else if (route.name === 'Media') {
+              label = t('media');
+            } else if (route.name === 'Profile') {
+              label = t('profile');
             }
             return <Text style={{ color: color, fontSize: 10 }}>{label}</Text>;
           },
         })}
       >
-        <Tab.Screen name="Dashboard">
+        <Tab.Screen name="Home">
           {props => <ScreenWrapper {...props}><DashboardScreen /></ScreenWrapper>}
         </Tab.Screen>
         <Tab.Screen name="Content">
           {props => <ScreenWrapper {...props}><ContentScreen /></ScreenWrapper>}
         </Tab.Screen>
-        <Tab.Screen name="AI">
+        <Tab.Screen name="Scan">
           {props => <ScreenWrapper {...props}><AIScreen /></ScreenWrapper>}
         </Tab.Screen>
-        <Tab.Screen name="Notifications">
+        <Tab.Screen name="Media">
           {props => <ScreenWrapper {...props}><NotificationsScreen /></ScreenWrapper>}
         </Tab.Screen>
-        <Tab.Screen name="Settings">
+        <Tab.Screen name="Profile">
           {props => <ScreenWrapper {...props}><SettingsScreen /></ScreenWrapper>}
-        </Tab.Screen>
-        <Tab.Screen name="ContentEditor"> {/* New Tab Screen */}
-          {props => <ScreenWrapper {...props}><ContentEditorScreen /></ScreenWrapper>}
-        </Tab.Screen>
-        <Tab.Screen name="Onboarding">
-          {props => <ScreenWrapper {...props}><OnboardingScreen /></ScreenWrapper>}
         </Tab.Screen>
       </Tab.Navigator>
     </NavigationContainer>

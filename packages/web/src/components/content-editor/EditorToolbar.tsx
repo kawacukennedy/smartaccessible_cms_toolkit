@@ -14,6 +14,8 @@ interface EditorToolbarProps {
   isSaving?: boolean;
   onToggleSidebar?: () => void;
   onToggleAIPanel?: () => void;
+  onTogglePreview?: () => void;
+  isPreviewPaneOpen?: boolean;
 }
 
 const EditorToolbar: React.FC<EditorToolbarProps> = ({
@@ -26,6 +28,8 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({
   isSaving,
   onToggleSidebar,
   onToggleAIPanel,
+  onTogglePreview,
+  isPreviewPaneOpen,
 }) => {
   const { undo, redo, canUndo, canRedo } = useUndoRedo();
 
@@ -36,7 +40,10 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({
   };
 
   return (
-    <div className="flex items-center justify-between p-2 bg-background_light dark:bg-background_dark border-b border-gray-200 dark:border-gray-700">
+    <div role="toolbar" className="flex items-center justify-between p-2 bg-background_light dark:bg-background_dark border-b border-gray-200 dark:border-gray-700">
+      <div aria-live="polite" aria-atomic="true" className="sr-only" id="autosave-status">
+        {isSaving ? 'Saving draft...' : 'Draft saved'}
+      </div>
       <div className="flex items-center space-x-2">
         <button onClick={undo} disabled={!canUndo} className="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50">
           <Undo size={20} />
@@ -60,9 +67,14 @@ const EditorToolbar: React.FC<EditorToolbarProps> = ({
         <button onClick={onToggleAIAssist} className={`p-2 rounded-md ${isAiAssistEnabled ? 'bg-primary text-white' : 'hover:bg-gray-200 dark:hover:bg-gray-700'}`}>
           <Sparkles size={20} />
         </button>
+        {onTogglePreview && (
+          <button onClick={onTogglePreview} className={`p-2 rounded-md ${isPreviewPaneOpen ? 'bg-primary text-white' : 'hover:bg-gray-200 dark:hover:bg-gray-700'}`}>
+            <Eye size={20} />
+          </button>
+        )}
         {onToggleAIPanel && (
           <button onClick={onToggleAIPanel} className="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700">
-            <Eye size={20} />
+            <Sparkles size={20} />
           </button>
         )}
       </div>

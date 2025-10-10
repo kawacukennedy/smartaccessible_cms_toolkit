@@ -54,9 +54,9 @@ module.exports = {
         lg: '0 10px 30px rgba(0,0,0,0.18)',
       },
       animation: {
-        fast: '300ms',
-        normal: '500ms',
-        slow: '1000ms',
+        fast: '120ms',
+        normal: '300ms',
+        slow: '500ms',
         confetti: '1500ms',
       },
       transitionTimingFunction: {
@@ -64,11 +64,22 @@ module.exports = {
         accelerate: 'cubic-bezier(0.2, 0, 0, 1)',
         decelerate: 'cubic-bezier(0, 0, 0.2, 1)',
       },
+      micro_interactions: {
+        hover_lift: { scale: 1.02, duration: 120 },
+        click_ripple: { duration: 200 },
+        toast_slide: { duration: 300 },
+        modal_open: { duration: 300, easing: 'standard' },
+      },
       screens: {
         mobile: '0px',
         tablet: '768px',
         desktop: '1024px',
         wide: '1440px',
+      },
+      accessibility_tokens: {
+        focus_ring: { width: '3px', color: '#2563EB', offset: '2px' },
+        min_contrast_ratio_text: 4.5,
+        min_contrast_ratio_ui: 3.0,
       },
     },
   },

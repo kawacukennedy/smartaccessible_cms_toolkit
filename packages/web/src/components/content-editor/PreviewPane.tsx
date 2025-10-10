@@ -9,13 +9,14 @@ interface PreviewPaneProps {
 }
 
 const PreviewPane: React.FC<PreviewPaneProps> = ({ draftContent, publishedContent }) => {
-  const [view, setView] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
+  const [view, setView] = useState<'desktop' | 'tablet' | 'mobile_portrait' | 'mobile_landscape'>('desktop');
   const [diffMode, setDiffMode] = useState(false);
+  const [theme, setTheme] = useState<'light' | 'dark' | 'high_contrast'>('light');
 
   const renderContent = (content: string) => {
     return (
       <div
-        className="p-4 bg-white rounded-lg shadow-inner overflow-auto"
+        className={`p-4 rounded-lg shadow-inner overflow-auto ${getThemeClasses()}`}
         dangerouslySetInnerHTML={{ __html: content || '<p>No content.</p>' }}
       />
     );
@@ -23,10 +24,19 @@ const PreviewPane: React.FC<PreviewPaneProps> = ({ draftContent, publishedConten
 
   const getFrameWidth = () => {
     switch (view) {
-      case 'mobile': return 'w-full max-w-sm';
-      case 'tablet': return 'w-full max-w-md';
+      case 'mobile_portrait': return 'w-full max-w-sm h-96';
+      case 'mobile_landscape': return 'w-full max-w-md h-48';
+      case 'tablet': return 'w-full max-w-lg';
       case 'desktop':
       default: return 'w-full';
+    }
+  };
+
+  const getThemeClasses = () => {
+    switch (theme) {
+      case 'dark': return 'bg-gray-900 text-white';
+      case 'high_contrast': return 'bg-black text-white';
+      default: return 'bg-white text-black';
     }
   };
 
@@ -36,7 +46,13 @@ const PreviewPane: React.FC<PreviewPaneProps> = ({ draftContent, publishedConten
         <div className="flex items-center space-x-1 bg-gray-200 dark:bg-gray-800 p-1 rounded-lg">
           <button onClick={() => setView('desktop')} className={`p-2 rounded-md ${view === 'desktop' ? 'bg-white dark:bg-gray-700' : ''}`}><Laptop size={20} /></button>
           <button onClick={() => setView('tablet')} className={`p-2 rounded-md ${view === 'tablet' ? 'bg-white dark:bg-gray-700' : ''}`}><Tablet size={20} /></button>
-          <button onClick={() => setView('mobile')} className={`p-2 rounded-md ${view === 'mobile' ? 'bg-white dark:bg-gray-700' : ''}`}><Smartphone size={20} /></button>
+          <button onClick={() => setView('mobile_portrait')} className={`p-2 rounded-md ${view === 'mobile_portrait' ? 'bg-white dark:bg-gray-700' : ''}`} title="Mobile Portrait"><Smartphone size={20} /></button>
+          <button onClick={() => setView('mobile_landscape')} className={`p-2 rounded-md ${view === 'mobile_landscape' ? 'bg-white dark:bg-gray-700' : ''}`} title="Mobile Landscape"><Smartphone size={20} className="rotate-90" /></button>
+        </div>
+        <div className="flex items-center space-x-1 bg-gray-200 dark:bg-gray-800 p-1 rounded-lg">
+          <button onClick={() => setTheme('light')} className={`p-2 rounded-md ${theme === 'light' ? 'bg-white dark:bg-gray-700' : ''}`}>Light</button>
+          <button onClick={() => setTheme('dark')} className={`p-2 rounded-md ${theme === 'dark' ? 'bg-white dark:bg-gray-700' : ''}`}>Dark</button>
+          <button onClick={() => setTheme('high_contrast')} className={`p-2 rounded-md ${theme === 'high_contrast' ? 'bg-white dark:bg-gray-700' : ''}`}>HC</button>
         </div>
         <div className="flex space-x-2">
           <button onClick={() => setDiffMode(!diffMode)} className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm ${diffMode ? 'bg-primary text-white' : 'bg-gray-200 dark:bg-gray-800'}`}>

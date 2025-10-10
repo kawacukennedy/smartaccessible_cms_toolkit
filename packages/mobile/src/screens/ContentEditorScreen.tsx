@@ -1,5 +1,5 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { View, Text, StyleSheet, Modal, TouchableOpacity } from 'react-native';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, Modal, TouchableOpacity, PanResponder } from 'react-native';
 import MobileEditorToolbar from '../components/MobileEditorToolbar';
 import MobileBlockCanvas from '../components/MobileBlockCanvas';
 import { useUndoRedo } from '@/contexts/UndoRedoContext';
@@ -26,6 +26,7 @@ const ContentEditorScreen = () => {
   const [isAIErrorModalOpen, setIsAIErrorModalOpen] = useState(false); // New state for AI error modal
   const [isSaving, setIsSaving] = useState(false);
   const [isOffline, setIsOffline] = useState(false);
+  const [suggestions, setSuggestions] = useState([]);
 
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener(state => {

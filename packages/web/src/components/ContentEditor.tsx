@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 import BlockEditorCanvas from './content-editor/BlockEditorCanvas';
 import EditorToolbar from './content-editor/EditorToolbar';
 import PreviewPane from './content-editor/PreviewPane';
+import { Eye } from 'lucide-react';
 import AIPanel from './content-editor/AIPanel';
 import PublishConfirmationModal from './PublishConfirmationModal';
 import { useUndoRedo } from '@/contexts/UndoRedoContext';
@@ -15,6 +17,8 @@ const ContentEditor: React.FC = () => {
   const { currentContent, addChange } = useUndoRedo();
   const { addNotification } = useNotifications();
   const { isOffline, setPendingSyncCount } = useOffline();
+  const searchParams = useSearchParams();
+  const contentId = searchParams.get('id');
 
   const [accessibilityScore, setAccessibilityScore] = useState(85);
   const [isAiAssistEnabled, setIsAiAssistEnabled] = useState(true);
@@ -28,6 +32,7 @@ const ContentEditor: React.FC = () => {
   const [dividerPosition, setDividerPosition] = useState(50);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isAIPanelOpen, setIsAIPanelOpen] = useState(true);
+  const [isPreviewPaneOpen, setIsPreviewPaneOpen] = useState(false);
   const [aiScanStatus, setAiScanStatus] = useState<'idle' | 'queued' | 'running' | 'done' | 'failed'>('idle');
   const [aiTaskId, setAiTaskId] = useState<string | null>(null);
   const [editorState, setEditorState] = useState<'idle' | 'editing' | 'autosaving' | 'saved' | 'error' | 'publishing' | 'published' | 'conflict'>('idle');
@@ -55,16 +60,31 @@ const ContentEditor: React.FC = () => {
 
   useEffect(() => {
     const loadContent = async () => {
-      const storedContent = await getContentFromIndexedDB('editor-content');
-      if (storedContent) {
-        setInitialEditorContent(storedContent.content);
-        addNotification({ displayType: 'toast', style: 'info', message: 'Loaded unsaved changes.' });
+      if (contentId) {
+        try {
+          const response = await fetch(`/api/content/${contentId}`);
+          if (response.ok) {
+            const data = await response.json();
+            setInitialEditorContent(data.content);
+            addNotification({ displayType: 'toast', style: 'info', message: 'Content loaded.' });
+          } else {
+            addNotification({ displayType: 'toast', style: 'error', message: 'Failed to load content.' });
+          }
+        } catch (error) {
+          addNotification({ displayType: 'toast', style: 'error', message: 'Error loading content.' });
+        }
+      } else {
+        const storedContent = await getContentFromIndexedDB('editor-content');
+        if (storedContent) {
+          setInitialEditorContent(storedContent.content);
+          addNotification({ displayType: 'toast', style: 'info', message: 'Loaded unsaved changes.' });
+        }
       }
       const allOffline = await getAllOfflineContent();
       setPendingSyncCount(allOffline.filter(item => item.status === 'pending_sync').length);
     };
     loadContent();
-  }, [addNotification, setPendingSyncCount]);
+  }, [addNotification, setPendingSyncCount, contentId]);
 
   const handleSaveDraft = useCallback(async () => {
     setEditorState('autosaving');
@@ -104,19 +124,23 @@ const ContentEditor: React.FC = () => {
           case 'z':
             if (e.shiftKey) {
               e.preventDefault();
-              // Redo
+              // Redo - would need to implement redo in UndoRedoContext
             } else {
               e.preventDefault();
-              // Undo
+              // Undo - would need to implement undo in UndoRedoContext
             }
             break;
+        }
+        if (e.altKey && e.key === 'p') {
+          e.preventDefault();
+          handlePublish();
         }
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [handleSaveDraft]);
+  }, [handleSaveDraft, handlePublish]);
 
   const handleAIScanRequest = useCallback(async () => {
     if (aiScanStatus !== 'idle') return;
@@ -162,7 +186,21 @@ const ContentEditor: React.FC = () => {
     setIsPublishing(true);
     setPublishError(null);
     try {
-      await new Promise((resolve, reject) => setTimeout(() => Math.random() > 0.8 ? reject(new Error('Failed to connect.')) : resolve(true), 2000));
+      if (contentId) {
+        const response = await fetch(`/api/content/${contentId}/publish`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content: currentContent }),
+        });
+        if (!response.ok) throw new Error('Publish failed');
+      } else {
+        const response = await fetch('/api/content', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content: currentContent, type: 'page', locale: 'en' }),
+        });
+        if (!response.ok) throw new Error('Create and publish failed');
+      }
       addNotification({ displayType: 'toast', style: 'success', message: 'Content published!' });
       setEditorState('published');
       setPublishedContent(currentContent);
@@ -175,7 +213,7 @@ const ContentEditor: React.FC = () => {
     } finally {
       setIsPublishing(false);
     }
-  }, [currentContent, addNotification, setPendingSyncCount]);
+  }, [currentContent, addNotification, setPendingSyncCount, contentId]);
 
   return (
     <div className="flex h-full bg-neutral-100 dark:bg-neutral-900">
@@ -189,6 +227,8 @@ const ContentEditor: React.FC = () => {
         isSaving={isSaving}
         onToggleSidebar={() => setIsSidebarOpen(prev => !prev)}
         onToggleAIPanel={() => setIsAIPanelOpen(prev => !prev)}
+        onTogglePreview={() => setIsPreviewPaneOpen(prev => !prev)}
+        isPreviewPaneOpen={isPreviewPaneOpen}
       />
       <div className="flex flex-grow">
         {isSidebarOpen && (
@@ -198,8 +238,13 @@ const ContentEditor: React.FC = () => {
         )}
         <div className="flex-grow flex">
           <div className="flex-grow p-4 overflow-auto">
-            <BlockEditorCanvas initialContent={initialEditorContent} />
+            <BlockEditorCanvas initialContent={initialEditorContent} onContentChange={addChange} />
           </div>
+          {isPreviewPaneOpen && (
+            <div className="w-96 bg-white dark:bg-neutral-800 border-l border-neutral-200 dark:border-neutral-700">
+              <PreviewPane draftContent={draftContent} publishedContent={publishedContent} />
+            </div>
+          )}
           {isAIPanelOpen && (
             <div className="w-90 bg-white dark:bg-neutral-800 border-l border-neutral-200 dark:border-neutral-700">
               <AIPanel
