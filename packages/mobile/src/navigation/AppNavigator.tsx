@@ -10,6 +10,7 @@ import ThemeBuilderScreen from '../screens/ThemeBuilderScreen';
 import AnalyticsScreen from '../screens/AnalyticsScreen';
 import PerformanceScreen from '../screens/PerformanceScreen';
 import AdvancedContentEditorScreen from '../screens/AdvancedContentEditorScreen';
+import OnboardingScreen from '../screens/OnboardingScreen';
 import MobileGestureHandler from '../components/MobileGestureHandler';
 import MobileVoiceNavigation from '../components/MobileVoiceNavigation';
 import { GestureEvent, VoiceCommand, globalGestureSupport } from '../lib/mobileGestureSupport';
@@ -77,6 +78,7 @@ const AppNavigator = () => {
       <Stack.Screen name="Analytics" component={AnalyticsScreen} />
       <Stack.Screen name="Performance" component={PerformanceScreen} />
       <Stack.Screen name="AdvancedContentEditor" component={AdvancedContentEditorScreen} />
+      <Stack.Screen name="Onboarding" component={OnboardingScreen} />
     </Stack.Navigator>
   );
 };
